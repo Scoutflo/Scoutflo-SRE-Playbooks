@@ -18,6 +18,11 @@
 - [Getting Started](#getting-started)
 - [Usage](#usage)
 - [Terminology & Glossary](#terminology--glossary)
+- [Quick Reference](#quick-reference)
+- [Troubleshooting Guide](#troubleshooting-guide)
+- [Examples & Use Cases](#examples--use-cases)
+- [FAQ](#faq)
+- [Video Tutorials](#video-tutorials)
 - [Contributing](#contributing)
 - [Connect with Us](#connect-with-us)
 - [Support](#support)
@@ -258,6 +263,52 @@ Understanding the terms used in these playbooks will help you use them more effe
 ---
 
 **For detailed explanations of AWS and Kubernetes terms, see the respective README files above.**
+
+## Quick Reference
+
+Need a quick cheat sheet? Check out our [Quick Reference Card](QUICK_REFERENCE.md) for:
+- One-page overview
+- Common commands
+- Quick lookup tables
+- Essential links
+
+## Troubleshooting Guide
+
+Not sure which playbook to use? Use our [Troubleshooting Decision Tree](TROUBLESHOOTING_FLOWCHART.md) to:
+- Quickly identify the right playbook
+- Navigate by issue type
+- Look up by error message or alert name
+
+## Examples & Use Cases
+
+See real-world scenarios in [EXAMPLES.md](EXAMPLES.md):
+- Step-by-step examples
+- Common workflows
+- Success stories
+- Best practices
+
+## FAQ
+
+Have questions? Check our [FAQ](FAQ.md) for answers to:
+- General questions
+- Usage questions
+- Technical questions
+- Contributing questions
+
+## Video Tutorials
+
+Learn how to use these playbooks effectively:
+
+- **YouTube Channel**: [@scoutflo6727](https://www.youtube.com/@scoutflo6727) - Subscribe for tutorials and walkthroughs
+- **AI SRE Demo**: [Watch Demo Video](https://youtu.be/P6xzFUtRqRc?si=0VN9oMV05rNzXFs8) - See Scoutflo AI SRE in action
+- **Tutorials**: Step-by-step video guides on using playbooks
+- **Best Practices**: Learn SRE incident response best practices
+
+**Coming Soon**: Video tutorials for:
+- How to use playbooks effectively
+- Common troubleshooting scenarios
+- Contributing to playbooks
+- Advanced correlation analysis
 
 ## Contributing
 
