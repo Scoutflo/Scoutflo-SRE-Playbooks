@@ -62,33 +62,148 @@ If you're experiencing networking issues:
 
 ## Useful Commands
 
+### Services
 ```bash
 # Check services
 kubectl get services -n <namespace>
+kubectl get svc -A  # All namespaces
 
 # Describe service
 kubectl describe service <service-name> -n <namespace>
 
+# Check service endpoints
+kubectl get endpoints <service-name> -n <namespace>
+
+# Check service selector matches
+kubectl get pods -l <selector> -n <namespace>
+
+# Test service connectivity
+kubectl run -it --rm debug --image=busybox --restart=Never -- wget -O- <service-name>.<namespace>.svc.cluster.local
+```
+
+### Ingress
+```bash
 # Check ingress
 kubectl get ingress -n <namespace>
 
+# Describe ingress
+kubectl describe ingress <ingress-name> -n <namespace>
+
+# Check ingress controller pods
+kubectl get pods -n <ingress-namespace> -l app=<ingress-controller>
+
+# Check ingress controller logs
+kubectl logs -n <ingress-namespace> -l app=<ingress-controller>
+```
+
+### DNS
+```bash
 # Check CoreDNS pods
 kubectl get pods -n kube-system | grep coredns
 
-# Check kube-proxy
-kubectl get pods -n kube-system | grep kube-proxy
-
-# Check network policies
-kubectl get networkpolicies -n <namespace>
+# Check CoreDNS logs
+kubectl logs -n kube-system -l k8s-app=kube-dns
 
 # Test DNS resolution
 kubectl run -it --rm debug --image=busybox --restart=Never -- nslookup <service-name>.<namespace>.svc.cluster.local
+
+# Test DNS from pod
+kubectl exec -it <pod-name> -n <namespace> -- nslookup <service-name>.<namespace>.svc.cluster.local
 ```
+
+### Network Policies
+```bash
+# Check network policies
+kubectl get networkpolicies -n <namespace>
+
+# Describe network policy
+kubectl describe networkpolicy <policy-name> -n <namespace>
+
+# Check network policy rules
+kubectl get networkpolicy <policy-name> -n <namespace> -o yaml
+```
+
+### kube-proxy
+```bash
+# Check kube-proxy pods
+kubectl get pods -n kube-system | grep kube-proxy
+
+# Check kube-proxy logs
+kubectl logs -n kube-system -l k8s-app=kube-proxy
+
+# Check kube-proxy configuration
+kubectl get configmap -n kube-system kube-proxy -o yaml
+```
+
+### Network Debugging
+```bash
+# Check pod network interfaces
+kubectl exec <pod-name> -n <namespace> -- ip addr
+
+# Check pod routing
+kubectl exec <pod-name> -n <namespace> -- ip route
+
+# Test connectivity between pods
+kubectl exec <pod-1> -n <namespace> -- ping <pod-2-ip>
+
+# Check service IP
+kubectl get service <service-name> -n <namespace> -o jsonpath='{.spec.clusterIP}'
+```
+
+## Best Practices
+
+### Service Design
+- **Service Discovery**: Use DNS names for service discovery
+- **Service Types**: Choose appropriate service type (ClusterIP, NodePort, LoadBalancer)
+- **Session Affinity**: Use session affinity when needed for stateful applications
+- **Headless Services**: Use headless services for StatefulSets
+
+### Ingress Configuration
+- **Ingress Controller**: Ensure ingress controller is running and healthy
+- **TLS/SSL**: Always use TLS for production ingress
+- **Path-based Routing**: Use path-based routing for multiple services
+- **Ingress Classes**: Use ingress classes for multiple controllers
+
+### DNS Best Practices
+- **CoreDNS Health**: Monitor CoreDNS pod health
+- **DNS Caching**: Understand DNS caching behavior
+- **External DNS**: Use ExternalDNS for cloud provider DNS integration
+- **DNS Policies**: Configure DNS policies for pod DNS behavior
+
+### Network Policies
+- **Default Deny**: Start with deny-all and allow specific traffic
+- **Namespace Isolation**: Use network policies for namespace isolation
+- **Label Selectors**: Use consistent label selectors for policies
+- **Policy Testing**: Test network policies in non-production first
+
+### Troubleshooting Tips
+- **Check Endpoints**: Verify service has endpoints (pods selected)
+- **DNS Resolution**: Test DNS resolution from within pods
+- **Network Policies**: Check if network policies are blocking traffic
+- **Ingress Controller**: Verify ingress controller is processing ingress resources
+- **kube-proxy**: Ensure kube-proxy is running on all nodes
 
 ## Additional Resources
 
-- [Kubernetes Networking](https://kubernetes.io/docs/concepts/services-networking/)
-- [Services](https://kubernetes.io/docs/concepts/services-networking/service/)
-- [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/)
-- [DNS](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/)
-- [Back to Main K8s Playbooks](../README.md)
+### Official Documentation
+- [Kubernetes Networking](https://kubernetes.io/docs/concepts/services-networking/) - Networking overview
+- [Services](https://kubernetes.io/docs/concepts/services-networking/service/) - Service guide
+- [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/) - Ingress guide
+- [DNS](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/) - DNS guide
+- [Network Policies](https://kubernetes.io/docs/concepts/services-networking/network-policies/) - Network policy guide
+
+### Learning Resources
+- [Service Types Explained](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types) - Service types
+- [Ingress Controllers](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/) - Controller options
+- [CoreDNS Configuration](https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/) - DNS configuration
+
+### Tools & Utilities
+- [CoreDNS](https://coredns.io/) - DNS server documentation
+- [NGINX Ingress Controller](https://kubernetes.github.io/ingress-nginx/) - Popular ingress controller
+- [Traefik](https://doc.traefik.io/traefik/) - Alternative ingress controller
+
+### Community Resources
+- [Kubernetes Slack #sig-network](https://slack.k8s.io/) - Networking discussions
+- [Stack Overflow - Kubernetes Networking](https://stackoverflow.com/questions/tagged/kubernetes+networking) - Q&A
+
+[Back to Main K8s Playbooks](../README.md)

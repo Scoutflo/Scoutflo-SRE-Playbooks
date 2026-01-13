@@ -45,32 +45,138 @@ If you're experiencing RBAC issues:
 
 ## Useful Commands
 
+### ServiceAccounts
 ```bash
 # Check ServiceAccounts
 kubectl get serviceaccounts -n <namespace>
+kubectl get sa -n <namespace>  # Short form
 
+# Describe ServiceAccount
+kubectl describe serviceaccount <serviceaccount-name> -n <namespace>
+
+# Check ServiceAccount secrets
+kubectl get serviceaccount <serviceaccount-name> -n <namespace> -o yaml
+
+# Check pods using ServiceAccount
+kubectl get pods -n <namespace> -o jsonpath='{.items[?(@.spec.serviceAccountName=="<serviceaccount-name>")].metadata.name}'
+```
+
+### Roles and ClusterRoles
+```bash
 # Check Roles
 kubectl get roles -n <namespace>
 
-# Check RoleBindings
-kubectl get rolebindings -n <namespace>
+# Describe Role
+kubectl describe role <role-name> -n <namespace>
+
+# Check Role rules
+kubectl get role <role-name> -n <namespace> -o yaml
 
 # Check ClusterRoles
 kubectl get clusterroles
 
-# Check ClusterRoleBindings
-kubectl get clusterrolebindings
+# Describe ClusterRole
+kubectl describe clusterrole <clusterrole-name>
 
-# Check permissions for a ServiceAccount
-kubectl auth can-i --list --as=system:serviceaccount:<namespace>:<serviceaccount-name> -n <namespace>
+# Check ClusterRole rules
+kubectl get clusterrole <clusterrole-name> -o yaml
+```
+
+### RoleBindings and ClusterRoleBindings
+```bash
+# Check RoleBindings
+kubectl get rolebindings -n <namespace>
 
 # Describe RoleBinding
 kubectl describe rolebinding <rolebinding-name> -n <namespace>
+
+# Check ClusterRoleBindings
+kubectl get clusterrolebindings
+
+# Describe ClusterRoleBinding
+kubectl describe clusterrolebinding <clusterrolebinding-name>
+
+# Check what subjects are bound to a Role
+kubectl get rolebinding <rolebinding-name> -n <namespace> -o jsonpath='{.subjects}'
 ```
+
+### Permission Checking
+```bash
+# Check if current user can perform action
+kubectl auth can-i create pods -n <namespace>
+
+# Check permissions for ServiceAccount
+kubectl auth can-i --list --as=system:serviceaccount:<namespace>:<serviceaccount-name> -n <namespace>
+
+# Check all permissions for user
+kubectl auth can-i --list --as=<user-name> -n <namespace>
+
+# Check cluster-wide permissions
+kubectl auth can-i --list --as=<user-name> --all-namespaces
+```
+
+### Debugging RBAC Issues
+```bash
+# Check API server authorization logs (requires access to control plane)
+# Usually in API server logs
+
+# Check ServiceAccount token
+kubectl get secret -n <namespace> | grep <serviceaccount-name>
+
+# Test authentication with ServiceAccount token
+kubectl --token=<token> get pods -n <namespace>
+
+# Check RBAC events
+kubectl get events -n <namespace> --field-selector reason=Failed
+```
+
+## Best Practices
+
+### RBAC Design
+- **Least Privilege**: Grant minimum permissions necessary
+- **Role vs ClusterRole**: Use Role for namespace-scoped, ClusterRole for cluster-scoped
+- **ServiceAccounts**: Use dedicated ServiceAccounts for each application
+- **Resource Names**: Be specific with resource names in rules
+
+### Security Best Practices
+- **Avoid Cluster-admin**: Don't use cluster-admin unless absolutely necessary
+- **Regular Audits**: Regularly audit RBAC permissions
+- **ServiceAccount Tokens**: Rotate ServiceAccount tokens regularly
+- **RBAC Policies**: Document RBAC policies and review regularly
+
+### Troubleshooting Tips
+- **Check ServiceAccount**: Verify pod is using correct ServiceAccount
+- **Verify Bindings**: Check RoleBinding/ClusterRoleBinding exists
+- **Test Permissions**: Use `kubectl auth can-i` to test permissions
+- **Review Logs**: Check API server logs for authorization failures
+- **Check Subjects**: Verify subjects in bindings match users/ServiceAccounts
+
+### Common Patterns
+- **Read-only Access**: Create read-only roles for monitoring tools
+- **Namespace Admin**: Create namespace-specific admin roles
+- **Pod Creator**: Allow users to create pods but not modify other resources
+- **Resource Quota Viewer**: Allow viewing resource quotas without modification
 
 ## Additional Resources
 
-- [Kubernetes RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
-- [ServiceAccounts](https://kubernetes.io/docs/concepts/security/service-accounts/)
-- [Authorization](https://kubernetes.io/docs/reference/access-authn-authz/authorization/)
-- [Back to Main K8s Playbooks](../README.md)
+### Official Documentation
+- [Kubernetes RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) - RBAC guide
+- [ServiceAccounts](https://kubernetes.io/docs/concepts/security/service-accounts/) - ServiceAccount guide
+- [Authorization](https://kubernetes.io/docs/reference/access-authn-authz/authorization/) - Authorization overview
+- [RBAC API Reference](https://kubernetes.io/docs/reference/kubernetes-api/authorization-resources/role-v1/) - API reference
+
+### Learning Resources
+- [RBAC Examples](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-example) - Role examples
+- [RBAC Best Practices](https://kubernetes.io/docs/concepts/security/rbac-good-practices/) - Best practices guide
+- [ServiceAccount Tokens](https://kubernetes.io/docs/concepts/security/service-accounts/#service-account-tokens) - Token management
+
+### Tools & Utilities
+- [kubectl-whoami](https://github.com/rajatjindal/kubectl-whoami) - Check current user context
+- [rbac-lookup](https://github.com/FairwindsOps/rbac-lookup) - Reverse RBAC lookup
+- [kubectl-rbac](https://github.com/alcideio/rbac-tool) - RBAC analysis tool
+
+### Community Resources
+- [Kubernetes Slack #sig-auth](https://slack.k8s.io/) - Authentication/authorization discussions
+- [Stack Overflow - Kubernetes RBAC](https://stackoverflow.com/questions/tagged/kubernetes+rbac) - Q&A
+
+[Back to Main K8s Playbooks](../README.md)

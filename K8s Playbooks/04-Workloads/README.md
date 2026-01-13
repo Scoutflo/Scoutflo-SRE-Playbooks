@@ -67,6 +67,7 @@ If you're experiencing workload issues:
 
 ## Useful Commands
 
+### Deployments
 ```bash
 # Check deployment status
 kubectl get deployments -n <namespace>
@@ -74,26 +75,152 @@ kubectl get deployments -n <namespace>
 # Describe deployment
 kubectl describe deployment <deployment-name> -n <namespace>
 
+# Check deployment rollout status
+kubectl rollout status deployment/<deployment-name> -n <namespace>
+
+# Check deployment history
+kubectl rollout history deployment/<deployment-name> -n <namespace>
+
+# Rollback deployment
+kubectl rollout undo deployment/<deployment-name> -n <namespace>
+
+# Scale deployment
+kubectl scale deployment <deployment-name> --replicas=<count> -n <namespace>
+
+# Check deployment replicas
+kubectl get deployment <deployment-name> -n <namespace> -o jsonpath='{.status.replicas}'
+```
+
+### StatefulSets
+```bash
 # Check StatefulSet status
 kubectl get statefulsets -n <namespace>
 
+# Describe StatefulSet
+kubectl describe statefulset <statefulset-name> -n <namespace>
+
+# Check StatefulSet pods
+kubectl get pods -l app=<statefulset-name> -n <namespace>
+
+# Check StatefulSet replica status
+kubectl get statefulset <statefulset-name> -n <namespace> -o jsonpath='{.status}'
+```
+
+### DaemonSets
+```bash
 # Check DaemonSet status
 kubectl get daemonsets -n <namespace>
 
-# Check HPA status
-kubectl get hpa -n <namespace>
+# Describe DaemonSet
+kubectl describe daemonset <daemonset-name> -n <namespace>
 
+# Check DaemonSet pods
+kubectl get pods -l app=<daemonset-name> -n <namespace>
+
+# Check which nodes have DaemonSet pods
+kubectl get pods -l app=<daemonset-name> -n <namespace> -o wide
+```
+
+### Jobs and CronJobs
+```bash
 # Check job status
 kubectl get jobs -n <namespace>
 
+# Describe job
+kubectl describe job <job-name> -n <namespace>
+
+# Check job pods
+kubectl get pods -l job-name=<job-name> -n <namespace>
+
+# Check CronJob
+kubectl get cronjobs -n <namespace>
+
+# Check CronJob schedule
+kubectl get cronjob <cronjob-name> -n <namespace> -o jsonpath='{.spec.schedule}'
+```
+
+### Horizontal Pod Autoscaler (HPA)
+```bash
+# Check HPA status
+kubectl get hpa -n <namespace>
+
+# Describe HPA
+kubectl describe hpa <hpa-name> -n <namespace>
+
+# Check HPA metrics
+kubectl get hpa <hpa-name> -n <namespace> -o yaml
+
+# Check HPA events
+kubectl describe hpa <hpa-name> -n <namespace> | grep -A 10 "Events:"
+```
+
+### Workload Events and Debugging
+```bash
 # Check workload events
 kubectl get events -n <namespace> --sort-by='.lastTimestamp'
+
+# Check events for specific workload
+kubectl get events -n <namespace> --field-selector involvedObject.name=<workload-name>
+
+# Check replica sets (for Deployments)
+kubectl get replicasets -n <namespace>
 ```
+
+## Best Practices
+
+### Deployment Best Practices
+- **Rolling Updates**: Use rolling update strategy for zero-downtime deployments
+- **Resource Limits**: Always set resource requests and limits
+- **Readiness Probes**: Configure readiness probes for proper traffic routing
+- **Pod Disruption Budgets**: Use PDBs to ensure availability during updates
+- **Replica Management**: Start with 2+ replicas for high availability
+
+### StatefulSet Best Practices
+- **Stable Storage**: Use PersistentVolumes for stateful data
+- **Ordered Pod Management**: Understand ordered startup/termination
+- **Headless Services**: Use headless services for stable network identities
+- **Backup Strategy**: Implement regular backups for stateful data
+
+### DaemonSet Best Practices
+- **Node Selection**: Use node selectors or taints/tolerations for placement
+- **Update Strategy**: Choose appropriate update strategy (RollingUpdate or OnDelete)
+- **Resource Management**: Monitor resource usage as DaemonSets run on all nodes
+
+### HPA Best Practices
+- **Metrics Server**: Ensure Metrics Server is running and healthy
+- **Resource Metrics**: Start with CPU/memory metrics before custom metrics
+- **Min/Max Replicas**: Set appropriate min and max replica counts
+- **Scaling Policies**: Configure scaling policies for smooth scaling
+
+### Troubleshooting Tips
+- **Check Replica Status**: Verify desired vs. current replicas
+- **Review Events**: Events show why scaling or updates failed
+- **Check Resource Quotas**: Quotas can prevent scaling
+- **Verify Node Capacity**: Nodes must have capacity for new pods
+- **Check HPA Metrics**: Ensure metrics are available for HPA decisions
 
 ## Additional Resources
 
-- [Kubernetes Workloads](https://kubernetes.io/docs/concepts/workloads/)
-- [Deployments](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/)
-- [StatefulSets](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/)
-- [HPA](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
-- [Back to Main K8s Playbooks](../README.md)
+### Official Documentation
+- [Kubernetes Workloads](https://kubernetes.io/docs/concepts/workloads/) - Workload overview
+- [Deployments](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) - Deployment guide
+- [StatefulSets](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/) - StatefulSet guide
+- [DaemonSets](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/) - DaemonSet guide
+- [Jobs](https://kubernetes.io/docs/concepts/workloads/controllers/job/) - Job guide
+- [HPA](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) - Autoscaling guide
+
+### Learning Resources
+- [Deployment Strategies](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#deployment-strategies) - Update strategies
+- [StatefulSet Patterns](https://kubernetes.io/docs/tasks/run-application/run-replicated-stateful-application/) - StatefulSet patterns
+- [HPA Walkthrough](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/) - HPA tutorial
+
+### Tools & Utilities
+- [kubectl rollout](https://kubernetes.io/docs/reference/kubectl/kubectl_rollout/) - Rollout management
+- [kubectl scale](https://kubernetes.io/docs/reference/kubectl/kubectl_scale/) - Scaling commands
+- [Metrics Server](https://github.com/kubernetes-sigs/metrics-server) - Resource metrics
+
+### Community Resources
+- [Kubernetes Slack #sig-apps](https://slack.k8s.io/) - Application workload discussions
+- [Stack Overflow - Kubernetes Deployments](https://stackoverflow.com/questions/tagged/kubernetes+deployment) - Q&A
+
+[Back to Main K8s Playbooks](../README.md)

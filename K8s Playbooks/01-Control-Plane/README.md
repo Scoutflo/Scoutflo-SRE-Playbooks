@@ -58,6 +58,7 @@ If you're experiencing control plane issues:
 
 ## Useful Commands
 
+### Basic Status Checks
 ```bash
 # Check API Server status
 kubectl get componentstatuses
@@ -65,15 +66,102 @@ kubectl get componentstatuses
 # Check control plane pods
 kubectl get pods -n kube-system
 
+# Check all control plane components
+kubectl get pods -n kube-system -l component=kube-apiserver
+kubectl get pods -n kube-system -l component=kube-scheduler
+kubectl get pods -n kube-system -l component=kube-controller-manager
+
+# Check API Server health
+kubectl get --raw /healthz
+kubectl get --raw /readyz
+```
+
+### Logs and Debugging
+```bash
 # Check API Server logs
 kubectl logs -n kube-system kube-apiserver-<node-name>
 
-# Check etcd status
+# Check Scheduler logs
+kubectl logs -n kube-system kube-scheduler-<node-name>
+
+# Check Controller Manager logs
+kubectl logs -n kube-system kube-controller-manager-<node-name>
+
+# Check etcd status and logs
 kubectl get pods -n kube-system | grep etcd
+kubectl logs -n kube-system etcd-<node-name>
+
+# Follow logs in real-time
+kubectl logs -n kube-system -f kube-apiserver-<node-name>
 ```
+
+### API Server Information
+```bash
+# Check API Server version
+kubectl version --short
+
+# Check API resources
+kubectl api-resources
+
+# Check API versions
+kubectl api-versions
+
+# Test API connectivity
+kubectl cluster-info
+```
+
+### Certificate and Security
+```bash
+# Check certificate expiration
+kubectl get csr
+kubectl certificate approve <csr-name>
+
+# Check service account tokens
+kubectl get secrets -n kube-system | grep token
+```
+
+## Best Practices
+
+### Control Plane Health
+- **Monitor API Server**: Set up alerts for API Server latency and error rates
+- **Certificate Management**: Implement automated certificate rotation
+- **Version Consistency**: Keep all control plane components on the same version
+- **Resource Limits**: Set appropriate resource requests/limits for control plane pods
+- **High Availability**: Run multiple API Server instances for HA
+
+### Troubleshooting Tips
+- **Start with API Server**: Most issues manifest as API Server problems
+- **Check Logs First**: Control plane logs provide detailed error information
+- **Verify Network**: Ensure control plane components can communicate
+- **Check Certificates**: Expired certificates are a common cause of issues
+- **Review Events**: Use `kubectl get events` to see recent control plane events
+
+### Performance Optimization
+- **API Server**: Monitor request rates and adjust `--max-requests-inflight` if needed
+- **etcd**: Monitor etcd performance and consider tuning for large clusters
+- **Scheduler**: Review scheduling latency metrics
+- **Controller Manager**: Monitor controller reconciliation times
 
 ## Additional Resources
 
-- [Kubernetes Control Plane Components](https://kubernetes.io/docs/concepts/overview/components/)
-- [API Server Troubleshooting](https://kubernetes.io/docs/tasks/debug/)
-- [Back to Main K8s Playbooks](../README.md)
+### Official Documentation
+- [Kubernetes Control Plane Components](https://kubernetes.io/docs/concepts/overview/components/) - Component overview
+- [API Server Troubleshooting](https://kubernetes.io/docs/tasks/debug/) - Debugging guide
+- [Kubernetes API Reference](https://kubernetes.io/docs/reference/kubernetes-api/) - Complete API docs
+- [Control Plane Security](https://kubernetes.io/docs/concepts/security/controlling-access/) - Security best practices
+
+### Learning Resources
+- [Kubernetes Control Plane Deep Dive](https://kubernetes.io/docs/concepts/overview/components/#control-plane-components) - Component details
+- [etcd Documentation](https://etcd.io/docs/) - etcd cluster management
+- [API Server Configuration](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/) - Configuration options
+
+### Tools & Utilities
+- [kube-apiserver Metrics](https://kubernetes.io/docs/reference/instrumentation/metrics/) - Available metrics
+- [kubectl debug](https://kubernetes.io/docs/tasks/debug/) - Debugging tools
+- [kubeadm Troubleshooting](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/) - kubeadm issues
+
+### Community Resources
+- [Kubernetes Slack #sig-api-machinery](https://slack.k8s.io/) - API machinery discussions
+- [Stack Overflow - Kubernetes Control Plane](https://stackoverflow.com/questions/tagged/kubernetes+control-plane) - Q&A
+
+[Back to Main K8s Playbooks](../README.md)

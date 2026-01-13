@@ -440,19 +440,96 @@ Need help? Check out our [Support Guide](.github/SUPPORT.md) or:
 
 ## Related Resources
 
-### AWS
-- [AWS Documentation](https://docs.aws.amazon.com/)
-- [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/)
-- [AWS Troubleshooting Guides](https://docs.aws.amazon.com/general/latest/gr/aws_troubleshooting.html)
+### AWS Resources
 
-### Kubernetes
-- [Kubernetes Documentation](https://kubernetes.io/docs/)
-- [kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
-- [Kubernetes Troubleshooting](https://kubernetes.io/docs/tasks/debug/)
+**Official Documentation:**
+- [AWS Documentation](https://docs.aws.amazon.com/) - Complete AWS service documentation
+- [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/) - Best practices for building on AWS
+- [AWS Troubleshooting Guides](https://docs.aws.amazon.com/general/latest/gr/aws_troubleshooting.html) - Official troubleshooting guides
+- [AWS Service Health Dashboard](https://status.aws.amazon.com/) - Check AWS service status
+
+**Learning & Best Practices:**
+- [AWS Architecture Center](https://aws.amazon.com/architecture/) - Reference architectures
+- [AWS Security Best Practices](https://aws.amazon.com/security/security-resources/) - Security guidelines
+- [AWS re:Post](https://repost.aws/) - AWS community Q&A
+- [AWS Training](https://aws.amazon.com/training/) - Free and paid training courses
+
+**Tools & Utilities:**
+- [AWS CLI Documentation](https://docs.aws.amazon.com/cli/latest/userguide/) - Command-line interface
+- [AWS CloudShell](https://aws.amazon.com/cloudshell/) - Browser-based shell
+- [AWS Systems Manager](https://docs.aws.amazon.com/systems-manager/) - Operations management
+- [AWS CloudWatch](https://docs.aws.amazon.com/cloudwatch/) - Monitoring and observability
+
+### Kubernetes Resources
+
+**Official Documentation:**
+- [Kubernetes Documentation](https://kubernetes.io/docs/) - Complete Kubernetes documentation
+- [kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/) - Quick command reference
+- [Kubernetes Troubleshooting](https://kubernetes.io/docs/tasks/debug/) - Official troubleshooting guide
+- [Kubernetes API Reference](https://kubernetes.io/docs/reference/kubernetes-api/) - API documentation
+
+**Learning & Best Practices:**
+- [Kubernetes Best Practices](https://kubernetes.io/docs/concepts/cluster-administration/) - Cluster administration
+- [Kubernetes Security Best Practices](https://kubernetes.io/docs/concepts/security/) - Security guidelines
+- [CNCF Cloud Native Trail Map](https://github.com/cncf/trailmap) - Learning path
+- [Kubernetes.io Blog](https://kubernetes.io/blog/) - Latest updates and tutorials
+
+**Tools & Utilities:**
+- [k9s](https://k9scli.io/) - Terminal UI for Kubernetes
+- [Lens](https://k8slens.dev/) - Kubernetes IDE
+- [Helm](https://helm.sh/) - Package manager for Kubernetes
+- [kubectx & kubens](https://github.com/ahmetb/kubectx) - Context and namespace switching
+
+**Community Resources:**
+- [Kubernetes Slack](https://slack.k8s.io/) - Community chat
+- [Stack Overflow - Kubernetes](https://stackoverflow.com/questions/tagged/kubernetes) - Q&A
+- [r/kubernetes](https://www.reddit.com/r/kubernetes/) - Reddit community
+- [Kubernetes Forum](https://discuss.kubernetes.io/) - Discussion forum
 
 ### SRE Resources
-- [Google SRE Book](https://sre.google/books/)
-- [Site Reliability Engineering](https://sre.google/sre-book/table-of-contents/)
+
+**Books & Guides:**
+- [Google SRE Book](https://sre.google/books/) - Site Reliability Engineering book
+- [Site Reliability Engineering](https://sre.google/sre-book/table-of-contents/) - SRE practices
+- [The Site Reliability Workbook](https://sre.google/workbook/table-of-contents/) - Practical SRE guide
+- [Building Secure & Reliable Systems](https://sre.google/books/building-secure-reliable-systems/) - Security and reliability
+
+**Learning Resources:**
+- [SRE Foundation Course](https://www.cncf.io/certification/training/) - CNCF training
+- [SRE Weekly](https://sreweekly.com/) - Weekly newsletter
+- [SREcon](https://www.usenix.org/conferences/byname/srecon) - SRE conferences
+- [Incident Response Guide](https://response.pagerduty.com/) - PagerDuty's incident response guide
+
+**Tools & Platforms:**
+- [Prometheus](https://prometheus.io/) - Monitoring and alerting
+- [Grafana](https://grafana.com/) - Visualization and dashboards
+- [Jaeger](https://www.jaegertracing.io/) - Distributed tracing
+- [ELK Stack](https://www.elastic.co/what-is/elk-stack) - Logging and analysis
+
+### Incident Response & Runbooks
+
+**Runbook Resources:**
+- [PagerDuty Incident Response](https://response.pagerduty.com/) - Incident response best practices
+- [Atlassian Incident Management](https://www.atlassian.com/incident-management) - Incident management guide
+- [GitLab Runbooks](https://about.gitlab.com/handbook/engineering/infrastructure/runbooks/) - Example runbooks
+- [Google's SRE Runbook Template](https://sre.google/workbook/runbooks/) - Runbook structure
+
+**Incident Management:**
+- [Incident.io](https://incident.io/) - Incident management platform
+- [FireHydrant](https://www.firehydrant.com/) - Incident response platform
+- [Statuspage](https://www.statuspage.io/) - Status page management
+
+### Community & Forums
+
+**General DevOps:**
+- [DevOps Reddit](https://www.reddit.com/r/devops/) - DevOps community
+- [DevOps Stack Exchange](https://devops.stackexchange.com/) - Q&A platform
+- [HashiCorp Learn](https://learn.hashicorp.com/) - Infrastructure tutorials
+
+**Cloud Native:**
+- [CNCF Resources](https://www.cncf.io/) - Cloud Native Computing Foundation
+- [Cloud Native Landscape](https://landscape.cncf.io/) - CNCF project landscape
+- [CNCF Webinars](https://www.cncf.io/webinars/) - Educational webinars
 
 ## Statistics
 

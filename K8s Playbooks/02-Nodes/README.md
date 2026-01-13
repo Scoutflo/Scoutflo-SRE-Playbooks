@@ -51,6 +51,7 @@ If you're experiencing node issues:
 
 ## Useful Commands
 
+### Node Status and Information
 ```bash
 # Check node status
 kubectl get nodes
@@ -60,19 +61,110 @@ kubectl describe node <node-name>
 
 # Check node conditions
 kubectl get nodes -o wide
+kubectl get nodes -o jsonpath='{.items[*].status.conditions}'
 
-# Check kubelet status
-systemctl status kubelet
+# Check node labels and annotations
+kubectl get nodes --show-labels
+kubectl get node <node-name> -o yaml
+```
 
-# Check node resources
+### Node Resources
+```bash
+# Check node resource usage
 kubectl top nodes
 
+# Check node capacity and allocatable
+kubectl describe node <node-name> | grep -A 5 "Capacity:\|Allocatable:"
+
+# Check node resource requests and limits
+kubectl describe node <node-name> | grep -A 10 "Allocated resources:"
+```
+
+### Kubelet and Services
+```bash
+# Check kubelet status (on the node)
+systemctl status kubelet
+systemctl status kube-proxy
+
+# Check kubelet logs (on the node)
+journalctl -u kubelet -f
+journalctl -u kubelet --since "1 hour ago"
+
+# Check kubelet configuration
+kubectl get --raw /api/v1/nodes/<node-name>/proxy/configz
+```
+
+### Pods and Scheduling
+```bash
 # Check pods on a node
 kubectl get pods --all-namespaces --field-selector spec.nodeName=<node-name>
+
+# Check why pods can't be scheduled on a node
+kubectl describe node <node-name> | grep -A 20 "Events:"
+
+# Check node taints and tolerations
+kubectl describe node <node-name> | grep -A 5 "Taints:"
 ```
+
+### Node Events and Issues
+```bash
+# Check node events
+kubectl get events --field-selector involvedObject.kind=Node
+
+# Check node conditions in detail
+kubectl get node <node-name> -o jsonpath='{.status.conditions}' | jq
+
+# Check for node pressure conditions
+kubectl get nodes -o json | jq '.items[] | select(.status.conditions[] | select(.type=="MemoryPressure" or .type=="DiskPressure" or .type=="PIDPressure") | .status=="True")'
+```
+
+## Best Practices
+
+### Node Health Monitoring
+- **Regular Health Checks**: Monitor node conditions (Ready, MemoryPressure, DiskPressure, PIDPressure)
+- **Resource Monitoring**: Track CPU, memory, and disk usage on nodes
+- **Kubelet Health**: Monitor kubelet heartbeat and status
+- **Node Capacity**: Ensure nodes have adequate resources for workloads
+
+### Node Management
+- **Taints and Tolerations**: Use taints to control pod scheduling
+- **Node Labels**: Use labels for node selection and organization
+- **Drain Before Maintenance**: Always drain nodes before maintenance
+- **Cordon/Uncordon**: Use cordon to prevent new pods from scheduling
+
+### Troubleshooting Tips
+- **Check Node Conditions**: Start with `kubectl describe node` to see all conditions
+- **Review Kubelet Logs**: Kubelet logs provide detailed information about node issues
+- **Check Resource Pressure**: Memory, disk, or PID pressure can cause node issues
+- **Verify Network**: Ensure node can communicate with control plane
+- **Check Certificates**: Node certificates must be valid for kubelet to function
+
+### Performance Optimization
+- **Resource Requests**: Set appropriate resource requests for pods
+- **Node Affinity**: Use node affinity for workload placement
+- **Pod Density**: Monitor pod density per node (kubelet has limits)
+- **Disk Space**: Regularly clean up unused images and containers
 
 ## Additional Resources
 
-- [Kubernetes Nodes](https://kubernetes.io/docs/concepts/architecture/nodes/)
-- [Node Troubleshooting](https://kubernetes.io/docs/tasks/debug/)
-- [Back to Main K8s Playbooks](../README.md)
+### Official Documentation
+- [Kubernetes Nodes](https://kubernetes.io/docs/concepts/architecture/nodes/) - Node architecture
+- [Node Troubleshooting](https://kubernetes.io/docs/tasks/debug/) - Debugging guide
+- [Kubelet Configuration](https://kubernetes.io/docs/reference/config-api/kubelet-config.v1beta1/) - Kubelet config
+- [Node Lifecycle](https://kubernetes.io/docs/concepts/architecture/nodes/#node-lifecycle) - Node lifecycle management
+
+### Learning Resources
+- [Kubelet Deep Dive](https://kubernetes.io/docs/concepts/architecture/nodes/#kubelet) - Kubelet details
+- [Node Resource Management](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) - Resource management
+- [Node Maintenance](https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/) - Safe node draining
+
+### Tools & Utilities
+- [kubectl debug](https://kubernetes.io/docs/tasks/debug/) - Debug pods on nodes
+- [Node Problem Detector](https://github.com/kubernetes/node-problem-detector) - Automated problem detection
+- [kubectl top](https://kubernetes.io/docs/reference/kubectl/kubectl_top/) - Resource usage monitoring
+
+### Community Resources
+- [Kubernetes Slack #sig-node](https://slack.k8s.io/) - Node-related discussions
+- [Stack Overflow - Kubernetes Nodes](https://stackoverflow.com/questions/tagged/kubernetes+nodes) - Q&A
+
+[Back to Main K8s Playbooks](../README.md)

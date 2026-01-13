@@ -706,21 +706,66 @@ To add a new playbook for an uncovered Kubernetes issue:
 
 ## Related Resources
 
-### Kubernetes Documentation
-- [Kubernetes Documentation](https://kubernetes.io/docs/)
-- [kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
-- [Kubernetes Troubleshooting Guide](https://kubernetes.io/docs/tasks/debug/)
-- [Kubernetes API Reference](https://kubernetes.io/docs/reference/kubernetes-api/)
+### Kubernetes Official Documentation
+- [Kubernetes Documentation](https://kubernetes.io/docs/) - Complete Kubernetes documentation
+- [kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/) - Quick command reference
+- [Kubernetes Troubleshooting Guide](https://kubernetes.io/docs/tasks/debug/) - Official troubleshooting guide
+- [Kubernetes API Reference](https://kubernetes.io/docs/reference/kubernetes-api/) - Complete API documentation
+- [Kubernetes Concepts](https://kubernetes.io/docs/concepts/) - Core concepts explained
+- [Kubernetes Tasks](https://kubernetes.io/docs/tasks/) - Step-by-step tutorials
 
-### Kubernetes Tools
-- [kubectl Documentation](https://kubernetes.io/docs/reference/kubectl/)
-- [k9s - Terminal UI](https://k9scli.io/)
-- [Lens - Kubernetes IDE](https://k8slens.dev/)
+### Kubernetes Learning Resources
+- [Kubernetes.io Blog](https://kubernetes.io/blog/) - Latest updates and tutorials
+- [CNCF Cloud Native Trail Map](https://github.com/cncf/trailmap) - Learning path for cloud native
+- [Kubernetes Academy](https://kubernetes.academy/) - Free Kubernetes courses
+- [Kubernetes.io Learn](https://kubernetes.io/training/) - Training and certification
+- [Kubernetes Best Practices](https://kubernetes.io/docs/concepts/cluster-administration/) - Cluster administration guide
+- [Kubernetes Security Best Practices](https://kubernetes.io/docs/concepts/security/) - Security guidelines
 
-### SRE Resources
-- [Google SRE Book](https://sre.google/books/)
-- [Site Reliability Engineering](https://sre.google/sre-book/table-of-contents/)
-- [Kubernetes Best Practices](https://kubernetes.io/docs/concepts/cluster-administration/)
+### Kubernetes Tools & Utilities
+- [kubectl Documentation](https://kubernetes.io/docs/reference/kubectl/) - Complete kubectl reference
+- [k9s](https://k9scli.io/) - Terminal UI for Kubernetes clusters
+- [Lens](https://k8slens.dev/) - Kubernetes IDE and management tool
+- [Helm](https://helm.sh/) - Package manager for Kubernetes
+- [kubectx & kubens](https://github.com/ahmetb/kubectx) - Context and namespace switching
+- [kubectl-aliases](https://github.com/ahmetb/kubectl-aliases) - Useful kubectl aliases
+- [kubeval](https://www.kubeval.com/) - Validate Kubernetes YAML files
+- [kube-score](https://kube-score.com/) - Static code analysis for Kubernetes
+
+### Monitoring & Observability
+- [Prometheus](https://prometheus.io/) - Monitoring and alerting toolkit
+- [Grafana](https://grafana.com/) - Visualization and dashboards
+- [Jaeger](https://www.jaegertracing.io/) - Distributed tracing
+- [ELK Stack](https://www.elastic.co/what-is/elk-stack) - Elasticsearch, Logstash, Kibana
+- [Fluentd](https://www.fluentd.org/) - Log collector and processor
+- [OpenTelemetry](https://opentelemetry.io/) - Observability framework
+
+### Kubernetes Community
+- [Kubernetes Slack](https://slack.k8s.io/) - Official Kubernetes community chat
+- [Stack Overflow - Kubernetes](https://stackoverflow.com/questions/tagged/kubernetes) - Q&A platform
+- [r/kubernetes](https://www.reddit.com/r/kubernetes/) - Reddit community
+- [Kubernetes Forum](https://discuss.kubernetes.io/) - Discussion forum
+- [Kubernetes GitHub](https://github.com/kubernetes/kubernetes) - Source code and issues
+- [CNCF Slack](https://slack.cncf.io/) - Cloud Native Computing Foundation community
+
+### SRE & Best Practices
+- [Google SRE Book](https://sre.google/books/) - Site Reliability Engineering principles
+- [Site Reliability Engineering](https://sre.google/sre-book/table-of-contents/) - SRE practices
+- [The Site Reliability Workbook](https://sre.google/workbook/table-of-contents/) - Practical SRE guide
+- [Kubernetes Production Best Practices](https://learnk8s.io/production-best-practices) - Production guidelines
+- [Kubernetes Hardening Guide](https://kubernetes.io/docs/concepts/security/pod-security-standards/) - Security hardening
+
+### Incident Response & Runbooks
+- [PagerDuty Incident Response](https://response.pagerduty.com/) - Incident response best practices
+- [Atlassian Incident Management](https://www.atlassian.com/incident-management) - Incident management guide
+- [GitLab Runbooks](https://about.gitlab.com/handbook/engineering/infrastructure/runbooks/) - Example runbooks
+- [Google's SRE Runbook Template](https://sre.google/workbook/runbooks/) - Runbook structure
+
+### Cloud Native Resources
+- [CNCF Resources](https://www.cncf.io/) - Cloud Native Computing Foundation
+- [Cloud Native Landscape](https://landscape.cncf.io/) - CNCF project landscape
+- [CNCF Webinars](https://www.cncf.io/webinars/) - Educational webinars
+- [CNCF Training](https://www.cncf.io/certification/training/) - Training and certification
 
 ## Statistics
 

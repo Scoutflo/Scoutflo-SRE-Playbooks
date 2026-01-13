@@ -73,29 +73,148 @@ If you're experiencing pod issues:
 
 ## Useful Commands
 
+### Pod Status and Information
 ```bash
 # Get pod status
 kubectl get pods -n <namespace>
+kubectl get pods -A  # All namespaces
 
 # Describe pod for details
 kubectl describe pod <pod-name> -n <namespace>
 
+# Get pod YAML
+kubectl get pod <pod-name> -n <namespace> -o yaml
+
+# Check pod status in JSON format
+kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.status}'
+```
+
+### Pod Logs
+```bash
 # Check pod logs
 kubectl logs <pod-name> -n <namespace>
 
 # Check previous container logs (if crashed)
 kubectl logs <pod-name> -n <namespace> --previous
 
+# Follow logs in real-time
+kubectl logs <pod-name> -n <namespace> -f
+
+# Get logs from specific container (multi-container pods)
+kubectl logs <pod-name> -n <namespace> -c <container-name>
+
+# Get logs with timestamps
+kubectl logs <pod-name> -n <namespace> --timestamps
+
+# Get last N lines of logs
+kubectl logs <pod-name> -n <namespace> --tail=100
+```
+
+### Pod Events and Debugging
+```bash
 # Get pod events
 kubectl get events -n <namespace> --sort-by='.lastTimestamp'
 
+# Watch pod events in real-time
+kubectl get events -n <namespace> --watch
+
+# Check pod events specifically
+kubectl describe pod <pod-name> -n <namespace> | grep -A 20 "Events:"
+
+# Check pod conditions
+kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.status.conditions}'
+```
+
+### Pod Resources and Metrics
+```bash
 # Check pod resource usage
 kubectl top pod <pod-name> -n <namespace>
+kubectl top pods -n <namespace>
+
+# Check pod resource requests and limits
+kubectl describe pod <pod-name> -n <namespace> | grep -A 5 "Limits:\|Requests:"
+
+# Check pod resource allocation
+kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.spec.containers[*].resources}'
 ```
+
+### Pod Execution and Debugging
+```bash
+# Execute command in running pod
+kubectl exec -it <pod-name> -n <namespace> -- /bin/sh
+
+# Execute command in specific container
+kubectl exec -it <pod-name> -n <namespace> -c <container-name> -- /bin/sh
+
+# Copy files from pod
+kubectl cp <namespace>/<pod-name>:/path/to/file /local/path
+
+# Copy files to pod
+kubectl cp /local/path <namespace>/<pod-name>:/path/to/file
+```
+
+### Pod State Analysis
+```bash
+# Check pod phase
+kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.status.phase}'
+
+# Check container states
+kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.status.containerStatuses[*].state}'
+
+# Check pod restart count
+kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.status.containerStatuses[*].restartCount}'
+
+# Check pod IP and node
+kubectl get pod <pod-name> -n <namespace> -o wide
+```
+
+## Best Practices
+
+### Pod Health and Monitoring
+- **Health Probes**: Always configure liveness and readiness probes
+- **Resource Limits**: Set appropriate CPU and memory limits
+- **Log Management**: Implement proper log rotation and retention
+- **Monitoring**: Set up alerts for pod restarts and failures
+
+### Pod Design
+- **Single Responsibility**: One container per concern when possible
+- **Init Containers**: Use init containers for setup tasks
+- **Sidecar Pattern**: Use sidecars for logging, monitoring, or proxies
+- **Security Context**: Set appropriate security contexts and runAsNonRoot
+
+### Troubleshooting Tips
+- **Start with Events**: `kubectl get events` shows what happened
+- **Check Logs**: Always check logs first, especially previous container logs
+- **Describe Pod**: `kubectl describe` provides comprehensive information
+- **Check Resource Limits**: OOM kills are common causes of pod failures
+- **Verify Image**: Ensure container image exists and is accessible
+
+### Performance Optimization
+- **Resource Requests**: Set accurate resource requests for better scheduling
+- **Pod Disruption Budgets**: Use PDBs to ensure availability during updates
+- **Anti-Affinity**: Use anti-affinity to spread pods across nodes
+- **Pod Priority**: Use priority classes for important workloads
 
 ## Additional Resources
 
-- [Kubernetes Pods](https://kubernetes.io/docs/concepts/workloads/pods/)
-- [Pod Lifecycle](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/)
-- [Troubleshooting Pods](https://kubernetes.io/docs/tasks/debug/)
-- [Back to Main K8s Playbooks](../README.md)
+### Official Documentation
+- [Kubernetes Pods](https://kubernetes.io/docs/concepts/workloads/pods/) - Pod concepts
+- [Pod Lifecycle](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/) - Lifecycle details
+- [Troubleshooting Pods](https://kubernetes.io/docs/tasks/debug/) - Debugging guide
+- [Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/) - Security guidelines
+
+### Learning Resources
+- [Pod Design Patterns](https://kubernetes.io/docs/concepts/workloads/pods/) - Design patterns
+- [Init Containers](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/) - Init container usage
+- [Ephemeral Containers](https://kubernetes.io/docs/concepts/workloads/pods/ephemeral-containers/) - Debugging with ephemeral containers
+
+### Tools & Utilities
+- [kubectl debug](https://kubernetes.io/docs/tasks/debug/) - Debug running pods
+- [stern](https://github.com/stern/stern) - Multi-pod log tailing
+- [kubectl-logs](https://github.com/jonmosco/kube-ps1) - Enhanced log viewing
+
+### Community Resources
+- [Kubernetes Slack #sig-apps](https://slack.k8s.io/) - Application workload discussions
+- [Stack Overflow - Kubernetes Pods](https://stackoverflow.com/questions/tagged/kubernetes+pods) - Q&A
+
+[Back to Main K8s Playbooks](../README.md)

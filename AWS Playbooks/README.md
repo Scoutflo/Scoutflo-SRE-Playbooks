@@ -402,20 +402,54 @@ To add a new playbook for an uncovered AWS issue:
 
 ## Related Resources
 
-### AWS Documentation
-- [AWS Documentation](https://docs.aws.amazon.com/)
-- [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/)
-- [AWS Troubleshooting Guides](https://docs.aws.amazon.com/general/latest/gr/aws_troubleshooting.html)
-- [AWS Service Health Dashboard](https://status.aws.amazon.com/)
+### AWS Official Documentation
+- [AWS Documentation](https://docs.aws.amazon.com/) - Complete AWS service documentation
+- [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/) - Best practices for building on AWS
+- [AWS Troubleshooting Guides](https://docs.aws.amazon.com/general/latest/gr/aws_troubleshooting.html) - Official troubleshooting guides
+- [AWS Service Health Dashboard](https://status.aws.amazon.com/) - Real-time service status
+- [AWS Architecture Center](https://aws.amazon.com/architecture/) - Reference architectures and solutions
 
-### AWS Tools
-- [AWS CLI Documentation](https://docs.aws.amazon.com/cli/latest/userguide/)
-- [CloudWatch Logs Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html)
-- [AWS Systems Manager](https://docs.aws.amazon.com/systems-manager/)
+### AWS Tools & CLI
+- [AWS CLI Documentation](https://docs.aws.amazon.com/cli/latest/userguide/) - Command-line interface guide
+- [AWS CloudShell](https://aws.amazon.com/cloudshell/) - Browser-based shell environment
+- [AWS Systems Manager](https://docs.aws.amazon.com/systems-manager/) - Operations management and automation
+- [AWS CloudWatch](https://docs.aws.amazon.com/cloudwatch/) - Monitoring and observability
+- [CloudWatch Logs Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html) - Log analysis queries
+- [AWS CloudFormation](https://docs.aws.amazon.com/cloudformation/) - Infrastructure as code
 
-### SRE Resources
-- [Google SRE Book](https://sre.google/books/)
-- [Site Reliability Engineering](https://sre.google/sre-book/table-of-contents/)
+### AWS Learning Resources
+- [AWS Training](https://aws.amazon.com/training/) - Free and paid training courses
+- [AWS re:Post](https://repost.aws/) - AWS community Q&A and discussions
+- [AWS Architecture Blog](https://aws.amazon.com/blogs/architecture/) - Architecture best practices
+- [AWS Security Blog](https://aws.amazon.com/blogs/security/) - Security updates and best practices
+- [AWS Compute Blog](https://aws.amazon.com/blogs/compute/) - Compute service updates
+
+### AWS Best Practices
+- [AWS Security Best Practices](https://aws.amazon.com/security/security-resources/) - Security guidelines
+- [AWS Cost Optimization](https://aws.amazon.com/pricing/cost-optimization/) - Cost management strategies
+- [AWS Well-Architected Labs](https://www.wellarchitectedlabs.com/) - Hands-on labs
+- [AWS Well-Architected Tool](https://aws.amazon.com/well-architected-tool/) - Review your workloads
+
+### AWS Service-Specific Resources
+- **EC2**: [EC2 User Guide](https://docs.aws.amazon.com/ec2/) | [EC2 Best Practices](https://aws.amazon.com/ec2/pricing/)
+- **VPC**: [VPC User Guide](https://docs.aws.amazon.com/vpc/) | [VPC Best Practices](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-best-practices.html)
+- **IAM**: [IAM User Guide](https://docs.aws.amazon.com/iam/) | [IAM Best Practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html)
+- **S3**: [S3 User Guide](https://docs.aws.amazon.com/s3/) | [S3 Best Practices](https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html)
+- **RDS**: [RDS User Guide](https://docs.aws.amazon.com/rds/) | [RDS Best Practices](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_BestPractices.html)
+- **Lambda**: [Lambda Developer Guide](https://docs.aws.amazon.com/lambda/) | [Lambda Best Practices](https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html)
+- **EKS**: [EKS User Guide](https://docs.aws.amazon.com/eks/) | [EKS Best Practices](https://aws.github.io/aws-eks-best-practices/)
+
+### SRE & Incident Response
+- [Google SRE Book](https://sre.google/books/) - Site Reliability Engineering principles
+- [Site Reliability Engineering](https://sre.google/sre-book/table-of-contents/) - SRE practices and methodologies
+- [PagerDuty Incident Response](https://response.pagerduty.com/) - Incident response best practices
+- [AWS Incident Response Guide](https://aws.amazon.com/blogs/security/incident-response-in-aws/) - AWS-specific incident response
+
+### Community & Forums
+- [AWS re:Post](https://repost.aws/) - Official AWS community forum
+- [Stack Overflow - AWS](https://stackoverflow.com/questions/tagged/amazon-web-services) - Q&A platform
+- [AWS Subreddit](https://www.reddit.com/r/aws/) - Reddit community
+- [AWS User Groups](https://aws.amazon.com/developer/community/usergroups/) - Local meetups
 
 ---
 
