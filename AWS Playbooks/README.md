@@ -185,6 +185,114 @@ Playbooks use the following placeholder format that should be replaced with actu
 - `<rds-instance-id>` - RDS instance identifier
 - `<load-balancer-name>` - Load balancer name
 
+## Terminology & Glossary
+
+### AWS Service Abbreviations
+
+**EC2 (Elastic Compute Cloud)**
+- AWS's virtual server service. An "EC2 instance" is a virtual machine running on AWS.
+
+**VPC (Virtual Private Cloud)**
+- An isolated network environment within AWS where you can launch resources like EC2 instances.
+
+**IAM (Identity and Access Management)**
+- AWS service that manages user access, roles, and permissions to AWS resources.
+
+**S3 (Simple Storage Service)**
+- AWS's object storage service for storing files, backups, and data.
+
+**RDS (Relational Database Service)**
+- AWS's managed database service for relational databases like MySQL, PostgreSQL, Oracle, etc.
+
+**Lambda**
+- AWS's serverless computing service that runs code without managing servers. You just upload code and it runs.
+
+**ELB (Elastic Load Balancer)**
+- AWS service that distributes incoming traffic across multiple targets (like EC2 instances) to ensure high availability.
+
+**CloudWatch**
+- AWS's monitoring and observability service for collecting metrics, logs, and events from AWS resources.
+
+**CloudTrail**
+- AWS service that logs API calls and changes made to your AWS account for security and compliance.
+
+**GuardDuty**
+- AWS's threat detection service that continuously monitors for malicious activity and unauthorized behavior.
+
+**KMS (Key Management Service)**
+- AWS service for creating and managing encryption keys used to encrypt your data.
+
+**NAT Gateway**
+- A network address translation service that allows resources in private subnets to access the internet securely.
+
+**Route 53**
+- AWS's DNS (Domain Name System) web service that routes internet traffic to your applications.
+
+**EKS (Elastic Kubernetes Service)**
+- AWS's managed Kubernetes service for running containerized applications.
+
+**ECS (Elastic Container Service)**
+- AWS's container orchestration service for running Docker containers.
+
+**API Gateway**
+- AWS service that creates, publishes, and manages APIs for your applications.
+
+**CodePipeline**
+- AWS's continuous delivery service for automating release pipelines.
+
+### Common AWS Terms
+
+**Security Group**
+- A virtual firewall that controls inbound and outbound traffic for AWS resources.
+
+**IAM Role**
+- An AWS identity with permissions that can be assumed by AWS services or users.
+
+**IAM Policy**
+- A document that defines permissions for AWS resources. Attached to users, groups, or roles.
+
+**Region**
+- A geographic area where AWS has data centers (e.g., us-east-1, eu-west-1).
+
+**Availability Zone (AZ)**
+- One or more discrete data centers within a region, designed to be isolated from failures in other zones.
+
+**Subnet**
+- A range of IP addresses in your VPC where you can launch resources.
+
+**Internet Gateway**
+- A horizontally scaled, redundant component that allows communication between your VPC and the internet.
+
+**Target Group**
+- A group of resources (like EC2 instances) that receive traffic from a load balancer.
+
+**Health Check**
+- A periodic check to determine if a resource is healthy and should receive traffic.
+
+### Playbook Terms
+
+**Diagnosis Section**
+- Part of each playbook that helps you correlate events (like configuration changes) with failures using time-based analysis.
+
+**Placeholder**
+- A value in playbooks (like `<instance-id>`) that you replace with your actual AWS resource identifier.
+
+**Correlation Window**
+- A time period you examine to find relationships between events and failures (e.g., "check CloudTrail logs from the last 30 minutes").
+
+**Root Cause**
+- The underlying reason why an issue occurred, as opposed to just the symptoms you're seeing.
+
+**CloudWatch Logs Insights**
+- A feature that allows you to search and analyze log data from CloudWatch Logs using a query language.
+
+---
+
+**Need more help?** Check out:
+- [AWS Documentation](https://docs.aws.amazon.com/)
+- [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/)
+- [Scoutflo Documentation](https://scoutflo-documentation.gitbook.io/scoutflo-documentation)
+
 ### Best Practices
 
 - **Start Early**: Begin with the most common causes (earlier steps in the Playbook section)

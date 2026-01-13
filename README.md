@@ -17,6 +17,7 @@
 - [Contents](#contents)
 - [Getting Started](#getting-started)
 - [Usage](#usage)
+- [Terminology & Glossary](#terminology--glossary)
 - [Contributing](#contributing)
 - [Connect with Us](#connect-with-us)
 - [Support](#support)
@@ -207,6 +208,56 @@ All playbooks follow a consistent structure:
 
 **Kubernetes Playbooks:**
 - `<pod-name>`, `<namespace>`, `<deployment-name>`, `<node-name>`, `<service-name>`, `<ingress-name>`, `<pvc-name>`, `<configmap-name>`, `<secret-name>`
+
+## Terminology & Glossary
+
+Understanding the terms used in these playbooks will help you use them more effectively. For detailed glossaries, see:
+- [AWS Terminology](AWS%20Playbooks/README.md#terminology--glossary)
+- [Kubernetes Terminology](K8s%20Playbooks/README.md#terminology--glossary)
+
+### Quick Reference
+
+**SRE (Site Reliability Engineering)**
+- A discipline combining software engineering and operations to build reliable systems.
+
+**Playbook / Runbook**
+- A step-by-step guide for diagnosing and resolving specific issues.
+
+**Incident**
+- An event that disrupts or degrades a service, requiring immediate attention.
+
+**On-Call**
+- Engineers available to respond to incidents outside normal business hours.
+
+**MTTR (Mean Time To Recovery)**
+- Average time to restore a service after an incident. Playbooks help reduce MTTR.
+
+**Correlation Analysis**
+- Finding relationships between events (like configuration changes) and symptoms (like service failures) by comparing timestamps.
+
+**Root Cause**
+- The underlying reason why an issue occurred, as opposed to just the symptoms.
+
+**Placeholder**
+- A value in playbooks (like `<instance-id>`) that you replace with your actual resource identifier.
+
+**Diagnosis Section**
+- Part of each playbook that helps you correlate events with failures using time-based analysis.
+
+### Common Abbreviations
+
+- **K8s**: Kubernetes (K + 8 letters + s)
+- **SRE**: Site Reliability Engineering
+- **MTTR**: Mean Time To Recovery
+- **API**: Application Programming Interface
+- **DNS**: Domain Name System
+- **RBAC**: Role-Based Access Control
+- **PVC**: PersistentVolumeClaim
+- **HPA**: Horizontal Pod Autoscaler
+
+---
+
+**For detailed explanations of AWS and Kubernetes terms, see the respective README files above.**
 
 ## Contributing
 

@@ -390,6 +390,181 @@ Playbooks use the following placeholder format that should be replaced with actu
 - `<configmap-name>` - ConfigMap name
 - `<secret-name>` - Secret name
 
+## Terminology & Glossary
+
+### Core Kubernetes Concepts
+
+**Pod**
+- The smallest deployable unit in Kubernetes. A pod contains one or more containers that share storage and network. Think of it as a wrapper around your application container(s).
+
+**Namespace**
+- A way to divide cluster resources between multiple users or teams. Like folders for organizing resources. Common namespaces: `default`, `kube-system`, `production`, `staging`.
+
+**Node**
+- A worker machine in Kubernetes that runs pods. Can be a physical or virtual machine. Nodes are managed by the control plane.
+
+**Deployment**
+- A Kubernetes resource that manages a set of identical pods and ensures they're running correctly. Handles updates, rollbacks, and scaling.
+
+**Service**
+- A way to expose an application running on pods as a network service. Provides a stable IP address and DNS name that doesn't change even if pods are recreated.
+
+**Ingress**
+- An API object that manages external access to services, typically HTTP/HTTPS. Routes traffic from outside the cluster to services inside.
+
+**ConfigMap**
+- A Kubernetes object used to store non-confidential configuration data in key-value pairs. Pods can consume ConfigMaps as environment variables or files.
+
+**Secret**
+- A Kubernetes object for storing sensitive information like passwords, tokens, or keys. Similar to ConfigMap but for sensitive data.
+
+**PVC (PersistentVolumeClaim)**
+- A request for storage by a user. Like requesting a hard drive for your application. The cluster provisions storage to match the claim.
+
+**PV (PersistentVolume)**
+- A piece of storage in the cluster that has been provisioned. Can be used by pods through PVCs.
+
+**StorageClass**
+- Describes different classes of storage available in the cluster. Different classes might map to different quality-of-service levels or backup policies.
+
+### Kubernetes Resources
+
+**StatefulSet**
+- A workload resource that manages stateful applications. Maintains a sticky identity for each pod (like database instances).
+
+**DaemonSet**
+- Ensures that a copy of a pod runs on all (or selected) nodes in the cluster. Useful for system daemons like log collectors.
+
+**Job**
+- Creates one or more pods and ensures they complete successfully. Used for batch work that runs to completion.
+
+**CronJob**
+- A Job that runs on a time-based schedule, similar to cron in Linux.
+
+**HPA (Horizontal Pod Autoscaler)**
+- Automatically scales the number of pods based on CPU, memory, or custom metrics. Adds or removes pods as needed.
+
+### Kubernetes Components
+
+**Control Plane**
+- The set of components that manage the Kubernetes cluster:
+  - **API Server**: The front-end for the Kubernetes control plane
+  - **Scheduler**: Assigns pods to nodes
+  - **Controller Manager**: Runs controller processes
+  - **etcd**: Consistent and highly-available key-value store
+
+**kubelet**
+- The agent that runs on each node and ensures containers are running in pods. Communicates with the control plane.
+
+**kube-proxy**
+- Network proxy that maintains network rules on nodes, enabling communication to pods from network sessions.
+
+**Container Runtime**
+- The software responsible for running containers (e.g., Docker, containerd, CRI-O).
+
+### Common Pod States
+
+**CrashLoopBackOff**
+- Pod state indicating the container keeps crashing and Kubernetes is waiting before restarting it. Usually indicates a configuration or application error.
+
+**ImagePullBackOff**
+- Pod state indicating Kubernetes cannot pull the container image. Often due to authentication issues, network problems, or image doesn't exist.
+
+**Pending**
+- Pod state indicating the pod has been accepted but hasn't been scheduled to a node yet. Could be waiting for resources or node availability.
+
+**Terminating**
+- Pod state indicating the pod is being shut down. Kubernetes is gracefully stopping containers.
+
+**Running**
+- Pod state indicating all containers are running and healthy.
+
+**Succeeded**
+- Pod state indicating all containers have terminated successfully (for Jobs).
+
+**Failed**
+- Pod state indicating at least one container has terminated in failure.
+
+### Networking Terms
+
+**Service Type: ClusterIP**
+- Default service type. Exposes the service on an internal IP, only accessible within the cluster.
+
+**Service Type: NodePort**
+- Exposes the service on each node's IP at a static port. Accessible from outside the cluster.
+
+**Service Type: LoadBalancer**
+- Exposes the service externally using a cloud provider's load balancer.
+
+**DNS**
+- Domain Name System. In Kubernetes, services get DNS names like `service-name.namespace.svc.cluster.local`.
+
+**CoreDNS**
+- The default DNS server in Kubernetes that provides DNS services for pods.
+
+**Network Policy**
+- Rules that control network traffic between pods. Like a firewall for pod-to-pod communication.
+
+### RBAC Terms
+
+**RBAC (Role-Based Access Control)**
+- Kubernetes authorization system that controls who can do what in the cluster.
+
+**ServiceAccount**
+- An identity for processes running in pods. Used to authenticate to the Kubernetes API.
+
+**Role**
+- Defines permissions within a specific namespace.
+
+**ClusterRole**
+- Defines permissions across the entire cluster.
+
+**RoleBinding**
+- Grants the permissions defined in a Role to a user or set of users within a namespace.
+
+**ClusterRoleBinding**
+- Grants permissions across the entire cluster.
+
+### Common Abbreviations
+
+- **K8s**: Short for Kubernetes (K + 8 letters + s)
+- **PVC**: PersistentVolumeClaim
+- **PV**: PersistentVolume
+- **HPA**: Horizontal Pod Autoscaler
+- **RBAC**: Role-Based Access Control
+- **DNS**: Domain Name System
+- **API**: Application Programming Interface
+
+### Playbook Terms
+
+**Diagnosis Section**
+- Part of each playbook that helps you correlate events (like resource changes) with failures using time-based analysis.
+
+**Placeholder**
+- A value in playbooks (like `<pod-name>`) that you replace with your actual Kubernetes resource name.
+
+**Correlation Window**
+- A time period you examine to find relationships between events and failures (e.g., "check events from the last 30 minutes").
+
+**Root Cause**
+- The underlying reason why an issue occurred, as opposed to just the symptoms you're seeing.
+
+**kubectl**
+- The command-line tool for interacting with Kubernetes clusters. Used in most playbook steps.
+
+**kubectl describe**
+- Command that shows detailed information about a resource, including events and current state.
+
+**kubectl get events**
+- Command that shows recent events in a namespace, helpful for understanding what happened.
+
+---
+
+**Need more help?** Check out:
+- [Kubernetes Documentation](https://kubernetes.io/docs/)
+- [kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
+- [Scoutflo Documentation](https://scoutflo-documentation.gitbook.io/scoutflo-documentation)
+
 ### Best Practices
 
 - **Start with the category folder**: Use the numbered folders to quickly navigate to relevant playbooks
