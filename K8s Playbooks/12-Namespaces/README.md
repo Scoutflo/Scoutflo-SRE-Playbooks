@@ -33,69 +33,48 @@ If you're experiencing namespace issues:
 - **07-RBAC/**: RBAC issues related to namespaces
 - **03-Pods/**: Pod issues within namespaces
 
-## Useful Commands
+## Understanding Playbook Steps
 
-### Namespace Operations
+**Important**: These playbooks are designed for **AI agents** using natural language processing. The playbook steps use natural language instructions like:
+
+- "Retrieve namespace `<namespace>` and check namespace status and finalizers"
+- "Retrieve all resources in namespace `<namespace>` and verify resources are deleted"
+- "Retrieve events in namespace `<namespace>` and check for namespace deletion errors"
+
+AI agents interpret these instructions and execute the appropriate actions using available tools.
+
+### Manual Verification Commands
+
+If you need to manually verify or troubleshoot (outside of AI agent usage), here are equivalent kubectl commands:
+
+**Namespace Operations:**
 ```bash
 # List namespaces
 kubectl get namespaces
-kubectl get ns  # Short form
 
 # Describe namespace
 kubectl describe namespace <namespace>
 
 # Check namespace status
 kubectl get namespace <namespace> -o yaml
-
-# Create namespace
-kubectl create namespace <namespace>
-
-# Delete namespace
-kubectl delete namespace <namespace>
-
-# Check namespace labels and annotations
-kubectl get namespace <namespace> --show-labels
 ```
 
-### Namespace Resources
+**Namespace Resources:**
 ```bash
 # Check resources in namespace
 kubectl get all -n <namespace>
-
-# Check all resources in namespace
-kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get --show-kind --ignore-not-found -n <namespace>
-
-# Count resources in namespace
-kubectl get all -n <namespace> --no-headers | wc -l
 
 # Check namespace resource quota
 kubectl get resourcequota -n <namespace>
 ```
 
-### Namespace Finalizers
+**Namespace Finalizers:**
 ```bash
 # Check finalizers blocking deletion
 kubectl get namespace <namespace> -o jsonpath='{.metadata.finalizers}'
 
-# Remove finalizer (use with caution)
-kubectl patch namespace <namespace> -p '{"metadata":{"finalizers":[]}}' --type=merge
-
 # Check namespace deletion status
 kubectl get namespace <namespace> -o jsonpath='{.status.phase}'
-```
-
-### Namespace Debugging
-```bash
-# Check namespace events
-kubectl get events -n <namespace> --sort-by='.lastTimestamp'
-
-# Check namespace conditions
-kubectl get namespace <namespace> -o jsonpath='{.status.conditions}'
-
-# Check what's preventing namespace deletion
-kubectl get all -n <namespace>
-kubectl get pvc -n <namespace>
-kubectl get secrets -n <namespace>
 ```
 
 ## Best Practices

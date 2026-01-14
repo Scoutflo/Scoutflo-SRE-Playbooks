@@ -187,6 +187,19 @@ Browse and download individual playbooks directly from GitHub web interface.
 
 ## Usage
 
+### How Playbooks Work
+
+**Important**: These playbooks are designed for **AI agents** using natural language processing (NLP). They use natural language instructions that AI agents interpret and execute using available tools (like AWS MCP tools, Kubernetes MCP tools, or kubectl).
+
+**Example Playbook Step:**
+- Natural Language: "Retrieve logs from pod `<pod-name>` in namespace `<namespace>` and analyze error messages"
+- AI Agent Action: Interprets this instruction and uses appropriate tools to fetch and analyze pod logs
+
+**For Manual Use:**
+- While playbooks are optimized for AI agents, you can also use them manually
+- The README files in each category folder include equivalent kubectl/AWS CLI commands for manual verification
+- Replace placeholders with actual resource identifiers when following steps manually
+
 ### Playbook Structure
 
 All playbooks follow a consistent structure:
@@ -194,17 +207,17 @@ All playbooks follow a consistent structure:
 1. **Title** - Clear, descriptive issue identification
 2. **Meaning** - What the issue means, triggers, symptoms, root causes
 3. **Impact** - Business and technical implications
-4. **Playbook** - 8-10 numbered diagnostic steps (ordered from common to specific)
+4. **Playbook** - 8-10 numbered diagnostic steps in natural language (ordered from common to specific)
 5. **Diagnosis** - Correlation analysis framework with time windows
 
 ### Best Practices
 
-- **Start Early**: Begin with the most common causes (earlier steps)
+- **For AI Agents**: Playbooks are optimized for AI interpretation - use natural language instructions
+- **For Manual Use**: See category README files for equivalent kubectl/AWS CLI commands
 - **Replace Placeholders**: All playbooks use placeholders (e.g., `<instance-id>`, `<pod-name>`) that must be replaced with actual values
 - **Follow Order**: Execute steps sequentially unless you have strong evidence pointing to a specific step
 - **Correlate Timestamps**: Use the Diagnosis section to correlate events with failures
 - **Extend Windows**: If initial correlations don't reveal causes, extend time windows as suggested
-- **Document Findings**: Keep notes of what you've checked and what you found
 
 ### Placeholder Reference
 

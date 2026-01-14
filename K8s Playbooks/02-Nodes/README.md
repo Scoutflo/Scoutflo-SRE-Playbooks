@@ -49,9 +49,20 @@ If you're experiencing node issues:
 - **09-Resource-Management/**: Resource quota and capacity issues
 - **01-Control-Plane/**: Control plane issues affecting node communication
 
-## Useful Commands
+## Understanding Playbook Steps
 
-### Node Status and Information
+**Important**: These playbooks are designed for **AI agents** using natural language processing. The playbook steps use natural language instructions like:
+
+- "Retrieve the Node `<node-name>` and check node status and network connectivity"
+- "Retrieve pod `<pod-name>` in namespace `<namespace>` and check pod status and restart count"
+
+AI agents interpret these instructions and execute the appropriate actions using available tools.
+
+### Manual Verification Commands
+
+If you need to manually verify or troubleshoot (outside of AI agent usage), here are equivalent kubectl commands:
+
+**Node Status and Information:**
 ```bash
 # Check node status
 kubectl get nodes
@@ -62,60 +73,33 @@ kubectl describe node <node-name>
 # Check node conditions
 kubectl get nodes -o wide
 kubectl get nodes -o jsonpath='{.items[*].status.conditions}'
-
-# Check node labels and annotations
-kubectl get nodes --show-labels
-kubectl get node <node-name> -o yaml
 ```
 
-### Node Resources
+**Node Resources:**
 ```bash
 # Check node resource usage
 kubectl top nodes
 
 # Check node capacity and allocatable
 kubectl describe node <node-name> | grep -A 5 "Capacity:\|Allocatable:"
-
-# Check node resource requests and limits
-kubectl describe node <node-name> | grep -A 10 "Allocated resources:"
 ```
 
-### Kubelet and Services
+**Kubelet and Services:**
 ```bash
 # Check kubelet status (on the node)
 systemctl status kubelet
-systemctl status kube-proxy
 
 # Check kubelet logs (on the node)
 journalctl -u kubelet -f
-journalctl -u kubelet --since "1 hour ago"
-
-# Check kubelet configuration
-kubectl get --raw /api/v1/nodes/<node-name>/proxy/configz
 ```
 
-### Pods and Scheduling
+**Pods and Scheduling:**
 ```bash
 # Check pods on a node
 kubectl get pods --all-namespaces --field-selector spec.nodeName=<node-name>
 
-# Check why pods can't be scheduled on a node
-kubectl describe node <node-name> | grep -A 20 "Events:"
-
 # Check node taints and tolerations
 kubectl describe node <node-name> | grep -A 5 "Taints:"
-```
-
-### Node Events and Issues
-```bash
-# Check node events
-kubectl get events --field-selector involvedObject.kind=Node
-
-# Check node conditions in detail
-kubectl get node <node-name> -o jsonpath='{.status.conditions}' | jq
-
-# Check for node pressure conditions
-kubectl get nodes -o json | jq '.items[] | select(.status.conditions[] | select(.type=="MemoryPressure" or .type=="DiskPressure" or .type=="PIDPressure") | .status=="True")'
 ```
 
 ## Best Practices

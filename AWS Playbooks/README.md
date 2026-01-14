@@ -58,10 +58,12 @@ Description of the business and technical impact, including:
 - Cascading effects on dependent services
 
 ### 4. **Playbook** (H2)
-Numbered, actionable steps to diagnose the issue:
-- Each step includes specific AWS resource identifiers (e.g., `<instance-id>`, `<bucket-name>`)
+Numbered, actionable steps in natural language to diagnose the issue:
+- Each step uses natural language instructions for AI agents (e.g., "Retrieve the EC2 Instance `<instance-id>` and verify instance state")
+- Steps include specific AWS resource identifiers (e.g., `<instance-id>`, `<bucket-name>`)
 - Steps reference AWS services, CloudWatch Logs, and configuration checks
 - Ordered from most common to more specific diagnostic steps
+- **Note**: Playbooks are designed for AI agents using NLP - see "Understanding Playbook Steps" section for manual kubectl/AWS CLI equivalents
 
 ### 5. **Diagnosis** (H2)
 Correlation analysis framework:

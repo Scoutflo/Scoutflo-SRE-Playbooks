@@ -45,85 +45,51 @@ If you're experiencing resource management issues:
 - **04-Workloads/**: Workload scaling issues related to resources
 - **10-Monitoring-Autoscaling/**: Metrics and autoscaling
 
-## Useful Commands
+## Understanding Playbook Steps
 
-### Resource Quotas
+**Important**: These playbooks are designed for **AI agents** using natural language processing. The playbook steps use natural language instructions like:
+
+- "Retrieve ResourceQuota `<quota-name>` in namespace `<namespace>` and check quota usage and limits"
+- "Retrieve pod `<pod-name>` in namespace `<namespace>` and verify resource requests and limits"
+- "Retrieve namespace `<namespace>` and check namespace resource quota and usage"
+
+AI agents interpret these instructions and execute the appropriate actions using available tools.
+
+### Manual Verification Commands
+
+If you need to manually verify or troubleshoot (outside of AI agent usage), here are equivalent kubectl commands:
+
+**Resource Quotas:**
 ```bash
 # Check resource quotas
 kubectl get resourcequota -n <namespace>
-kubectl get quota -n <namespace>  # Short form
 
 # Describe resource quota
 kubectl describe resourcequota <quota-name> -n <namespace>
-
-# Check quota usage
-kubectl get resourcequota <quota-name> -n <namespace> -o yaml
-
-# Check all quotas in namespace
-kubectl get resourcequota -n <namespace> -o jsonpath='{.items[*].status.used}'
 ```
 
-### Resource Usage
+**Resource Usage:**
 ```bash
 # Check pod resource usage
 kubectl top pods -n <namespace>
 
 # Check node resource usage
 kubectl top nodes
-
-# Check specific pod usage
-kubectl top pod <pod-name> -n <namespace>
-
-# Check resource usage for all namespaces
-kubectl top pods --all-namespaces
 ```
 
-### Resource Requests and Limits
+**Resource Requests and Limits:**
 ```bash
 # Check pod resource requests/limits
 kubectl describe pod <pod-name> -n <namespace> | grep -A 5 "Limits:"
-
-# Get resource requests/limits in JSON
-kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.spec.containers[*].resources}'
-
-# Check deployment resource requests/limits
-kubectl get deployment <deployment-name> -n <namespace> -o jsonpath='{.spec.template.spec.containers[*].resources}'
 ```
 
-### Namespace Resources
-```bash
-# Check namespace resource usage
-kubectl describe namespace <namespace>
-
-# Check namespace resource quota
-kubectl get namespace <namespace> -o jsonpath='{.status}'
-
-# Check all resource quotas
-kubectl get resourcequota --all-namespaces
-```
-
-### Limit Ranges
+**Limit Ranges:**
 ```bash
 # Check limit ranges
 kubectl get limitrange -n <namespace>
 
 # Describe limit range
 kubectl describe limitrange <limitrange-name> -n <namespace>
-
-# View limit range rules
-kubectl get limitrange <limitrange-name> -n <namespace> -o yaml
-```
-
-### Resource Analysis
-```bash
-# Check total resource requests in namespace
-kubectl get pods -n <namespace> -o json | jq '[.items[].spec.containers[].resources.requests.cpu // "0" | rtrimstr("m") | tonumber] | add'
-
-# Check total resource limits in namespace
-kubectl get pods -n <namespace> -o json | jq '[.items[].spec.containers[].resources.limits.memory // "0" | rtrimstr("Mi") | tonumber] | add'
-
-# Compare requests vs limits
-kubectl get pods -n <namespace> -o custom-columns=NAME:.metadata.name,CPU-REQ:.spec.containers[*].resources.requests.cpu,CPU-LIM:.spec.containers[*].resources.limits.cpu
 ```
 
 ## Best Practices

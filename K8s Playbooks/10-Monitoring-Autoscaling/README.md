@@ -36,84 +36,54 @@ If you're experiencing monitoring/autoscaling issues:
 - **09-Resource-Management/**: Resource quota and capacity issues
 - **02-Nodes/**: Node capacity issues affecting autoscaling
 
-## Useful Commands
+## Understanding Playbook Steps
 
-### Metrics Server
+**Important**: These playbooks are designed for **AI agents** using natural language processing. The playbook steps use natural language instructions like:
+
+- "Retrieve HPA `<hpa-name>` in namespace `<namespace>` and check HPA status and scaling metrics"
+- "Retrieve pods with label `k8s-app=metrics-server` in namespace `kube-system` and verify Metrics Server pod status"
+- "Retrieve Cluster Autoscaler deployment in namespace `kube-system` and check autoscaler configuration"
+
+AI agents interpret these instructions and execute the appropriate actions using available tools.
+
+### Manual Verification Commands
+
+If you need to manually verify or troubleshoot (outside of AI agent usage), here are equivalent kubectl commands:
+
+**Metrics Server:**
 ```bash
 # Check Metrics Server
 kubectl get pods -n kube-system | grep metrics-server
 
 # Check Metrics Server logs
 kubectl logs -n kube-system -l k8s-app=metrics-server
-
-# Check Metrics Server API
-kubectl get --raw /apis/metrics.k8s.io/v1beta1/nodes
-
-# Check node metrics
-kubectl get --raw /apis/metrics.k8s.io/v1beta1/nodes/<node-name>
-
-# Check pod metrics
-kubectl get --raw /apis/metrics.k8s.io/v1beta1/namespaces/<namespace>/pods
 ```
 
-### Horizontal Pod Autoscaler (HPA)
+**HPA:**
 ```bash
 # Check HPA status
 kubectl get hpa -n <namespace>
 
 # Describe HPA
 kubectl describe hpa <hpa-name> -n <namespace>
-
-# Check HPA metrics
-kubectl get hpa <hpa-name> -n <namespace> -o yaml
-
-# Check HPA events
-kubectl describe hpa <hpa-name> -n <namespace> | grep -A 10 "Events:"
-
-# Watch HPA in real-time
-kubectl get hpa <hpa-name> -n <namespace> -w
 ```
 
-### Resource Metrics
+**Resource Metrics:**
 ```bash
 # Check node resource metrics
 kubectl top nodes
 
 # Check pod resource metrics
 kubectl top pods -n <namespace>
-
-# Check specific pod metrics
-kubectl top pod <pod-name> -n <namespace>
-
-# Check all namespaces
-kubectl top pods --all-namespaces
 ```
 
-### Cluster Autoscaler
+**Cluster Autoscaler:**
 ```bash
 # Check Cluster Autoscaler
 kubectl get pods -n kube-system | grep cluster-autoscaler
 
 # Check autoscaler logs
 kubectl logs -n kube-system -l app=cluster-autoscaler
-
-# Check autoscaler configuration
-kubectl get deployment cluster-autoscaler -n kube-system -o yaml
-
-# Check autoscaler status (if status endpoint available)
-kubectl get --raw /api/v1/namespaces/kube-system/services/cluster-autoscaler:8085/proxy/status
-```
-
-### Custom Metrics (Prometheus Adapter)
-```bash
-# Check Prometheus Adapter
-kubectl get pods -n kube-system | grep prometheus-adapter
-
-# Check available custom metrics
-kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1
-
-# Check specific custom metric
-kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/<namespace>/pods/*/<metric-name>
 ```
 
 ## Best Practices

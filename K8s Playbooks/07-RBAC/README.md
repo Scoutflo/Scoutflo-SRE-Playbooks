@@ -43,91 +43,57 @@ If you're experiencing RBAC issues:
 - **03-Pods/**: Pod issues related to ServiceAccount problems
 - **08-Configuration/**: ConfigMap/Secret access issues (often RBAC-related)
 
-## Useful Commands
+## Understanding Playbook Steps
 
-### ServiceAccounts
+**Important**: These playbooks are designed for **AI agents** using natural language processing. The playbook steps use natural language instructions like:
+
+- "Retrieve ServiceAccount `<serviceaccount-name>` in namespace `<namespace>` and verify ServiceAccount exists"
+- "Retrieve RoleBinding `<rolebinding-name>` in namespace `<namespace>` and check role binding configuration"
+- "Verify permissions for ServiceAccount `<serviceaccount-name>` in namespace `<namespace>`"
+
+AI agents interpret these instructions and execute the appropriate actions using available tools.
+
+### Manual Verification Commands
+
+If you need to manually verify or troubleshoot (outside of AI agent usage), here are equivalent kubectl commands:
+
+**ServiceAccounts:**
 ```bash
 # Check ServiceAccounts
 kubectl get serviceaccounts -n <namespace>
-kubectl get sa -n <namespace>  # Short form
 
 # Describe ServiceAccount
 kubectl describe serviceaccount <serviceaccount-name> -n <namespace>
-
-# Check ServiceAccount secrets
-kubectl get serviceaccount <serviceaccount-name> -n <namespace> -o yaml
-
-# Check pods using ServiceAccount
-kubectl get pods -n <namespace> -o jsonpath='{.items[?(@.spec.serviceAccountName=="<serviceaccount-name>")].metadata.name}'
 ```
 
-### Roles and ClusterRoles
+**Roles and ClusterRoles:**
 ```bash
 # Check Roles
 kubectl get roles -n <namespace>
 
-# Describe Role
-kubectl describe role <role-name> -n <namespace>
-
-# Check Role rules
-kubectl get role <role-name> -n <namespace> -o yaml
-
 # Check ClusterRoles
 kubectl get clusterroles
 
-# Describe ClusterRole
-kubectl describe clusterrole <clusterrole-name>
-
-# Check ClusterRole rules
-kubectl get clusterrole <clusterrole-name> -o yaml
+# Describe Role
+kubectl describe role <role-name> -n <namespace>
 ```
 
-### RoleBindings and ClusterRoleBindings
+**RoleBindings:**
 ```bash
 # Check RoleBindings
 kubectl get rolebindings -n <namespace>
 
 # Describe RoleBinding
 kubectl describe rolebinding <rolebinding-name> -n <namespace>
-
-# Check ClusterRoleBindings
-kubectl get clusterrolebindings
-
-# Describe ClusterRoleBinding
-kubectl describe clusterrolebinding <clusterrolebinding-name>
-
-# Check what subjects are bound to a Role
-kubectl get rolebinding <rolebinding-name> -n <namespace> -o jsonpath='{.subjects}'
 ```
 
-### Permission Checking
+**Permission Checking:**
 ```bash
 # Check if current user can perform action
 kubectl auth can-i create pods -n <namespace>
 
 # Check permissions for ServiceAccount
 kubectl auth can-i --list --as=system:serviceaccount:<namespace>:<serviceaccount-name> -n <namespace>
-
-# Check all permissions for user
-kubectl auth can-i --list --as=<user-name> -n <namespace>
-
-# Check cluster-wide permissions
-kubectl auth can-i --list --as=<user-name> --all-namespaces
-```
-
-### Debugging RBAC Issues
-```bash
-# Check API server authorization logs (requires access to control plane)
-# Usually in API server logs
-
-# Check ServiceAccount token
-kubectl get secret -n <namespace> | grep <serviceaccount-name>
-
-# Test authentication with ServiceAccount token
-kubectl --token=<token> get pods -n <namespace>
-
-# Check RBAC events
-kubectl get events -n <namespace> --field-selector reason=Failed
 ```
 
 ## Best Practices

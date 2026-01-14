@@ -32,37 +32,33 @@ If you're experiencing installation issues:
 - **03-Pods/**: Pod issues related to installed applications
 - **04-Workloads/**: Workload issues from installations
 
-## Useful Commands
+## Understanding Playbook Steps
 
-### Helm Operations
+**Important**: These playbooks are designed for **AI agents** using natural language processing. The playbook steps use natural language instructions like:
+
+- "Retrieve Helm release `<release-name>` in namespace `<namespace>` and check release status and resources"
+- "Retrieve pods in namespace `<namespace>` with label matching Helm release and verify pod status"
+- "Retrieve events in namespace `<namespace>` and filter for Helm release-related errors"
+
+AI agents interpret these instructions and execute the appropriate actions using available tools (like Helm MCP tools or Kubernetes MCP tools).
+
+### Manual Verification Commands
+
+If you need to manually verify or troubleshoot (outside of AI agent usage), here are equivalent Helm and kubectl commands:
+
+**Helm Operations:**
 ```bash
 # Check Helm releases
 helm list -n <namespace>
-helm list -A  # All namespaces
 
 # Check Helm release status
 helm status <release-name> -n <namespace>
 
 # Check Helm release history
 helm history <release-name> -n <namespace>
-
-# Rollback Helm release
-helm rollback <release-name> <revision> -n <namespace>
-
-# Upgrade Helm release
-helm upgrade <release-name> <chart> -n <namespace>
-
-# Uninstall Helm release
-helm uninstall <release-name> -n <namespace>
-
-# Check Helm release values
-helm get values <release-name> -n <namespace>
-
-# Check Helm release manifest
-helm get manifest <release-name> -n <namespace>
 ```
 
-### Installation Debugging
+**Installation Debugging:**
 ```bash
 # Check installed resources
 kubectl get all -n <namespace>
@@ -72,33 +68,6 @@ kubectl get pods -n <namespace> | grep <release-name>
 
 # Check Helm release events
 kubectl get events -n <namespace> --sort-by='.lastTimestamp'
-
-# Check Helm release secrets (Helm 3 stores releases as secrets)
-kubectl get secrets -n <namespace> | grep helm
-
-# Check Helm release status in detail
-helm status <release-name> -n <namespace> --show-resources
-```
-
-### Helm Chart Operations
-```bash
-# Search Helm charts
-helm search repo <chart-name>
-
-# Add Helm repository
-helm repo add <repo-name> <repo-url>
-
-# Update Helm repositories
-helm repo update
-
-# Install from chart
-helm install <release-name> <chart> -n <namespace>
-
-# Dry run installation
-helm install <release-name> <chart> -n <namespace> --dry-run --debug
-
-# Template rendering (without installing)
-helm template <release-name> <chart> -n <namespace>
 ```
 
 ## Best Practices

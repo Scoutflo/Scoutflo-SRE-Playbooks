@@ -39,85 +39,48 @@ If you're experiencing configuration issues:
 - **07-RBAC/**: Permission issues affecting ConfigMap/Secret access
 - **04-Workloads/**: Workload-level configuration issues
 
-## Useful Commands
+## Understanding Playbook Steps
 
-### ConfigMaps
+**Important**: These playbooks are designed for **AI agents** using natural language processing. The playbook steps use natural language instructions like:
+
+- "Retrieve ConfigMap `<configmap-name>` in namespace `<namespace>` and verify ConfigMap exists and is accessible"
+- "Retrieve pod `<pod-name>` in namespace `<namespace>` and check pod environment variables and volume mounts"
+- "Retrieve Secret `<secret-name>` in namespace `<namespace>` and verify Secret is accessible to pods"
+
+AI agents interpret these instructions and execute the appropriate actions using available tools.
+
+### Manual Verification Commands
+
+If you need to manually verify or troubleshoot (outside of AI agent usage), here are equivalent kubectl commands:
+
+**ConfigMaps:**
 ```bash
 # Check ConfigMaps
 kubectl get configmaps -n <namespace>
-kubectl get cm -n <namespace>  # Short form
 
 # Describe ConfigMap
 kubectl describe configmap <configmap-name> -n <namespace>
 
 # View ConfigMap data
 kubectl get configmap <configmap-name> -n <namespace> -o yaml
-
-# View specific ConfigMap key
-kubectl get configmap <configmap-name> -n <namespace> -o jsonpath='{.data.<key>}'
-
-# Edit ConfigMap
-kubectl edit configmap <configmap-name> -n <namespace>
-
-# Create ConfigMap from file
-kubectl create configmap <configmap-name> --from-file=<file-path> -n <namespace>
-
-# Create ConfigMap from literal
-kubectl create configmap <configmap-name> --from-literal=key=value -n <namespace>
 ```
 
-### Secrets
+**Secrets:**
 ```bash
 # Check Secrets
 kubectl get secrets -n <namespace>
 
 # Describe Secret
 kubectl describe secret <secret-name> -n <namespace>
-
-# View Secret data (base64 encoded)
-kubectl get secret <secret-name> -n <namespace> -o yaml
-
-# Decode Secret value
-kubectl get secret <secret-name> -n <namespace> -o jsonpath='{.data.<key>}' | base64 -d
-
-# Create Secret from file
-kubectl create secret generic <secret-name> --from-file=<file-path> -n <namespace>
-
-# Create Secret from literal
-kubectl create secret generic <secret-name> --from-literal=key=value -n <namespace>
-
-# Create Secret from env file
-kubectl create secret generic <secret-name> --from-env-file=<env-file> -n <namespace>
 ```
 
-### Pod Configuration
+**Pod Configuration:**
 ```bash
 # Check pod environment variables from ConfigMap
 kubectl describe pod <pod-name> -n <namespace> | grep -A 20 "Environment:"
 
-# Check pod environment variables
-kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.spec.containers[*].env}'
-
-# Check pod volume mounts for ConfigMap/Secret
+# Check pod volume mounts
 kubectl describe pod <pod-name> -n <namespace> | grep -A 10 "Mounts:"
-
-# Check mounted ConfigMap/Secret in pod
-kubectl exec <pod-name> -n <namespace> -- ls /path/to/mount
-
-# View ConfigMap/Secret file content in pod
-kubectl exec <pod-name> -n <namespace> -- cat /path/to/configmap/file
-```
-
-### Configuration Debugging
-```bash
-# Check which pods use a ConfigMap
-kubectl get pods -n <namespace> -o json | jq '.items[] | select(.spec.volumes[]?.configMap.name=="<configmap-name>")'
-
-# Check which pods use a Secret
-kubectl get pods -n <namespace> -o json | jq '.items[] | select(.spec.volumes[]?.secret.secretName=="<secret-name>")'
-
-# Check ConfigMap size
-kubectl get configmap <configmap-name> -n <namespace> -o json | jq '.data | to_entries | map(.value | length) | add'
 ```
 
 ## Best Practices

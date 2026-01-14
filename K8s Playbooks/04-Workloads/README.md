@@ -65,9 +65,21 @@ If you're experiencing workload issues:
 - **09-Resource-Management/**: Resource quota issues
 - **10-Monitoring-Autoscaling/**: Metrics and autoscaling issues
 
-## Useful Commands
+## Understanding Playbook Steps
 
-### Deployments
+**Important**: These playbooks are designed for **AI agents** using natural language processing. The playbook steps use natural language instructions like:
+
+- "Retrieve deployment `<deployment-name>` in namespace `<namespace>` and check deployment status and replica count"
+- "Retrieve StatefulSet `<statefulset-name>` in namespace `<namespace>` and verify replica count matches desired state"
+- "Retrieve HPA `<hpa-name>` in namespace `<namespace>` and check scaling metrics and current replica count"
+
+AI agents interpret these instructions and execute the appropriate actions using available tools.
+
+### Manual Verification Commands
+
+If you need to manually verify or troubleshoot (outside of AI agent usage), here are equivalent kubectl commands:
+
+**Deployments:**
 ```bash
 # Check deployment status
 kubectl get deployments -n <namespace>
@@ -77,93 +89,39 @@ kubectl describe deployment <deployment-name> -n <namespace>
 
 # Check deployment rollout status
 kubectl rollout status deployment/<deployment-name> -n <namespace>
-
-# Check deployment history
-kubectl rollout history deployment/<deployment-name> -n <namespace>
-
-# Rollback deployment
-kubectl rollout undo deployment/<deployment-name> -n <namespace>
-
-# Scale deployment
-kubectl scale deployment <deployment-name> --replicas=<count> -n <namespace>
-
-# Check deployment replicas
-kubectl get deployment <deployment-name> -n <namespace> -o jsonpath='{.status.replicas}'
 ```
 
-### StatefulSets
+**StatefulSets:**
 ```bash
 # Check StatefulSet status
 kubectl get statefulsets -n <namespace>
 
 # Describe StatefulSet
 kubectl describe statefulset <statefulset-name> -n <namespace>
-
-# Check StatefulSet pods
-kubectl get pods -l app=<statefulset-name> -n <namespace>
-
-# Check StatefulSet replica status
-kubectl get statefulset <statefulset-name> -n <namespace> -o jsonpath='{.status}'
 ```
 
-### DaemonSets
+**DaemonSets:**
 ```bash
 # Check DaemonSet status
 kubectl get daemonsets -n <namespace>
 
 # Describe DaemonSet
 kubectl describe daemonset <daemonset-name> -n <namespace>
-
-# Check DaemonSet pods
-kubectl get pods -l app=<daemonset-name> -n <namespace>
-
-# Check which nodes have DaemonSet pods
-kubectl get pods -l app=<daemonset-name> -n <namespace> -o wide
 ```
 
-### Jobs and CronJobs
-```bash
-# Check job status
-kubectl get jobs -n <namespace>
-
-# Describe job
-kubectl describe job <job-name> -n <namespace>
-
-# Check job pods
-kubectl get pods -l job-name=<job-name> -n <namespace>
-
-# Check CronJob
-kubectl get cronjobs -n <namespace>
-
-# Check CronJob schedule
-kubectl get cronjob <cronjob-name> -n <namespace> -o jsonpath='{.spec.schedule}'
-```
-
-### Horizontal Pod Autoscaler (HPA)
+**HPA:**
 ```bash
 # Check HPA status
 kubectl get hpa -n <namespace>
 
 # Describe HPA
 kubectl describe hpa <hpa-name> -n <namespace>
-
-# Check HPA metrics
-kubectl get hpa <hpa-name> -n <namespace> -o yaml
-
-# Check HPA events
-kubectl describe hpa <hpa-name> -n <namespace> | grep -A 10 "Events:"
 ```
 
-### Workload Events and Debugging
+**Workload Events:**
 ```bash
 # Check workload events
 kubectl get events -n <namespace> --sort-by='.lastTimestamp'
-
-# Check events for specific workload
-kubectl get events -n <namespace> --field-selector involvedObject.name=<workload-name>
-
-# Check replica sets (for Deployments)
-kubectl get replicasets -n <namespace>
 ```
 
 ## Best Practices

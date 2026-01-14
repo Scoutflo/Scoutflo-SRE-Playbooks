@@ -60,94 +60,57 @@ If you're experiencing networking issues:
 - **01-Control-Plane/**: Control plane issues affecting networking
 - **02-Nodes/**: Node networking problems
 
-## Useful Commands
+## Understanding Playbook Steps
 
-### Services
+**Important**: These playbooks are designed for **AI agents** using natural language processing. The playbook steps use natural language instructions like:
+
+- "Retrieve service `<service-name>` in namespace `<namespace>` and check service endpoints and selector"
+- "Retrieve ingress `<ingress-name>` in namespace `<namespace>` and verify ingress rules and backend configuration"
+- "Retrieve pods with label `k8s-app=kube-dns` in namespace `kube-system` and check pod status"
+
+AI agents interpret these instructions and execute the appropriate actions using available tools.
+
+### Manual Verification Commands
+
+If you need to manually verify or troubleshoot (outside of AI agent usage), here are equivalent kubectl commands:
+
+**Services:**
 ```bash
 # Check services
 kubectl get services -n <namespace>
-kubectl get svc -A  # All namespaces
 
 # Describe service
 kubectl describe service <service-name> -n <namespace>
 
 # Check service endpoints
 kubectl get endpoints <service-name> -n <namespace>
-
-# Check service selector matches
-kubectl get pods -l <selector> -n <namespace>
-
-# Test service connectivity
-kubectl run -it --rm debug --image=busybox --restart=Never -- wget -O- <service-name>.<namespace>.svc.cluster.local
 ```
 
-### Ingress
+**Ingress:**
 ```bash
 # Check ingress
 kubectl get ingress -n <namespace>
 
 # Describe ingress
 kubectl describe ingress <ingress-name> -n <namespace>
-
-# Check ingress controller pods
-kubectl get pods -n <ingress-namespace> -l app=<ingress-controller>
-
-# Check ingress controller logs
-kubectl logs -n <ingress-namespace> -l app=<ingress-controller>
 ```
 
-### DNS
+**DNS:**
 ```bash
 # Check CoreDNS pods
 kubectl get pods -n kube-system | grep coredns
 
-# Check CoreDNS logs
-kubectl logs -n kube-system -l k8s-app=kube-dns
-
 # Test DNS resolution
 kubectl run -it --rm debug --image=busybox --restart=Never -- nslookup <service-name>.<namespace>.svc.cluster.local
-
-# Test DNS from pod
-kubectl exec -it <pod-name> -n <namespace> -- nslookup <service-name>.<namespace>.svc.cluster.local
 ```
 
-### Network Policies
+**Network Policies:**
 ```bash
 # Check network policies
 kubectl get networkpolicies -n <namespace>
 
 # Describe network policy
 kubectl describe networkpolicy <policy-name> -n <namespace>
-
-# Check network policy rules
-kubectl get networkpolicy <policy-name> -n <namespace> -o yaml
-```
-
-### kube-proxy
-```bash
-# Check kube-proxy pods
-kubectl get pods -n kube-system | grep kube-proxy
-
-# Check kube-proxy logs
-kubectl logs -n kube-system -l k8s-app=kube-proxy
-
-# Check kube-proxy configuration
-kubectl get configmap -n kube-system kube-proxy -o yaml
-```
-
-### Network Debugging
-```bash
-# Check pod network interfaces
-kubectl exec <pod-name> -n <namespace> -- ip addr
-
-# Check pod routing
-kubectl exec <pod-name> -n <namespace> -- ip route
-
-# Test connectivity between pods
-kubectl exec <pod-1> -n <namespace> -- ping <pod-2-ip>
-
-# Check service IP
-kubectl get service <service-name> -n <namespace> -o jsonpath='{.spec.clusterIP}'
 ```
 
 ## Best Practices

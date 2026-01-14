@@ -47,95 +47,54 @@ If you're experiencing storage issues:
 - **02-Nodes/**: Node disk pressure issues
 - **09-Resource-Management/**: Resource quota issues affecting storage
 
-## Useful Commands
+## Understanding Playbook Steps
 
-### PersistentVolumeClaims (PVCs)
+**Important**: These playbooks are designed for **AI agents** using natural language processing. The playbook steps use natural language instructions like:
+
+- "Retrieve PVC `<pvc-name>` in namespace `<namespace>` and check PVC status and storage class"
+- "Retrieve pod `<pod-name>` in namespace `<namespace>` and verify volume mounts and permissions"
+- "Retrieve PersistentVolume `<pv-name>` and check PV status and reclaim policy"
+
+AI agents interpret these instructions and execute the appropriate actions using available tools.
+
+### Manual Verification Commands
+
+If you need to manually verify or troubleshoot (outside of AI agent usage), here are equivalent kubectl commands:
+
+**PVCs:**
 ```bash
 # Check PVCs
 kubectl get pvc -n <namespace>
-kubectl get pvc -A  # All namespaces
 
 # Describe PVC
 kubectl describe pvc <pvc-name> -n <namespace>
 
 # Check PVC status
 kubectl get pvc <pvc-name> -n <namespace> -o jsonpath='{.status.phase}'
-
-# Check PVC storage class
-kubectl get pvc <pvc-name> -n <namespace> -o jsonpath='{.spec.storageClassName}'
-
-# Check PVC capacity
-kubectl get pvc <pvc-name> -n <namespace> -o jsonpath='{.status.capacity.storage}'
 ```
 
-### PersistentVolumes (PVs)
+**PVs:**
 ```bash
 # Check PVs
 kubectl get pv
 
 # Describe PV
 kubectl describe pv <pv-name>
-
-# Check PV status
-kubectl get pv <pv-name> -o jsonpath='{.status.phase}'
-
-# Check PV reclaim policy
-kubectl get pv <pv-name> -o jsonpath='{.spec.persistentVolumeReclaimPolicy}'
-
-# Check PV access modes
-kubectl get pv <pv-name> -o jsonpath='{.spec.accessModes}'
 ```
 
-### Storage Classes
+**Storage Classes:**
 ```bash
 # Check storage classes
 kubectl get storageclass
-kubectl get sc  # Short form
 
 # Describe storage class
 kubectl describe storageclass <storageclass-name>
-
-# Check default storage class
-kubectl get storageclass -o jsonpath='{.items[?(@.metadata.annotations.storageclass\.kubernetes\.io/is-default-class=="true")].metadata.name}'
 ```
 
-### Volume Attachments
-```bash
-# Check volume attachments
-kubectl get volumeattachment
-
-# Describe volume attachment
-kubectl describe volumeattachment <attachment-name>
-
-# Check volume attachment status
-kubectl get volumeattachment -o jsonpath='{.items[*].status.attached}'
-```
-
-### Pod Volume Information
+**Pod Volume Information:**
 ```bash
 # Check pod volume mounts
 kubectl describe pod <pod-name> -n <namespace> | grep -A 10 "Volumes:"
-
-# Check pod volume claims
-kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.spec.volumes[*].persistentVolumeClaim}'
-
-# Check mounted volumes in pod
-kubectl exec <pod-name> -n <namespace> -- df -h
-
-# Check volume mount paths
-kubectl exec <pod-name> -n <namespace> -- mount | grep volume
-```
-
-### Storage Operations
-```bash
-# Create PVC from YAML
-kubectl apply -f <pvc-yaml-file>
-
-# Delete PVC (and associated PV if reclaim policy allows)
-kubectl delete pvc <pvc-name> -n <namespace>
-
-# Resize PVC (if supported)
-kubectl patch pvc <pvc-name> -n <namespace> -p '{"spec":{"resources":{"requests":{"storage":"<new-size>"}}}}'
 ```
 
 ## Best Practices

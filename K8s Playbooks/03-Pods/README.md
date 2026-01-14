@@ -71,25 +71,30 @@ If you're experiencing pod issues:
 - **08-Configuration/**: ConfigMap/Secret access issues
 - **09-Resource-Management/**: Resource quota issues
 
-## Useful Commands
+## Understanding Playbook Steps
 
-### Pod Status and Information
+**Important**: These playbooks are designed for **AI agents** using natural language processing. The playbook steps use natural language instructions like:
+
+- "Retrieve logs from pod `<pod-name>` in namespace `<namespace>` and analyze error messages"
+- "Retrieve pod `<pod-name>` in namespace `<namespace>` and check pod status and restart count"
+- "Retrieve deployment `<deployment-name>` in namespace `<namespace>` and check container image name"
+
+AI agents interpret these instructions and execute the appropriate actions using available tools (like Kubernetes MCP tools).
+
+### Manual Verification Commands
+
+If you need to manually verify or troubleshoot (outside of AI agent usage), here are equivalent kubectl commands:
+
+**Pod Status and Information:**
 ```bash
 # Get pod status
 kubectl get pods -n <namespace>
-kubectl get pods -A  # All namespaces
 
 # Describe pod for details
 kubectl describe pod <pod-name> -n <namespace>
-
-# Get pod YAML
-kubectl get pod <pod-name> -n <namespace> -o yaml
-
-# Check pod status in JSON format
-kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.status}'
 ```
 
-### Pod Logs
+**Pod Logs:**
 ```bash
 # Check pod logs
 kubectl logs <pod-name> -n <namespace>
@@ -99,73 +104,24 @@ kubectl logs <pod-name> -n <namespace> --previous
 
 # Follow logs in real-time
 kubectl logs <pod-name> -n <namespace> -f
-
-# Get logs from specific container (multi-container pods)
-kubectl logs <pod-name> -n <namespace> -c <container-name>
-
-# Get logs with timestamps
-kubectl logs <pod-name> -n <namespace> --timestamps
-
-# Get last N lines of logs
-kubectl logs <pod-name> -n <namespace> --tail=100
 ```
 
-### Pod Events and Debugging
+**Pod Events:**
 ```bash
 # Get pod events
 kubectl get events -n <namespace> --sort-by='.lastTimestamp'
 
-# Watch pod events in real-time
-kubectl get events -n <namespace> --watch
-
 # Check pod events specifically
 kubectl describe pod <pod-name> -n <namespace> | grep -A 20 "Events:"
-
-# Check pod conditions
-kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.status.conditions}'
 ```
 
-### Pod Resources and Metrics
+**Pod Resources:**
 ```bash
 # Check pod resource usage
 kubectl top pod <pod-name> -n <namespace>
-kubectl top pods -n <namespace>
 
 # Check pod resource requests and limits
-kubectl describe pod <pod-name> -n <namespace> | grep -A 5 "Limits:\|Requests:"
-
-# Check pod resource allocation
-kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.spec.containers[*].resources}'
-```
-
-### Pod Execution and Debugging
-```bash
-# Execute command in running pod
-kubectl exec -it <pod-name> -n <namespace> -- /bin/sh
-
-# Execute command in specific container
-kubectl exec -it <pod-name> -n <namespace> -c <container-name> -- /bin/sh
-
-# Copy files from pod
-kubectl cp <namespace>/<pod-name>:/path/to/file /local/path
-
-# Copy files to pod
-kubectl cp /local/path <namespace>/<pod-name>:/path/to/file
-```
-
-### Pod State Analysis
-```bash
-# Check pod phase
-kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.status.phase}'
-
-# Check container states
-kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.status.containerStatuses[*].state}'
-
-# Check pod restart count
-kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.status.containerStatuses[*].restartCount}'
-
-# Check pod IP and node
-kubectl get pod <pod-name> -n <namespace> -o wide
+kubectl describe pod <pod-name> -n <namespace> | grep -A 5 "Limits:"
 ```
 
 ## Best Practices

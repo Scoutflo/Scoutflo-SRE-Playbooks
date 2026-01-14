@@ -56,9 +56,20 @@ If you're experiencing control plane issues:
 - **02-Nodes/**: Node-level issues that might affect control plane communication
 - **07-RBAC/**: Authorization issues that might appear as API problems
 
-## Useful Commands
+## Understanding Playbook Steps
 
-### Basic Status Checks
+**Important**: These playbooks are designed for **AI agents** using natural language processing. The playbook steps use natural language instructions like:
+
+- "Retrieve the Pod `<pod-name>` in namespace `kube-system` with label `component=kube-apiserver` and inspect its status"
+- "Retrieve logs from the Pod `<pod-name>` in namespace `kube-system` and filter for error patterns"
+
+AI agents interpret these instructions and execute the appropriate actions using available tools (like Kubernetes MCP tools or kubectl).
+
+### Manual Verification Commands
+
+If you need to manually verify or troubleshoot (outside of AI agent usage), here are equivalent kubectl commands:
+
+**Basic Status Checks:**
 ```bash
 # Check API Server status
 kubectl get componentstatuses
@@ -76,7 +87,7 @@ kubectl get --raw /healthz
 kubectl get --raw /readyz
 ```
 
-### Logs and Debugging
+**Logs and Debugging:**
 ```bash
 # Check API Server logs
 kubectl logs -n kube-system kube-apiserver-<node-name>
@@ -90,12 +101,9 @@ kubectl logs -n kube-system kube-controller-manager-<node-name>
 # Check etcd status and logs
 kubectl get pods -n kube-system | grep etcd
 kubectl logs -n kube-system etcd-<node-name>
-
-# Follow logs in real-time
-kubectl logs -n kube-system -f kube-apiserver-<node-name>
 ```
 
-### API Server Information
+**API Server Information:**
 ```bash
 # Check API Server version
 kubectl version --short
@@ -103,21 +111,8 @@ kubectl version --short
 # Check API resources
 kubectl api-resources
 
-# Check API versions
-kubectl api-versions
-
 # Test API connectivity
 kubectl cluster-info
-```
-
-### Certificate and Security
-```bash
-# Check certificate expiration
-kubectl get csr
-kubectl certificate approve <csr-name>
-
-# Check service account tokens
-kubectl get secrets -n kube-system | grep token
 ```
 
 ## Best Practices

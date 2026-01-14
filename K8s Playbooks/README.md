@@ -90,10 +90,12 @@ Description of the business and technical impact, including:
 - Cascading effects on dependent workloads
 
 ### 5. **Playbook** (H2)
-Numbered, actionable steps to diagnose the issue:
-- Each step includes specific Kubernetes resource identifiers (e.g., `<pod-name>`, `<namespace>`)
-- Steps reference kubectl commands, resource specifications, and cluster state
+Numbered, actionable steps in natural language to diagnose the issue:
+- Each step uses natural language instructions for AI agents (e.g., "Retrieve the Pod `<pod-name>` in namespace `<namespace>` and inspect its status")
+- Steps include specific Kubernetes resource identifiers (e.g., `<pod-name>`, `<namespace>`)
+- Steps reference Kubernetes resources, resource specifications, and cluster state
 - Ordered from most common to more specific diagnostic steps
+- **Note**: Playbooks are designed for AI agents using NLP - each category folder README includes "Understanding Playbook Steps" section with manual kubectl command equivalents
 
 ### 6. **Diagnosis** (H2)
 Correlation analysis framework:
