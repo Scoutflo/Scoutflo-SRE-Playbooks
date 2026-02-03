@@ -10,10 +10,10 @@ These are step-by-step troubleshooting guides for common AWS, Kubernetes, and Se
 
 ### How many playbooks are there?
 
-- **389 total playbooks**
-  - 168 AWS playbooks (organized in 8 categories)
-  - 196 Kubernetes playbooks (organized in 13 categories)
-  - 25 Sentry playbooks (organized in 2 categories)
+- **376 total playbooks**
+  - 157 AWS playbooks (organized in 8 categories)
+  - 194 Kubernetes playbooks (organized in 13 categories)
+  - 25 Sentry playbooks (organized in 3 categories)
 
 ### Are these playbooks free to use?
 

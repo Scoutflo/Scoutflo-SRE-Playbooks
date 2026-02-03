@@ -1,9 +1,9 @@
 # AWS Playbooks
 
-[![AWS](https://img.shields.io/badge/AWS-168%20playbooks-orange)](README.md)
+[![AWS](https://img.shields.io/badge/AWS-157%20playbooks-orange)](README.md)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](../../CONTRIBUTING.md)
 
-> **168 comprehensive AWS incident response playbooks** organized into 8 categorized folders - Systematic troubleshooting guides for common AWS service issues to help SREs diagnose and resolve infrastructure problems faster.
+> **157 comprehensive AWS incident response playbooks** organized into 8 categorized folders - Systematic troubleshooting guides for common AWS service issues to help SREs diagnose and resolve infrastructure problems faster.
 
 ## 📋 Table of Contents
 
@@ -20,7 +20,7 @@
 
 ## Overview
 
-This directory contains **168 AWS incident response playbooks** organized into **8 categorized folders** to help Site Reliability Engineers (SREs) diagnose and resolve common AWS service issues. Each playbook follows a structured format to provide systematic troubleshooting guidance.
+This directory contains **157 AWS incident response playbooks** organized into **8 categorized folders** to help Site Reliability Engineers (SREs) diagnose and resolve common AWS service issues. Each playbook follows a structured format to provide systematic troubleshooting guidance.
 
 ### Services Covered
 
@@ -53,15 +53,15 @@ AWS Playbooks/
 ├── 02-Database/                   (8 playbooks)
 ├── 03-Storage/                    (7 playbooks)
 ├── 04-Networking/                 (17 playbooks)
-├── 05-Security/                   (17 playbooks)
+├── 05-Security/                   (16 playbooks)
 ├── 06-Monitoring/                 (8 playbooks)
 ├── 07-CI-CD/                      (9 playbooks)
-└── 08-Proactive/                  (75 playbooks)
+└── 08-Proactive/                  (65 playbooks)
     ├── 01-Capacity-Performance/   (11 playbooks)
     ├── 02-Security-Compliance/    (11 playbooks)
     ├── 03-Backup-DR/              (9 playbooks)
-    ├── 04-Cost-Optimization/      (16 playbooks)
-    ├── 05-Observability/          (10 playbooks)
+    ├── 04-Cost-Optimization/      (15 playbooks)
+    ├── 05-Observability/          (9 playbooks)
     ├── 06-Data-Integrity/         (2 playbooks)
     └── 07-Operational-Readiness/  (8 playbooks)
 ```
@@ -209,7 +209,7 @@ VPC, ELB, Route 53, API Gateway, CloudFront, Direct Connect, VPN, PrivateLink, N
 - `Target-Group-Showing-Unhealthy-Instances-ELB.md`
 - `Throttling-Requests-API-Gateway.md`
 
-### 05-Security/ (17 playbooks)
+### 05-Security/ (16 playbooks)
 IAM, KMS, GuardDuty, WAF, Shield, Cognito, Secrets Manager, ACM, Security Hub, STS, Organizations
 
 **Key Topics:**
@@ -276,7 +276,7 @@ CodePipeline, CodeBuild, CloudFormation, Step Functions, Glue, Batch, App Runner
 - `Stack-Failing-to-Create-CloudFormation.md`
 - `Stuck-in-Progress-CodePipeline.md`
 
-### 08-Proactive/ (75 playbooks)
+### 08-Proactive/ (65 playbooks)
 Proactive monitoring, capacity planning, security compliance, and operational readiness
 
 **Key Topics:**
@@ -325,7 +325,7 @@ Proactive monitoring, capacity planning, security compliance, and operational re
 - `Restore-Testing-AWS.md`
 - `RTO-RPO-Validation-AWS.md`
 
-#### 04-Cost-Optimization (16 playbooks)
+#### 04-Cost-Optimization (15 playbooks)
 - `Budgets-Not-Sending-Alerts-Cost.md`
 - `Compute-Savings-Plan-Not-Optimizing-Costs-Cost.md`
 - `Cost-Anomaly-Detection-AWS.md`
@@ -342,7 +342,7 @@ Proactive monitoring, capacity planning, security compliance, and operational re
 - `Unexpected-Increase-in-AWS-Bill-Cost.md`
 - `Unused-Resource-Cleanup-AWS.md`
 
-#### 05-Observability (10 playbooks)
+#### 05-Observability (9 playbooks)
 - `Alert-Coverage-Analysis-AWS.md`
 - `Automation-Coverage-AWS.md`
 - `Certificate-Expiration-Monitoring-AWS.md`
@@ -371,7 +371,7 @@ Proactive monitoring, capacity planning, security compliance, and operational re
 
 ### 1. Documentation
 
-This directory contains 168 AWS incident response playbooks organized into 8 categorized folders. Each playbook provides systematic troubleshooting guidance for common AWS issues.
+This directory contains 157 AWS incident response playbooks organized into 8 categorized folders. Each playbook provides systematic troubleshooting guidance for common AWS issues.
 
 **Quick Navigation:**
 - Browse by category folder (e.g., `01-Compute/` for compute issues)
@@ -530,7 +530,7 @@ We welcome contributions to improve AWS playbooks!
 
 ## Statistics
 
-- **Total Playbooks**: 168
+- **Total Playbooks**: 157
 - **Categories**: 8 (including Proactive monitoring)
 - **Organization**: Numbered folders for easy navigation
 - **Coverage**: All major AWS services and proactive monitoring

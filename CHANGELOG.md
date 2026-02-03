@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 01-Error-Tracking/ (19 playbooks) - Exception handling, error patterns
   - 02-Performance/ (6 playbooks) - Timeout, latency, performance issues
   - 03-Release-Health/ - Release correlation playbooks
-- **AWS Proactive Playbooks**: 66 new proactive monitoring playbooks
+- **AWS Proactive Playbooks**: 65 new proactive monitoring playbooks
   - Capacity & Performance planning
   - Security & Compliance auditing
   - Backup & Disaster Recovery verification
@@ -28,14 +28,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **AWS Playbooks Reorganized**: Restructured from flat to service-based folders
   - 01-Compute/ (27 playbooks) - EC2, Lambda, ECS, EKS, Fargate
-  - 02-Database/ (10 playbooks) - RDS, DynamoDB
+  - 02-Database/ (8 playbooks) - RDS, DynamoDB
   - 03-Storage/ (7 playbooks) - S3
   - 04-Networking/ (17 playbooks) - VPC, ELB, Route53, API Gateway
   - 05-Security/ (16 playbooks) - IAM, KMS, GuardDuty, WAF
   - 06-Monitoring/ (8 playbooks) - CloudTrail, CloudWatch, Config
   - 07-CI-CD/ (9 playbooks) - CodePipeline, CodeBuild, CodeDeploy
-  - 08-Proactive/ (66 playbooks) - Proactive monitoring
-- **Diagnosis Sections Improved**: All 377 playbooks updated with:
+  - 08-Proactive/ (65 playbooks) - Proactive monitoring
+- **Diagnosis Sections Improved**: All 376 playbooks updated with:
   - Events-first approach (analyze events before timestamps)
   - Conditional logic patterns ("If X, then Y. If inconclusive, then Z.")
   - Early permission checks (RBAC for K8s, IAM for AWS, Release correlation for Sentry)
@@ -43,8 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **K8s Reactive Playbooks**: Updated counts in existing folders
 
 ### Statistics
-- Total Playbooks: 163 → **377** (+214 new playbooks)
-- AWS: 25 → **158** (+133 playbooks)
+- Total Playbooks: 163 → **376** (+213 new playbooks)
+- AWS: 25 → **157** (+132 playbooks)
 - Kubernetes: 138 → **194** (+56 playbooks)
 - Sentry: 0 → **25** (new provider)
 

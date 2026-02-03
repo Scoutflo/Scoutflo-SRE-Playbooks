@@ -1,9 +1,9 @@
 # Kubernetes (K8s) Playbooks
 
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-196%20playbooks-blue)](README.md)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-194%20playbooks-blue)](README.md)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](../../CONTRIBUTING.md)
 
-> **196 comprehensive Kubernetes incident response playbooks** organized into 13 categorized folders - Systematic troubleshooting guides for common Kubernetes cluster and workload issues to help SREs diagnose and resolve problems faster.
+> **194 comprehensive Kubernetes incident response playbooks** organized into 13 categorized folders - Systematic troubleshooting guides for common Kubernetes cluster and workload issues to help SREs diagnose and resolve problems faster.
 
 ## 📋 Table of Contents
 
@@ -20,7 +20,7 @@
 
 ## Overview
 
-This directory contains **196 Kubernetes incident response playbooks** organized into **13 categorized folders** to help Site Reliability Engineers (SREs) quickly find and diagnose common Kubernetes cluster and workload issues. Each playbook follows a structured format to provide systematic troubleshooting guidance.
+This directory contains **194 Kubernetes incident response playbooks** organized into **13 categorized folders** to help Site Reliability Engineers (SREs) quickly find and diagnose common Kubernetes cluster and workload issues. Each playbook follows a structured format to provide systematic troubleshooting guidance.
 
 ### Services & Components Covered
 
@@ -45,23 +45,23 @@ K8s Playbooks/
 ├── 01-Control-Plane/              (18 playbooks)
 ├── 02-Nodes/                      (12 playbooks)
 ├── 03-Pods/                       (31 playbooks)
-├── 04-Workloads/                  (26 playbooks)
-├── 05-Networking/                 (20 playbooks)
-├── 06-Storage/                    (10 playbooks)
+├── 04-Workloads/                  (23 playbooks)
+├── 05-Networking/                 (19 playbooks)
+├── 06-Storage/                    (9 playbooks)
 ├── 07-RBAC/                       (6 playbooks)
 ├── 08-Configuration/              (6 playbooks)
-├── 09-Resource-Management/        (9 playbooks)
+├── 09-Resource-Management/        (8 playbooks)
 ├── 10-Monitoring-Autoscaling/     (3 playbooks)
 ├── 11-Installation-Setup/         (1 playbook)
 ├── 12-Namespaces/                 (2 playbooks)
-└── 13-Proactive/                  (60 playbooks)
+└── 13-Proactive/                  (56 playbooks)
     ├── 01-Capacity-Performance/   (7 playbooks)
     ├── 02-Security-Compliance/    (10 playbooks)
-    ├── 03-Backup-DR/              (8 playbooks)
-    ├── 04-Cost-Optimization/      (9 playbooks)
-    ├── 05-Observability/          (8 playbooks)
+    ├── 03-Backup-DR/              (7 playbooks)
+    ├── 04-Cost-Optimization/      (8 playbooks)
+    ├── 05-Observability/          (7 playbooks)
     ├── 06-Data-Integrity/         (5 playbooks)
-    └── 07-Operational-Readiness/  (13 playbooks)
+    └── 07-Operational-Readiness/  (12 playbooks)
 ```
 
 ## Playbook Structure
@@ -216,7 +216,7 @@ Pod lifecycle, scheduling, health checks, pod states, resource issues
 - `PodsStuckinInitState-pod.md`
 - `PodsStuckinTerminatingState-pod.md`
 
-### 04-Workloads/ (26 playbooks)
+### 04-Workloads/ (23 playbooks)
 Deployments, StatefulSets, DaemonSets, Jobs, HPA scaling issues
 
 **Key Topics:**
@@ -252,7 +252,7 @@ Deployments, StatefulSets, DaemonSets, Jobs, HPA scaling issues
 - `KubeStatefulSetReplicasMismatch-statefulset.md`
 - `KubeStatefulSetUpdateNotRolledOut-statefulset.md`
 
-### 05-Networking/ (20 playbooks)
+### 05-Networking/ (19 playbooks)
 Services, Ingress, DNS, Network Policies, kube-proxy, external connectivity
 
 **Key Topics:**
@@ -284,7 +284,7 @@ Services, Ingress, DNS, Network Policies, kube-proxy, external connectivity
 - `ServiceNotResolvingDNS-dns.md`
 - `ServicesIntermittentlyUnreachable-service.md`
 
-### 06-Storage/ (10 playbooks)
+### 06-Storage/ (9 playbooks)
 PersistentVolumes, PVCs, volume mounts, storage classes
 
 **Key Topics:**
@@ -339,7 +339,7 @@ ConfigMaps and Secrets access issues
 - `PodsCannotPullSecrets-secret.md`
 - `SecretsNotAccessible-secret.md`
 
-### 09-Resource-Management/ (9 playbooks)
+### 09-Resource-Management/ (8 playbooks)
 Resource Quotas, ResourceQuotas, overcommit, compute resource issues
 
 **Key Topics:**
@@ -392,7 +392,7 @@ Namespace management issues
 - `CannotDeleteNamespace-namespace.md`
 - `NamespaceDeletionStuck-namespace.md`
 
-### 13-Proactive/ (60 playbooks)
+### 13-Proactive/ (56 playbooks)
 Proactive monitoring, capacity planning, security compliance, and operational readiness
 
 **Key Topics:**
@@ -425,7 +425,7 @@ Proactive monitoring, capacity planning, security compliance, and operational re
 - `Security-Group-Audit-K8s.md`
 - `Vulnerability-Scanning-K8s.md`
 
-#### 03-Backup-DR (8 playbooks)
+#### 03-Backup-DR (7 playbooks)
 - `Backup-Integrity-Verification-K8s.md`
 - `Backup-Verification-K8s.md`
 - `Cross-cluster-Backup-Sync-K8s.md`
@@ -434,7 +434,7 @@ Proactive monitoring, capacity planning, security compliance, and operational re
 - `Restore-Testing-K8s.md`
 - `RTO-RPO-Validation-K8s.md`
 
-#### 04-Cost-Optimization (9 playbooks)
+#### 04-Cost-Optimization (8 playbooks)
 - `Cost-Anomaly-Detection-K8s.md`
 - `Idle-Resource-Detection-K8s.md`
 - `Quota-Utilization-Tracking-K8s.md`
@@ -444,7 +444,7 @@ Proactive monitoring, capacity planning, security compliance, and operational re
 - `Storage-Tier-Optimization-K8s.md`
 - `Unused-Resource-Cleanup-K8s.md`
 
-#### 05-Observability (8 playbooks)
+#### 05-Observability (7 playbooks)
 - `Alert-Coverage-Analysis-K8s.md`
 - `Error-Budget-Tracking-K8s.md`
 - `Log-Coverage-Analysis-K8s.md`
@@ -460,7 +460,7 @@ Proactive monitoring, capacity planning, security compliance, and operational re
 - `Replication-Lag-Monitoring-K8s.md`
 - `Transaction-Log-Analysis-K8s.md`
 
-#### 07-Operational-Readiness (13 playbooks)
+#### 07-Operational-Readiness (12 playbooks)
 - `API-Dependency-Status-K8s.md`
 - `Audit-Log-Review-K8s.md`
 - `Automation-Coverage-K8s.md`
@@ -478,7 +478,7 @@ Proactive monitoring, capacity planning, security compliance, and operational re
 
 ### 1. Documentation
 
-This directory contains 196 Kubernetes incident response playbooks organized into 13 categorized folders. Each playbook provides systematic troubleshooting guidance for common Kubernetes cluster and workload issues.
+This directory contains 194 Kubernetes incident response playbooks organized into 13 categorized folders. Each playbook provides systematic troubleshooting guidance for common Kubernetes cluster and workload issues.
 
 **Quick Navigation:**
 - Browse by category folder (e.g., `03-Pods/` for pod issues)
@@ -950,7 +950,7 @@ To add a new playbook for an uncovered Kubernetes issue:
 
 ## Statistics
 
-- **Total Playbooks**: 196
+- **Total Playbooks**: 194
 - **Categories**: 13 (including Proactive monitoring)
 - **Organization**: Numbered folders for easy navigation
 - **Coverage**: All major Kubernetes components, common issues, and proactive monitoring
