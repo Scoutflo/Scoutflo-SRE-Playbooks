@@ -8,9 +8,9 @@
 [![GitHub Discussions](https://img.shields.io/github/discussions/Scoutflo/scoutflo-SRE-Playbooks)](https://github.com/Scoutflo/scoutflo-SRE-Playbooks/discussions)
 [![GitHub Contributors](https://img.shields.io/github/contributors/Scoutflo/scoutflo-SRE-Playbooks)](https://github.com/Scoutflo/scoutflo-SRE-Playbooks/graphs/contributors)
 
-> **Comprehensive incident response playbooks for AWS and Kubernetes environments** - Helping SREs diagnose and resolve infrastructure issues faster with systematic, step-by-step troubleshooting guides.
+> **Comprehensive incident response playbooks for AWS, Kubernetes, and Sentry environments** - Helping SREs diagnose and resolve infrastructure issues faster with systematic, step-by-step troubleshooting guides.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [Repository Structure](#repository-structure)
@@ -31,7 +31,7 @@
 
 ## Overview
 
-This repository contains **163 comprehensive incident response playbooks** designed to help Site Reliability Engineers (SREs) systematically diagnose and resolve common infrastructure and application issues in AWS and Kubernetes environments.
+This repository contains **377 comprehensive incident response playbooks** designed to help Site Reliability Engineers (SREs) systematically diagnose and resolve common infrastructure and application issues in AWS, Kubernetes, and Sentry environments.
 
 ### Why This Repository?
 
@@ -39,7 +39,15 @@ This repository contains **163 comprehensive incident response playbooks** desig
 - **Time-Saving**: Quickly identify root causes with correlation analysis frameworks
 - **Community-Driven**: Continuously improved by the open-source community
 - **Production-Ready**: Based on real-world incident response scenarios
-- **Comprehensive Coverage**: 25 AWS playbooks + 138 Kubernetes playbooks
+- **Comprehensive Coverage**: 194 Kubernetes playbooks + 158 AWS playbooks + 25 Sentry playbooks
+- **Proactive Monitoring**: 56 K8s + 66 AWS proactive playbooks for capacity planning and compliance
+
+### Diagnosis Improvements
+
+All playbooks use an **events-first approach** for root cause analysis:
+- Diagnosis sections prioritize checking recent events and changes before diving into configuration details
+- Conditional logic patterns help narrow down causes based on observed symptoms
+- Time-based correlation analysis connects events to failures systematically
 
 ### Use Cases
 
@@ -53,37 +61,54 @@ This repository contains **163 comprehensive incident response playbooks** desig
 
 ```
 scoutflo-SRE-Playbooks/
-├── AWS Playbooks/                    # 25 AWS service playbooks
-│   └── README.md                     # AWS playbooks documentation
-├── K8s Playbooks/                    # 138 Kubernetes playbooks (organized in 12 folders)
-│   ├── 01-Control-Plane/             # 18 playbooks
-│   ├── 02-Nodes/                     # 12 playbooks
-│   ├── 03-Pods/                      # 31 playbooks
-│   ├── 04-Workloads/                 # 23 playbooks
-│   ├── 05-Networking/                # 19 playbooks
-│   ├── 06-Storage/                   # 9 playbooks
-│   ├── 07-RBAC/                      # 6 playbooks
-│   ├── 08-Configuration/             # 6 playbooks
-│   ├── 09-Resource-Management/       # 8 playbooks
-│   ├── 10-Monitoring-Autoscaling/    # 3 playbooks
-│   ├── 11-Installation-Setup/        # 1 playbook
-│   ├── 12-Namespaces/                # 2 playbooks
-│   └── README.md                     # Kubernetes playbooks documentation
-├── CONTRIBUTING.md                   # Contribution guidelines
-└── README.md                         # This file
+├── AWS Playbooks/                    # 158 AWS playbooks
+│   ├── 01-Compute/                   # 27 playbooks (EC2, Lambda, ECS, EKS)
+│   ├── 02-Database/                  # 10 playbooks (RDS, DynamoDB)
+│   ├── 03-Storage/                   # 7 playbooks (S3)
+│   ├── 04-Networking/                # 17 playbooks (VPC, ELB, Route53)
+│   ├── 05-Security/                  # 16 playbooks (IAM, KMS, GuardDuty)
+│   ├── 06-Monitoring/                # 8 playbooks (CloudTrail, CloudWatch)
+│   ├── 07-CI-CD/                     # 9 playbooks (CodePipeline, CodeBuild)
+│   ├── 08-Proactive/                 # 66 proactive monitoring playbooks
+│   └── README.md
+├── K8s Playbooks/                    # 194 Kubernetes playbooks
+│   ├── 01-Control-Plane/             # 19 playbooks
+│   ├── 02-Nodes/                     # 13 playbooks
+│   ├── 03-Pods/                      # 32 playbooks
+│   ├── 04-Workloads/                 # 24 playbooks
+│   ├── 05-Networking/                # 20 playbooks
+│   ├── 06-Storage/                   # 10 playbooks
+│   ├── 07-RBAC/                      # 7 playbooks
+│   ├── 08-Configuration/             # 7 playbooks
+│   ├── 09-Resource-Management/       # 9 playbooks
+│   ├── 10-Monitoring-Autoscaling/    # 4 playbooks
+│   ├── 11-Installation-Setup/        # 2 playbooks
+│   ├── 12-Namespaces/                # 3 playbooks
+│   ├── 13-Proactive/                 # 56 proactive monitoring playbooks
+│   └── README.md
+├── Sentry Playbooks/                 # 25 Sentry playbooks (NEW)
+│   ├── 01-Error-Tracking/            # 19 playbooks
+│   ├── 02-Performance/               # 6 playbooks
+│   ├── 03-Release-Health/            # Placeholder
+│   └── README.md
+├── CONTRIBUTING.md
+└── README.md
 ```
 
 ## Contents
 
 ### AWS Playbooks (`AWS Playbooks/`)
 
-**25 playbooks** covering critical AWS services and common issues:
+**158 playbooks** covering 7 service categories + proactive monitoring:
 
-- **Compute Services**: EC2, Lambda, ECS, EKS
-- **Networking**: VPC, ELB, Route 53, NAT Gateway
-- **Storage**: S3, EBS, RDS
-- **Security**: IAM, KMS, GuardDuty, CloudTrail
-- **Integration**: API Gateway, CodePipeline
+- **Compute Services** (27 playbooks): EC2, Lambda, ECS, EKS
+- **Database** (10 playbooks): RDS, DynamoDB
+- **Storage** (7 playbooks): S3
+- **Networking** (17 playbooks): VPC, ELB, Route 53, NAT Gateway
+- **Security** (16 playbooks): IAM, KMS, GuardDuty, CloudTrail
+- **Monitoring** (8 playbooks): CloudTrail, CloudWatch
+- **CI/CD** (9 playbooks): CodePipeline, CodeBuild
+- **Proactive** (66 playbooks): Capacity planning, compliance, cost optimization
 
 **Key Topics:**
 - Connection timeouts and network issues
@@ -91,26 +116,28 @@ scoutflo-SRE-Playbooks/
 - Resource unavailability and capacity issues
 - Security breaches and threat detection
 - Service integration failures
+- Proactive capacity and compliance monitoring
 
-📖 See [AWS Playbooks/README.md](AWS%20Playbooks/README.md) for complete documentation and playbook list.
+See [AWS Playbooks/README.md](AWS%20Playbooks/README.md) for complete documentation and playbook list.
 
 ### Kubernetes Playbooks (`K8s Playbooks/`)
 
-**138 playbooks** organized into **12 categorized folders** covering Kubernetes cluster and workload issues:
+**194 playbooks** organized into **13 categorized folders** covering Kubernetes cluster and workload issues:
 
 **Folder Structure:**
-- `01-Control-Plane/` (18 playbooks) - API Server, Scheduler, Controller Manager, etcd
-- `02-Nodes/` (12 playbooks) - Node readiness, kubelet issues, resource constraints
-- `03-Pods/` (31 playbooks) - Scheduling, lifecycle, health checks, resource limits
-- `04-Workloads/` (23 playbooks) - Deployments, StatefulSets, DaemonSets, Jobs, HPA
-- `05-Networking/` (19 playbooks) - Services, Ingress, DNS, Network Policies, kube-proxy
-- `06-Storage/` (9 playbooks) - PersistentVolumes, PersistentVolumeClaims, StorageClasses
-- `07-RBAC/` (6 playbooks) - ServiceAccounts, Roles, RoleBindings, authorization
-- `08-Configuration/` (6 playbooks) - ConfigMaps and Secrets access issues
-- `09-Resource-Management/` (8 playbooks) - Resource Quotas, overcommit, compute resources
-- `10-Monitoring-Autoscaling/` (3 playbooks) - Metrics Server, Cluster Autoscaler
-- `11-Installation-Setup/` (1 playbook) - Helm and installation issues
-- `12-Namespaces/` (2 playbooks) - Namespace management issues
+- `01-Control-Plane/` (19 playbooks) - API Server, Scheduler, Controller Manager, etcd
+- `02-Nodes/` (13 playbooks) - Node readiness, kubelet issues, resource constraints
+- `03-Pods/` (32 playbooks) - Scheduling, lifecycle, health checks, resource limits
+- `04-Workloads/` (24 playbooks) - Deployments, StatefulSets, DaemonSets, Jobs, HPA
+- `05-Networking/` (20 playbooks) - Services, Ingress, DNS, Network Policies, kube-proxy
+- `06-Storage/` (10 playbooks) - PersistentVolumes, PersistentVolumeClaims, StorageClasses
+- `07-RBAC/` (7 playbooks) - ServiceAccounts, Roles, RoleBindings, authorization
+- `08-Configuration/` (7 playbooks) - ConfigMaps and Secrets access issues
+- `09-Resource-Management/` (9 playbooks) - Resource Quotas, overcommit, compute resources
+- `10-Monitoring-Autoscaling/` (4 playbooks) - Metrics Server, Cluster Autoscaler
+- `11-Installation-Setup/` (2 playbooks) - Helm and installation issues
+- `12-Namespaces/` (3 playbooks) - Namespace management issues
+- `13-Proactive/` (56 playbooks) - Proactive monitoring, capacity planning, compliance
 
 **Key Topics:**
 - Pod lifecycle issues (CrashLoopBackOff, Pending, Terminating)
@@ -119,15 +146,35 @@ scoutflo-SRE-Playbooks/
 - Storage and volume mounting problems
 - RBAC and permission errors
 - Resource quota and capacity constraints
+- Proactive capacity and compliance monitoring
 
-📖 See [K8s Playbooks/README.md](K8s%20Playbooks/README.md) for complete documentation and playbook list.
+See [K8s Playbooks/README.md](K8s%20Playbooks/README.md) for complete documentation and playbook list.
+
+### Sentry Playbooks (`Sentry Playbooks/`)
+
+**25 playbooks** covering error tracking and performance monitoring:
+
+**Folder Structure:**
+- `01-Error-Tracking/` (19 playbooks) - Error capture, grouping, alerting, and debugging
+- `02-Performance/` (6 playbooks) - Transaction monitoring, performance issues, tracing
+- `03-Release-Health/` - Release tracking and health monitoring (placeholder)
+
+**Key Topics:**
+- Error capture and reporting issues
+- Issue grouping and deduplication
+- Alert configuration and routing
+- Performance transaction monitoring
+- SDK integration troubleshooting
+- Release health tracking
+
+See [Sentry Playbooks/README.md](Sentry%20Playbooks/README.md) for complete documentation and playbook list.
 
 ## Getting Started
 
 ### Prerequisites
 
-- Basic knowledge of AWS services or Kubernetes
-- Access to AWS Console or Kubernetes cluster (for using playbooks)
+- Basic knowledge of AWS services, Kubernetes, or Sentry
+- Access to AWS Console, Kubernetes cluster, or Sentry dashboard (for using playbooks)
 - Git (for cloning the repository)
 
 ### Installation
@@ -144,6 +191,7 @@ cd scoutflo-SRE-Playbooks
 # View available playbooks
 ls AWS\ Playbooks/
 ls K8s\ Playbooks/
+ls Sentry\ Playbooks/
 ```
 
 #### Option 2: Use as Git Submodule
@@ -160,10 +208,11 @@ Browse and download individual playbooks directly from GitHub web interface.
 
 ### Quick Start
 
-1. **Identify Your Issue**: Determine if it's an AWS or Kubernetes issue
-2. **Navigate to Playbooks**: 
-   - AWS issues → `AWS Playbooks/`
-   - K8s issues → `K8s Playbooks/[category-folder]/`
+1. **Identify Your Issue**: Determine if it's an AWS, Kubernetes, or Sentry issue
+2. **Navigate to Playbooks**:
+   - AWS issues -> `AWS Playbooks/`
+   - K8s issues -> `K8s Playbooks/[category-folder]/`
+   - Sentry issues -> `Sentry Playbooks/[category-folder]/`
 3. **Find the Playbook**: Match your symptoms to a playbook title
 4. **Follow the Steps**: Execute diagnostic steps in order
 5. **Use Diagnosis Section**: Apply correlation analysis for root cause identification
@@ -208,7 +257,7 @@ All playbooks follow a consistent structure:
 2. **Meaning** - What the issue means, triggers, symptoms, root causes
 3. **Impact** - Business and technical implications
 4. **Playbook** - 8-10 numbered diagnostic steps in natural language (ordered from common to specific)
-5. **Diagnosis** - Correlation analysis framework with time windows
+5. **Diagnosis** - Correlation analysis framework with time windows using events-first approach and conditional logic patterns
 
 ### Best Practices
 
@@ -226,6 +275,9 @@ All playbooks follow a consistent structure:
 
 **Kubernetes Playbooks:**
 - `<pod-name>`, `<namespace>`, `<deployment-name>`, `<node-name>`, `<service-name>`, `<ingress-name>`, `<pvc-name>`, `<configmap-name>`, `<secret-name>`
+
+**Sentry Playbooks:**
+- `<project-slug>`, `<organization-slug>`, `<issue-id>`, `<transaction-name>`, `<release-version>`, `<environment>`
 
 ## Terminology & Glossary
 
@@ -338,18 +390,18 @@ Found a bug, unclear instruction, or have a suggestion?
    - Use clear, descriptive title
    - Describe the problem or suggestion
    - Include relevant service/component, error messages, or examples
-   - Tag with appropriate labels (`aws-playbook`, `k8s-playbook`, `bug`, `enhancement`, etc.)
+   - Tag with appropriate labels (`aws-playbook`, `k8s-playbook`, `sentry-playbook`, `bug`, `enhancement`, etc.)
 
 #### 2. Improving Existing Playbooks
 
 To fix or enhance existing playbooks:
 
 1. **Fork the Repository**: Create your own fork
-2. **Create a Branch**: 
+2. **Create a Branch**:
    ```bash
    git checkout -b fix/playbook-name-improvement
    ```
-3. **Make Your Changes**: 
+3. **Make Your Changes**:
    - Follow the established playbook structure
    - Maintain consistency with existing formatting
    - Update placeholders and examples as needed
@@ -360,7 +412,7 @@ To fix or enhance existing playbooks:
    git commit -m "Fix: Improve [playbook-name] with [description]"
    git push origin fix/playbook-name-improvement
    ```
-6. **Create a Pull Request**: 
+6. **Create a Pull Request**:
    - Provide clear description of changes
    - Reference any related issues
    - Request review from maintainers
@@ -372,11 +424,13 @@ To add a new playbook for an uncovered issue:
 1. **Check for Duplicates**: Ensure a similar playbook doesn't already exist
 2. **Follow the Structure**: Use existing playbooks as templates
 3. **Choose the Right Location**:
-   - AWS playbooks → `AWS Playbooks/`
-   - K8s playbooks → Appropriate category folder in `K8s Playbooks/`
+   - AWS playbooks -> `AWS Playbooks/`
+   - K8s playbooks -> Appropriate category folder in `K8s Playbooks/`
+   - Sentry playbooks -> Appropriate category folder in `Sentry Playbooks/`
 4. **Follow Naming Conventions**:
    - AWS: `<IssueOrSymptom>-<Component>.md`
    - K8s: `<AlertName>-<Resource>.md`
+   - Sentry: `<IssueType>-<Component>.md`
 5. **Include All Sections**: Title, Meaning, Impact, Playbook (8-10 steps), Diagnosis (5 correlations)
 6. **Update README**: Add the new playbook to the appropriate README's playbook list
 7. **Create Pull Request**: Follow standard contribution process
@@ -397,7 +451,7 @@ To add a new playbook for an uncovered issue:
 3. Address any requested changes promptly
 4. Once approved, your contribution will be merged
 
-📖 For detailed contribution guidelines, see [CONTRIBUTING.md](CONTRIBUTING.md)
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contribution guidelines.
 
 ## Connect with Us
 
@@ -546,10 +600,11 @@ Need help? Check out our [Support Guide](.github/SUPPORT.md) or:
 
 ## Statistics
 
-- **Total Playbooks**: 163
-  - AWS: 25 playbooks
-  - Kubernetes: 138 playbooks
-- **Coverage**: Major AWS services and Kubernetes components
+- **Total Playbooks**: 377
+  - AWS: 158 playbooks (92 reactive + 66 proactive)
+  - Kubernetes: 194 playbooks (138 reactive + 56 proactive)
+  - Sentry: 25 playbooks
+- **Coverage**: Major AWS services, Kubernetes components, and Sentry monitoring
 - **Format**: Markdown with structured sections
 - **Language**: English
 - **Community**: Open source, community-driven
@@ -575,6 +630,6 @@ For maintainer information, see [MAINTAINERS.md](MAINTAINERS.md).
 
 ---
 
-**Made with ❤️ by the SRE community for the SRE community**
+**Made with love by the SRE community for the SRE community**
 
-If you find these playbooks helpful, please consider giving us a ⭐ on GitHub!
+If you find these playbooks helpful, please consider giving us a star on GitHub!

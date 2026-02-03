@@ -16,20 +16,33 @@ One-page cheat sheet for SRE Playbooks.
 
 ```
 scoutflo-SRE-Playbooks/
-├── AWS Playbooks/          (25 playbooks)
-└── K8s Playbooks/          (138 playbooks in 12 folders)
-    ├── 01-Control-Plane/   (18)
-    ├── 02-Nodes/           (12)
-    ├── 03-Pods/            (31) ⭐ Most common
-    ├── 04-Workloads/       (23)
-    ├── 05-Networking/      (19)
-    ├── 06-Storage/         (9)
-    ├── 07-RBAC/            (6)
-    ├── 08-Configuration/   (6)
-    ├── 09-Resource-Management/ (8)
-    ├── 10-Monitoring-Autoscaling/ (3)
-    ├── 11-Installation-Setup/ (1)
-    └── 12-Namespaces/      (2)
+├── AWS Playbooks/          (158 playbooks in 8 folders)
+│   ├── 01-Compute/         (27) - EC2, Lambda, ECS, EKS
+│   ├── 02-Database/        (10) - RDS, DynamoDB
+│   ├── 03-Storage/         (7)  - S3
+│   ├── 04-Networking/      (17) - VPC, ELB, Route53
+│   ├── 05-Security/        (16) - IAM, KMS, GuardDuty
+│   ├── 06-Monitoring/      (8)  - CloudTrail, CloudWatch
+│   ├── 07-CI-CD/           (9)  - CodePipeline
+│   └── 08-Proactive/       (66) - Proactive monitoring
+├── K8s Playbooks/          (194 playbooks in 13 folders)
+│   ├── 01-Control-Plane/   (19)
+│   ├── 02-Nodes/           (13)
+│   ├── 03-Pods/            (32) ⭐ Most common
+│   ├── 04-Workloads/       (24)
+│   ├── 05-Networking/      (20)
+│   ├── 06-Storage/         (10)
+│   ├── 07-RBAC/            (7)
+│   ├── 08-Configuration/   (7)
+│   ├── 09-Resource-Management/ (9)
+│   ├── 10-Monitoring-Autoscaling/ (4)
+│   ├── 11-Installation-Setup/ (2)
+│   ├── 12-Namespaces/      (3)
+│   └── 13-Proactive/       (56) - Proactive monitoring
+└── Sentry Playbooks/       (25 playbooks in 3 folders) ⭐ NEW
+    ├── 01-Error-Tracking/  (19)
+    ├── 02-Performance/     (6)
+    └── 03-Release-Health/  (placeholder)
 ```
 
 ## 🔍 Finding the Right Playbook
@@ -46,6 +59,10 @@ scoutflo-SRE-Playbooks/
 | API Server down | `01-Control-Plane/` | `KubeAPIDown-control-plane.md` |
 | EC2 SSH timeout | `AWS Playbooks/` | `Connection-Timeout-SSH-Issues-EC2.md` |
 | RDS connection failed | `AWS Playbooks/` | `Connection-Timeout-from-Lambda-RDS.md` |
+| Sentry error | `01-Error-Tracking/` | `UnhandledException-Error-application.md` |
+| API timeout | `02-Performance/` | `TimeoutError-RequestTimeout-API-Error-application.md` |
+| AWS cost issue | `08-Proactive/04-Cost-Optimization/` | `Cost-Anomaly-Detection-AWS.md` |
+| K8s capacity | `13-Proactive/01-Capacity-Performance/` | `Capacity-Trend-Analysis-K8s.md` |
 
 ## 🔧 Common Commands
 

@@ -7,21 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-02-03
+
 ### Added
-- Initial release with 163 playbooks (25 AWS + 138 Kubernetes)
-- Comprehensive documentation and README files
-- Contribution guidelines (CONTRIBUTING.md)
-- Code of Conduct (CODE_OF_CONDUCT.md)
-- Security Policy (SECURITY.md)
-- Maintainers documentation (MAINTAINERS.md)
-- CODEOWNERS file for automatic review assignment
-- Issue templates for bugs, features, and questions
-- Pull request template
-- Discussion categories for community engagement
+- **Sentry Playbooks**: 25 new playbooks for application error tracking
+  - 01-Error-Tracking/ (19 playbooks) - Exception handling, error patterns
+  - 02-Performance/ (6 playbooks) - Timeout, latency, performance issues
+  - 03-Release-Health/ - Release correlation playbooks
+- **AWS Proactive Playbooks**: 66 new proactive monitoring playbooks
+  - Capacity & Performance planning
+  - Security & Compliance auditing
+  - Backup & Disaster Recovery verification
+  - Cost Optimization analysis
+  - Observability coverage gaps
+  - Data Integrity checks
+  - Operational Readiness assessments
+- **K8s Proactive Playbooks**: 56 new proactive monitoring playbooks in 13-Proactive/
+  - Same categories as AWS proactive
 
 ### Changed
-- Organized Kubernetes playbooks into 12 categorized folders
-- Enhanced README files with best practices and community links
+- **AWS Playbooks Reorganized**: Restructured from flat to service-based folders
+  - 01-Compute/ (27 playbooks) - EC2, Lambda, ECS, EKS, Fargate
+  - 02-Database/ (10 playbooks) - RDS, DynamoDB
+  - 03-Storage/ (7 playbooks) - S3
+  - 04-Networking/ (17 playbooks) - VPC, ELB, Route53, API Gateway
+  - 05-Security/ (16 playbooks) - IAM, KMS, GuardDuty, WAF
+  - 06-Monitoring/ (8 playbooks) - CloudTrail, CloudWatch, Config
+  - 07-CI-CD/ (9 playbooks) - CodePipeline, CodeBuild, CodeDeploy
+  - 08-Proactive/ (66 playbooks) - Proactive monitoring
+- **Diagnosis Sections Improved**: All 377 playbooks updated with:
+  - Events-first approach (analyze events before timestamps)
+  - Conditional logic patterns ("If X, then Y. If inconclusive, then Z.")
+  - Early permission checks (RBAC for K8s, IAM for AWS, Release correlation for Sentry)
+  - Logical ordering (most likely causes first)
+- **K8s Reactive Playbooks**: Updated counts in existing folders
+
+### Statistics
+- Total Playbooks: 163 → **377** (+214 new playbooks)
+- AWS: 25 → **158** (+133 playbooks)
+- Kubernetes: 138 → **194** (+56 playbooks)
+- Sentry: 0 → **25** (new provider)
 
 ## [1.0.0] - 2026-01-13
 
@@ -36,7 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Networking (19 playbooks)
   - Storage (9 playbooks)
   - RBAC (6 playbooks)
-  - Configuration (6 playbooks)
+  - Configuration (8 playbooks)
   - Resource Management (8 playbooks)
   - Monitoring & Autoscaling (3 playbooks)
   - Installation & Setup (1 playbook)
