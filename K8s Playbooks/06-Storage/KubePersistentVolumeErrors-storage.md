@@ -15,30 +15,46 @@ PersistentVolume error alerts fire; volumes may be unavailable; pods cannot star
 
 ## Playbook
 
-1. Retrieve the PersistentVolume `<pv-name>` and inspect its status to check phase, status, and error messages to identify provisioning or operational errors.
+1. Describe PersistentVolume <pv-name> to inspect the volume status, phase, reclaim policy, storage class, claim reference, and any error messages indicating provisioning or operational errors.
 
-2. Retrieve events for the PersistentVolume `<pv-name>` and filter for error patterns including 'FailedBinding', 'ProvisioningFailed', 'VolumeFailed', 'StorageClassNotFound' to identify error causes.
+2. Retrieve events for PersistentVolume <pv-name> sorted by timestamp to identify FailedBinding, ProvisioningFailed, VolumeFailed, and StorageClassNotFound errors.
 
-3. Retrieve the PersistentVolumeClaim `<pvc-name>` in namespace `<namespace>` and inspect its status to verify binding status.
+3. Describe PersistentVolumeClaim <pvc-name> in namespace <namespace> to inspect the PVC status, phase, and binding status.
 
-4. Retrieve the StorageClass `<storageclass-name>` and check storage class configuration to verify if storage class exists and is properly configured.
+4. Retrieve events for PersistentVolumeClaim <pvc-name> in namespace <namespace> sorted by timestamp to identify binding or provisioning issues.
 
-5. Retrieve storage provider logs for volume provisioning errors if storage provider logs are accessible to identify backend issues.
+5. Describe StorageClass <storageclass-name> to verify if the storage class exists and is properly configured.
 
-6. Check storage quotas in the cloud provider for namespace or cluster to verify if quotas are preventing volume creation.
+6. Retrieve storage provider logs for volume provisioning errors if storage provider logs are accessible to identify backend issues.
+
+7. Check storage quotas in the cloud provider for namespace or cluster to verify if quotas are preventing volume creation.
+
+8. List all PersistentVolumes not in Bound state to check for orphaned volumes in Released or Failed state that may indicate storage backend issues.
 
 ## Diagnosis
 
-Compare PersistentVolume error timestamps with storage class or storage provider configuration change times within 10 minutes and verify whether errors began after storage configuration changes, using PV events and storage class modifications as supporting evidence.
+1. Analyze PV events from Playbook step 2 to identify the specific error type. The event reason indicates the failure category:
+   - "FailedBinding" - No suitable PV available or PVC requirements cannot be satisfied
+   - "ProvisioningFailed" - Storage backend cannot create the requested volume
+   - "VolumeFailed" - Existing volume encountered an error
+   - "StorageClassNotFound" - Referenced StorageClass does not exist
 
-Correlate PersistentVolume provisioning failure timestamps with storage quota exhaustion detection within 30 minutes and verify whether quota limits prevented volume provisioning, using storage quota status and PV provisioning events as supporting evidence.
+2. If events show "ProvisioningFailed", examine the error message for the specific backend failure:
+   - Quota exceeded - Storage quota exhausted (check step 7)
+   - Capacity unavailable - Storage backend has no capacity
+   - Permission denied - Provisioner lacks credentials
+   - Timeout - Storage backend is slow or unreachable
 
-Compare PersistentVolume error timestamps with node failure or zone unavailability times within 10 minutes and verify whether node or zone issues prevented volume attachment, using node conditions and zone availability as supporting evidence.
+3. If events show "FailedBinding", check the PVC requirements from Playbook step 3-4 against available PVs from step 8:
+   - Access mode mismatch (ReadWriteOnce vs ReadWriteMany)
+   - Capacity mismatch (PVC requests more than available PVs offer)
+   - StorageClass mismatch (PVC specifies a class with no matching PVs)
+   - Node affinity conflicts (PV is restricted to nodes where pod cannot run)
 
-Analyze PersistentVolume error patterns over the last 15 minutes to determine if errors are consistent (configuration issue) or intermittent (storage backend issues), using PV events and storage provider status as supporting evidence.
+4. If events show "StorageClassNotFound", verify the StorageClass exists from Playbook step 5. If the class was deleted or renamed, all PVCs referencing it will fail.
 
-Correlate PersistentVolume errors with storage backend maintenance or upgrade timestamps within 1 hour and verify whether storage system changes caused provisioning failures, using storage provider logs and maintenance schedules as supporting evidence.
+5. If error patterns from PV events are intermittent rather than consistent, the issue is likely storage backend instability rather than configuration. Check storage provider logs from step 6 for backend health issues.
 
-Compare PersistentVolume error frequency with historical patterns over the last 7 days and verify whether errors represent a new issue or ongoing storage problems, using PV event history and storage provider metrics as supporting evidence.
+6. If PVs in Released or Failed state exist from Playbook step 8, these orphaned volumes may indicate recurring provisioning/cleanup issues. Correlate the timestamps when these volumes entered error states with current PV error timestamps.
 
-If no correlation is found within the specified time windows: extend timeframes to 24 hours for storage system changes, review storage provider health status, check for storage backend capacity issues, verify storage class configurations, examine historical volume provisioning patterns. PersistentVolume errors may result from storage backend failures, capacity exhaustion, or storage provider issues rather than immediate configuration changes.
+**If no correlation is found within the specified time windows**: Extend timeframes to 24 hours for storage system changes, review storage provider health status, check for storage backend capacity issues, verify storage class configurations, examine historical volume provisioning patterns. PersistentVolume errors may result from storage backend failures, capacity exhaustion, or storage provider issues rather than immediate configuration changes.

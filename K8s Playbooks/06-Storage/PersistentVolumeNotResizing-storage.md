@@ -18,31 +18,39 @@ Volume capacity cannot be increased; PVC resize requests are not applied; applic
 
 ## Playbook
 
-1. Retrieve the PersistentVolumeClaim `<pvc-name>` in namespace `<namespace>` and inspect its status, conditions, and resize requests to verify if resize is pending or failed.
+1. Describe PersistentVolumeClaim <pvc-name> in namespace <namespace> to inspect the PVC status, conditions, resize requests, and verify if resize is pending or failed.
 
-2. Retrieve the StorageClass referenced by the PVC and verify if volume expansion is enabled in the StorageClass configuration.
+2. Retrieve events for PersistentVolumeClaim <pvc-name> in namespace <namespace> sorted by timestamp to identify VolumeResizeFailed or FileSystemResizePending events.
 
-3. Retrieve the PersistentVolume bound to the PVC and inspect its status and capacity to verify current volume size.
+3. Describe PersistentVolume <pv-name> to inspect the bound volume status, capacity, and verify current volume size.
 
-4. List events in namespace `<namespace>` and filter for volume-related events, focusing on events with reasons such as `VolumeResizeFailed` or messages indicating resize failures.
+4. Retrieve events for PersistentVolume <pv-name> sorted by timestamp to identify resize status events.
 
-5. Check the volume expansion controller pod status in the kube-system namespace to verify if the controller is running and processing resize requests.
+5. Describe the StorageClass referenced by the PVC and verify if allowVolumeExpansion is set to true in the StorageClass configuration.
 
-6. Verify if the storage backend (e.g., cloud provider storage) supports volume expansion by checking storage provider documentation or capabilities.
+6. List pods in the kube-system namespace and check the volume expansion controller pod status to verify if the controller is running and processing resize requests.
+
+7. Verify if the storage backend (e.g., cloud provider storage) supports volume expansion by checking storage provider documentation or capabilities.
 
 ## Diagnosis
 
-1. Compare the volume resize failure timestamps with StorageClass modification timestamps, and check whether `allowVolumeExpansion` was set to false or removed within 30 minutes before resize failures.
+1. Analyze PVC events from Playbook step 2 to identify the specific resize failure reason. Events will indicate the failure point:
+   - "VolumeResizeFailed" - Storage backend cannot expand the volume
+   - "FileSystemResizePending" - Volume expanded but filesystem resize requires pod restart
+   - No resize events - Resize request was not processed by the controller
 
-2. Compare the volume resize failure timestamps with PVC resize request timestamps, and check whether resize requests were made but not processed within 30 minutes before failures.
+2. If events show "FileSystemResizePending", the volume backend expansion succeeded but the filesystem needs to be resized. This typically requires:
+   - Restarting the pod using the volume (for online resize-capable storage)
+   - Detaching and reattaching the volume (for offline resize)
+   This is not a failure but a pending operation from Playbook step 1 conditions.
 
-3. Compare the volume resize failure timestamps with volume expansion controller restart or failure timestamps, and check whether controller issues occurred within 5 minutes before resize failures.
+3. If events show "VolumeResizeFailed" or no resize events, check the StorageClass from Playbook step 5. If allowVolumeExpansion is false or not set, the StorageClass does not permit volume expansion. This is a configuration limitation, not a runtime error.
 
-4. Compare the volume resize failure timestamps with storage backend unavailability or API error timestamps, and check whether storage provider issues occurred within 10 minutes before resize failures.
+4. If StorageClass allows expansion but resize still fails, check the storage backend capability from Playbook step 7. Not all storage backends support online expansion, and some have minimum/maximum size constraints.
 
-5. Compare the volume resize failure timestamps with PersistentVolume status change timestamps, and check whether volume state changes occurred within 30 minutes before resize failures.
+5. If StorageClass and backend support expansion, check the volume expansion controller pods from Playbook step 6. If controller pods are not Running or show errors, the resize request cannot be processed. Correlate controller pod restarts with when resize requests were submitted.
 
-6. Compare the volume resize failure timestamps with cluster upgrade or storage plugin update timestamps, and check whether infrastructure changes occurred within 1 hour before resize failures, affecting volume expansion capabilities.
+6. If PV events from Playbook step 4 show resize activity but PVC still shows pending, compare the PV capacity (step 3) with the PVC requested capacity (step 1). If PV shows the new size but PVC does not, there may be a controller synchronization issue.
 
 **If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review volume expansion controller logs for gradual processing issues, check for intermittent storage backend connectivity problems, examine if StorageClass configurations drifted over time, verify if storage provider capabilities changed gradually, and check for volume expansion quota or limit issues that may have accumulated. Volume resize failures may result from gradual storage infrastructure or configuration issues rather than immediate changes.
 

@@ -18,28 +18,30 @@ API requests timeout; kubectl commands hang or fail; controllers experience dela
 
 ## Playbook
 
-1. Retrieve logs from API server pod in namespace `kube-system` and filter for timeout errors including "context deadline exceeded" or "request timeout".
+1. Describe API server pods in namespace kube-system with label component=kube-apiserver to retrieve detailed API server pod information including status, resource usage, and timeout configuration.
 
-2. Retrieve API server pod in namespace `kube-system` and check current API server timeout configuration and resource usage.
+2. Retrieve events in namespace kube-system sorted by timestamp, filtering for timeout errors, "too many requests" errors, or context deadline exceeded messages.
 
-3. List events across all namespaces sorted by timestamp and filter for "too many requests" errors to check for high API request rates.
+3. Retrieve logs from API server pod in namespace kube-system and filter for timeout errors including "context deadline exceeded" or "request timeout".
 
-4. From a pod in the cluster, execute network connectivity tests such as `ping` or `curl` to the API server endpoint to test network connectivity.
+4. From a pod in the cluster, verify network connectivity to the API server endpoint to test network connectivity.
 
-5. Retrieve etcd pod in namespace `kube-system` and check etcd performance metrics and resource usage.
+5. Retrieve etcd pod information in namespace kube-system and check etcd performance metrics and resource usage.
 
 ## Diagnosis
 
-1. Compare the timestamps when timeout errors occurred (from API server logs) with large list operation timestamps from cluster events, and check whether timeouts begin within 1 minute of high-volume list operations.
+1. Analyze timeout and throttling events from Playbook to identify the pattern of context deadline exceeded errors. If events show "too many requests" or throttling messages, high API request volume is the likely cause.
 
-2. Compare the timeout occurrence timestamps with API request rate spike timestamps from "too many requests" events, and verify whether timeouts consistently occur during request rate spikes.
+2. If events indicate API server resource pressure, verify API server pod resource usage at event timestamps. If CPU or memory usage approaches limits when timeout events occurred, resource constraints are causing timeouts.
 
-3. Compare the timeout occurrence timestamps with controller or operator deployment scaling timestamps, and check whether timeouts correlate with scaling events within 5 minutes.
+3. If events indicate etcd connectivity issues or slow responses, analyze etcd pod events and health status. If etcd events show latency spikes or leader election issues at timestamps preceding timeout events, etcd performance is the root cause.
 
-4. Compare the timeout occurrence timestamps with API server resource usage spike timestamps from pod metrics, and verify whether timeouts correlate with CPU or memory pressure on the API server.
+4. If events show controller or operator scaling activity, correlate scaling event timestamps with timeout onset. If timeouts began shortly after scaling operations, increased controller reconciliation load is overwhelming the API server.
 
-5. Compare the timeout occurrence timestamps with ConfigMap or Deployment change timestamps in namespace `kube-system`, and check whether timeouts begin within 30 minutes of configuration changes.
+5. If events indicate large list operations or watch storms, identify which clients or controllers are generating high request volumes. If events show specific resources or namespaces with high activity at timeout timestamps, targeted optimization can resolve the issue.
 
-6. Compare the timeout occurrence timestamps with network connectivity issue timestamps and etcd performance problem timestamps, and verify whether timeouts correlate with network failures or etcd latency spikes at the same time.
+6. If events show configuration changes in kube-system namespace, correlate change timestamps with timeout onset. If configuration modifications occurred before timeouts began, recent changes may have introduced the problem.
 
-**If no correlation is found within the specified time windows**: Extend the search window (1 minute → 5 minutes, 30 minutes → 1 hour), review API server logs for earlier warning signs, check etcd performance metrics for gradual degradation, examine API request patterns for cumulative load increases, verify if API server resource limits are too restrictive, and check for network latency issues from multiple time points. Timeout issues may result from gradual performance degradation or cumulative load not immediately visible in single event timestamps.
+7. If events indicate network issues or connectivity failures, verify network path health at event timestamps. If network events show failures or latency at the same time as timeouts, network problems are contributing factors.
+
+**If no correlation is found**: Review API server logs for earlier warning signs, check etcd performance metrics for gradual degradation, examine API request patterns for cumulative load increases, verify if API server resource limits are too restrictive, and check for network latency issues. Timeout issues may result from gradual performance degradation or cumulative load.

@@ -18,31 +18,31 @@ Services cannot route traffic to pods; applications are unreachable through serv
 
 ## Playbook
 
-1. Retrieve the Service `<service-name>` in namespace `<namespace>` and inspect its spec, selector, and port configuration to verify service configuration.
+1. Describe the Service `<service-name>` in namespace `<namespace>` to inspect its spec, selector, and port configuration.
 
-2. List Endpoints for the Service `<service-name>` in namespace `<namespace>` and verify that pods are registered as endpoints and check their readiness status.
+2. Retrieve events for the Service `<service-name>` in namespace `<namespace>` sorted by timestamp to identify endpoint update failures.
 
-3. Retrieve pods matching the service selector in namespace `<namespace>` and verify they exist, are running, have the correct labels that match the service selector, and are ready.
+3. List Endpoints for the Service `<service-name>` in namespace `<namespace>` and verify that pods are registered as endpoints and check their readiness status.
 
-4. From a test pod, execute `curl` or `wget` to the service endpoint using Pod Exec tool to test connectivity and verify if traffic forwarding works.
+4. Retrieve pods matching the service selector in namespace `<namespace>` and verify they exist, are running, have the correct labels that match the service selector, and are ready.
 
-5. Check kube-proxy pod status in the kube-system namespace to verify if the service proxy is functioning correctly.
+5. From a test pod, execute curl or wget to the service endpoint to test connectivity and verify if traffic forwarding works.
 
-6. List events in namespace `<namespace>` and filter for service-related events, focusing on events with reasons such as `FailedToUpdateEndpoint` or messages indicating endpoint update failures.
+6. Check kube-proxy pod status in the `kube-system` namespace to verify if the service proxy is functioning correctly.
 
 ## Diagnosis
 
-1. Compare the service traffic forwarding failure timestamps with pod Ready condition transition times for pods matching the service selector, and check whether pods became NotReady within 5 minutes before service forwarding failures.
+1. Analyze service endpoints from Playbook to identify if service has any ready endpoints. If endpoints list is empty or shows no ready addresses, the issue is pod selection (selector mismatch or no matching pods).
 
-2. Compare the service traffic forwarding failure timestamps with service selector or port modification timestamps, and check whether service configuration changes occurred within 30 minutes before forwarding failures.
+2. If endpoints are empty, check service selector against pod labels from Playbook data. If service selector keys or values do not match any pod labels in the namespace, no pods are selected as endpoints.
 
-3. Compare the service traffic forwarding failure timestamps with pod label change timestamps, and check whether pod labels were modified within 30 minutes before service selector mismatches.
+3. If selector matches pods, check pod Ready condition from Playbook. If pods exist but are NotReady, they are excluded from service endpoints until they pass readiness probes.
 
-4. Compare the service traffic forwarding failure timestamps with kube-proxy restart or failure timestamps, and check whether proxy issues occurred within 5 minutes before service forwarding failures.
+4. If pods are Ready and should be endpoints, verify service port configuration from Playbook matches pod container ports. If targetPort does not match container port, traffic forwarding fails.
 
-5. Compare the service traffic forwarding failure timestamps with NetworkPolicy modification timestamps that may affect service traffic, and check whether policy changes occurred within 10 minutes before forwarding failures.
+5. If port configuration is correct, check kube-proxy status from Playbook data. If kube-proxy pods are not running or show failures, iptables/ipvs rules for service routing are not programmed.
 
-6. Compare the service traffic forwarding failure timestamps with endpoint controller restart or failure timestamps, and check whether endpoint updates stopped within 5 minutes before service forwarding failures.
+6. If kube-proxy is healthy, check NetworkPolicy rules from Playbook for ingress policies blocking traffic to service pods. If policies restrict ingress from service CIDR or other pods, traffic is blocked at the network level.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review kube-proxy logs for gradual performance degradation, check for intermittent endpoint update issues, examine if service selectors drifted over time, verify if network path issues developed gradually, and check for DNS or service discovery issues affecting service connectivity. Service forwarding failures may result from gradual infrastructure degradation rather than immediate configuration changes.
+**If no configuration issue is found**: Verify endpoint controller is functioning by checking kube-controller-manager logs, review if EndpointSlice controller is enabled and working (Kubernetes 1.21+), and check if service account tokens or RBAC permissions prevent endpoint updates.
 

@@ -18,31 +18,50 @@ KubePodCrashLooping alerts fire; containers are repeatedly restarted by kubelet;
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect pod restart count and container termination reason to confirm liveness probe failures and restarts.
+1. Describe pod <pod-name> in namespace <namespace> to see restart count, last termination reason, and Events showing "Liveness probe failed" with the specific failure message (HTTP status, connection refused, timeout).
 
-2. List events in namespace `<namespace>` and filter for liveness probe failure events associated with the pod, focusing on events with reasons such as `Unhealthy` and messages containing "liveness probe failed".
+2. Retrieve events for pod <pod-name> in namespace <namespace> filtered by reason Unhealthy to see liveness probe failure timestamps and messages.
 
-3. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and review the liveness probe configuration including probe path, port, initial delay, period, timeout, and failure threshold settings to verify probe settings.
+3. Retrieve the liveness probe configuration for pod <pod-name> in namespace <namespace> to see path, port, timeoutSeconds, periodSeconds, failureThreshold.
 
-4. Retrieve logs from the pod `<pod-name>` in namespace `<namespace>` and filter for application crashes, hangs, errors, or health check endpoint problems that may cause liveness probe failures.
+4. Execute a request to the liveness probe endpoint from inside pod <pod-name> to verify the endpoint is responding.
 
-5. From the pod `<pod-name>`, execute the liveness probe command or HTTP request manually using Pod Exec tool to verify the endpoint responds correctly and test probe behavior.
+5. Retrieve logs from pod <pod-name> in namespace <namespace> including previous container instance to see what happened before the restart.
 
-6. Check the pod `<pod-name>` resource usage metrics and OOM kill events to verify if resource constraints or out-of-memory conditions are causing application failures.
+6. Check the last termination reason for pod <pod-name> in namespace <namespace> - if OOMKilled, the application is running out of memory.
+
+7. Describe Deployment <deployment-name> in namespace <namespace> to review probe configuration and check if initialDelaySeconds is sufficient for application startup.
+
+8. Retrieve resource usage metrics for pod <pod-name> in namespace <namespace> to see if CPU/memory is at limits which may cause the application to become unresponsive.
 
 ## Diagnosis
 
-1. Compare the liveness probe failure timestamps with container restart timestamps, and check whether probe failures consistently occur within the `failureThreshold` period before each restart.
+1. Analyze pod events from Playbook steps 1-2 to identify liveness probe failures. Events showing "Unhealthy" with "Liveness probe failed" include the specific failure reason. Unlike readiness probes, liveness probe failures trigger container restarts.
 
-2. Compare the liveness probe failure timestamps with application error or crash log timestamps from the pod, and check whether application failures coincide with probe failures within 5 minutes.
+2. If last termination reason shows "OOMKilled" (from Playbook step 6), the application ran out of memory before the liveness probe failed. Address memory issues first - liveness probe failure is a symptom, not the cause.
 
-3. Compare the liveness probe failure timestamps with liveness probe configuration modification timestamps in the deployment, and check whether probe configuration changes occurred within 30 minutes before failures.
+3. If events show "connection refused" or "timeout" for probes:
+   - Application crashed or hung before probe execution
+   - Check previous container logs (Playbook step 5) for crash reasons
+   - Verify application handles SIGTERM gracefully and recovers
 
-4. Compare the liveness probe failure timestamps with pod resource limit modification timestamps, and check whether resource constraints or OOM conditions were introduced within 30 minutes before probe failures and restarts.
+4. If events show HTTP error codes, the application is responding but unhealthy:
+   - Check application logs for errors at probe failure timestamps
+   - Investigate application-level health check logic
+   - Verify dependencies (database, cache, APIs) are healthy
 
-5. Compare the liveness probe failure timestamps with network policy or security policy modification timestamps that may affect probe endpoint access, and check whether policy changes occurred within 10 minutes before probe failures.
+5. If resource usage is at limits (from Playbook step 8), the application may be too slow to respond to probes:
+   - CPU throttling causes slow response times - increase CPU limits
+   - Memory pressure causes GC pauses - increase memory limits
+   - Consider increasing probe timeoutSeconds as a temporary fix
 
-6. Compare the liveness probe failure timestamps with deployment rollout or image update timestamps, and check whether application changes occurred within 1 hour before probe failures, indicating the new application version may have bugs or different behavior causing crashes.
+6. If probe configuration has aggressive settings (from Playbook step 3), adjust:
+   - timeoutSeconds too short for application response time
+   - periodSeconds too frequent causing probe overhead
+   - failureThreshold too low causing restarts on transient issues
+   - initialDelaySeconds too short for application startup
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review application logs for gradual memory leaks or performance degradation, check for intermittent network issues affecting probe execution, examine resource usage trends for gradual constraint development, verify if application dependencies became unavailable causing hangs, and check for external factors like database connection issues that may cause application unresponsiveness. Liveness probe failures may result from gradual application degradation or external dependency issues rather than immediate configuration changes.
+7. If endpoint responds when tested manually (from Playbook step 4) but probe fails during normal operation, the application becomes unresponsive under load. Profile application for performance issues.
+
+**To resolve liveness probe failures**: Fix the underlying application issue causing unresponsiveness, adjust probe timing to be more tolerant, increase resource limits if constrained, and ensure the liveness endpoint performs minimal work (avoid database queries in liveness checks).
 

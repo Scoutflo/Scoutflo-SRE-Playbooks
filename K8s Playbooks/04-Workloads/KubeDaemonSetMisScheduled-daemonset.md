@@ -15,30 +15,32 @@ DaemonSet mis-scheduling alerts fire; service degradation or unavailability; exc
 
 ## Playbook
 
-1. Retrieve the DaemonSet `<daemonset-name>` in namespace `<namespace>` and inspect its status to check number scheduled, number ready, and number mis-scheduled to verify mis-scheduling.
+1. Describe DaemonSet <daemonset-name> in namespace <namespace> to see:
+   - Number scheduled, ready, and mis-scheduled counts
+   - Node selector, tolerations, and affinity rule configurations
+   - Conditions showing scheduling mismatches
+   - Events showing scheduling-related issues
 
-2. Retrieve the Pod `<pod-name>` in namespace `<namespace>` belonging to the DaemonSet `<daemonset-name>` and check pod status to identify pods running on incorrect nodes.
+2. Retrieve events for DaemonSet <daemonset-name> in namespace <namespace> sorted by timestamp to see the sequence of mis-scheduling issues.
 
-3. Retrieve the DaemonSet `<daemonset-name>` in namespace `<namespace>` and verify node selector, tolerations, and affinity rule configurations in the pod template to identify configuration issues.
+3. List pods belonging to DaemonSet in namespace <namespace> with label app=<daemonset-label> and describe pods to identify pods running on incorrect nodes.
 
-4. Retrieve the Node `<node-name>` where DaemonSet pods are mis-scheduled and check node taints and labels to verify node configuration mismatches.
+4. Describe node <node-name> where DaemonSet pods are mis-scheduled and check node taints and labels to verify node configuration mismatches.
 
-5. Retrieve events for the DaemonSet `<daemonset-name>` in namespace `<namespace>` and filter for scheduling-related patterns to identify scheduling issues.
-
-6. Verify node feature discovery or similar tools that may affect node labels used by DaemonSet selectors by checking node label sources and feature discovery configurations.
+5. Check node-feature-discovery pods in kube-system namespace to verify tools that may affect node labels used by DaemonSet selectors.
 
 ## Diagnosis
 
-Compare DaemonSet mis-scheduling detection timestamps with node taint or label change timestamps within 10 minutes and verify whether mis-scheduling began after node configuration changes, using node taint/label history and DaemonSet pod scheduling events as supporting evidence.
+1. Analyze DaemonSet events and pod distribution from Playbook to understand the mis-scheduling pattern. Identify which nodes have DaemonSet pods running that should not, based on the DaemonSet's nodeSelector and node affinity rules.
 
-Correlate DaemonSet mis-scheduling with DaemonSet configuration change timestamps within 30 minutes and verify whether mis-scheduling began after DaemonSet template updates, using DaemonSet modification history and pod scheduling events as supporting evidence.
+2. If mis-scheduled pods are running on nodes that should be excluded by nodeSelector, compare node labels with DaemonSet nodeSelector requirements. Labels may have changed on nodes after pods were scheduled. Pods scheduled before label changes continue running even if they no longer match selectors.
 
-Analyze DaemonSet pod distribution patterns across nodes to determine if mis-scheduling is systematic (configuration issue) or isolated (node-specific issue), using pod node assignments and DaemonSet selector configurations as supporting evidence.
+3. If mis-scheduled pods are running on tainted nodes, verify whether DaemonSet tolerations are overly permissive. Tolerations with operator "Exists" and no key match all taints. Check if tolerations were added that allow scheduling on unintended nodes.
 
-Compare DaemonSet node selector requirements with actual node labels and taints at mis-scheduling times and verify whether selector mismatches caused mis-scheduling, using DaemonSet configurations and node metadata as supporting evidence.
+4. If node-feature-discovery or similar tools are in use, check if automatic label updates caused nodes to match or unmatch the DaemonSet's selectors. Dynamic label changes can cause pods to become mis-scheduled relative to current node state.
 
-Correlate DaemonSet mis-scheduling with node feature discovery update timestamps within 10 minutes and verify whether node label changes from feature discovery caused selector mismatches, using node feature discovery logs and node label changes as supporting evidence.
+5. If mis-scheduling is systematic across many nodes, the DaemonSet's scheduling constraints may be misconfigured. Verify that nodeSelector, nodeAffinity, and tolerations together correctly express the intended node targeting. Missing nodeSelector with broad tolerations schedules to all nodes.
 
-Compare DaemonSet toleration configurations with node taint configurations and verify whether missing or incorrect tolerations caused pods to run on tainted nodes, using DaemonSet tolerations and node taints as supporting evidence.
+6. If mis-scheduling is isolated to specific nodes, check if those nodes recently had taints removed or labels added that now match the DaemonSet's requirements. Compare current node configuration with intended node pool membership.
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for configuration changes, review DaemonSet selector and toleration configurations, check for node pool changes, verify node feature discovery configurations, examine historical DaemonSet scheduling patterns. DaemonSet mis-scheduling may result from configuration drift, node pool changes, or feature discovery label updates rather than immediate changes.
+7. If DaemonSet pods exist on nodes where they cause resource contention or policy violations, the resolution may require either updating DaemonSet scheduling constraints or deleting the mis-scheduled pods manually. Note that pods scheduled to nodes before constraint changes are not automatically evicted.

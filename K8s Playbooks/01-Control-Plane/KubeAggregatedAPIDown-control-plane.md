@@ -15,32 +15,36 @@ KubeAggregatedAPIDown alerts fire; aggregated API endpoints return errors; custo
 
 ## Playbook
 
-1. Retrieve the Pod `<pod-name>` in namespace `<namespace>` for aggregated API server deployments and inspect its status, restart count, and container states to verify if the aggregated API server is running.
+1. Describe all apiservice resources to retrieve detailed information about all aggregated API services and identify any services in unavailable or degraded states.
 
-2. Retrieve logs from the Pod `<pod-name>` in namespace `<namespace>` and filter for error patterns including 'panic', 'fatal', 'connection refused', 'timeout', 'certificate' to identify startup or runtime failures.
+2. List events in namespace kube-system sorted by last timestamp to retrieve recent control plane events, filtering for aggregated API server errors or connectivity failures.
 
-3. Retrieve events for the Pod `<pod-name>` in namespace `<namespace>` and filter for error patterns including 'Failed', 'Error', 'CrashLoopBackOff' to identify pod lifecycle issues.
+3. Retrieve the Pod `<pod-name>` in namespace `<namespace>` for aggregated API server deployments and inspect its status, restart count, and container states to verify if the aggregated API server is running.
 
-4. Retrieve the Service `<service-name>` for aggregated API server endpoints in namespace `<namespace>` and verify network connectivity between API server and aggregated API server endpoints.
+4. Retrieve logs from the Pod `<pod-name>` in namespace `<namespace>` and filter for error patterns including 'panic', 'fatal', 'connection refused', 'timeout', 'certificate' to identify startup or runtime failures.
 
-5. Retrieve NetworkPolicy resources in namespace `<namespace>` and check if network policies block communication between API server and aggregated API servers.
+5. Retrieve the Service `<service-name>` for aggregated API server endpoints in namespace `<namespace>` and verify network connectivity between API server and aggregated API server endpoints.
 
-6. Retrieve the Service `<service-name>` and Endpoints for aggregated API server in namespace `<namespace>` and verify aggregated API server configuration and service endpoints.
+6. Retrieve NetworkPolicy resources in namespace `<namespace>` and check if network policies block communication between API server and aggregated API servers.
 
-7. Retrieve APIService resources and check API server aggregation layer configuration and aggregated API server registrations.
+7. Retrieve the Service `<service-name>` and Endpoints for aggregated API server in namespace `<namespace>` and verify aggregated API server configuration and service endpoints.
+
+8. Retrieve APIService resources and check API server aggregation layer configuration and aggregated API server registrations.
 
 ## Diagnosis
 
-Compare aggregated API unavailability timestamps with aggregated API server pod restart or failure timestamps within 5 minutes and verify whether unavailability coincides with pod failures, using pod events and aggregated API server status as supporting evidence.
+1. Analyze aggregated API server pod events from Playbook to identify failure mode and timing. If events show CrashLoopBackOff, Failed, or pod termination, use event timestamps and error messages to determine the root cause.
 
-Correlate aggregated API failures with network policy or firewall rule change timestamps within 10 minutes and verify whether network configuration changes blocked API server to aggregated API communication, using network policy events and connection logs as supporting evidence.
+2. If events indicate aggregated API server crashes or failures, examine pod logs from Playbook step 4. If logs show panic messages, fatal errors, or startup failures at event timestamps, application-level issues caused the unavailability.
 
-Compare aggregated API log error timestamps with configuration change times within 10 minutes and verify whether aggregated API failures began after configuration updates, using aggregated API logs and configuration modification times as supporting evidence.
+3. If events indicate network connectivity issues, verify service endpoints from Playbook step 5. If service or endpoint events show unavailability at timestamps when aggregated API failed, network connectivity is the root cause.
 
-Analyze aggregated API error patterns over the last 15 minutes to determine if failures are sudden (crash) or gradual (resource exhaustion), using aggregated API logs and pod resource usage metrics as supporting evidence.
+4. If events indicate network policy changes, examine NetworkPolicy modifications from Playbook step 6. If network policy events occurred before aggregated API became unavailable, policy changes may have blocked communication between API server and aggregated API.
 
-Correlate aggregated API unavailability with API server aggregation layer configuration change timestamps within 10 minutes and verify whether aggregation layer changes affected aggregated API connectivity, using API server logs and aggregation configuration as supporting evidence.
+5. If events indicate APIService registration issues, verify APIService status from Playbook step 8. If APIService events show registration failures or condition changes at unavailability timestamps, aggregation layer configuration is the problem.
 
-Compare aggregated API server pod resource usage metrics with resource limits at failure times and verify whether resource constraints caused aggregated API failures, using pod metrics and resource specifications as supporting evidence.
+6. If events indicate resource pressure (OOMKilled, CPU throttling), verify pod resource usage at event timestamps. If resource usage exceeded limits when failures began, resource constraints caused the unavailability.
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for infrastructure changes, review aggregated API server configuration, check for API server aggregation layer issues, verify network connectivity, examine historical aggregated API stability patterns. Aggregated API failures may result from network issues, configuration problems, or resource constraints rather than immediate changes.
+7. If events indicate configuration changes, correlate change timestamps with failure onset. If configuration modifications occurred before aggregated API became unavailable, recent changes may have introduced invalid settings.
+
+**If no correlation is found**: Extend timeframes to 1 hour for infrastructure changes, review aggregated API server configuration, check for API server aggregation layer issues, verify network connectivity, examine historical aggregated API stability patterns. Aggregated API failures may result from network issues, configuration problems, or resource constraints rather than immediate changes.

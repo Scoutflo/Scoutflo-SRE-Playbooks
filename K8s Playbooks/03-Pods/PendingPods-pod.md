@@ -18,33 +18,53 @@ New workloads cannot start; deployments fail to scale; applications remain unava
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect its status and associated events to see scheduler messages explaining why it remains Pending.
+1. Describe pod <pod-name> in namespace <namespace> and look at the Events section - the scheduler will explain exactly why the pod cannot be scheduled (e.g., "0/5 nodes are available: 3 Insufficient cpu, 2 node(s) had taint that the pod didn't tolerate").
 
-2. List all nodes and retrieve resource usage metrics to compare available CPU and memory on each node with the pod’s requested resources.
+2. Retrieve events for pod <pod-name> in namespace <namespace> filtered by reason FailedScheduling to see the scheduling failure reason.
 
-3. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and review container resource requests and limits to ensure they are reasonable relative to node capacity.
+3. Retrieve the resource requests for pod <pod-name> in namespace <namespace> and compare with available node capacity using node resource metrics.
 
-4. Inspect the pod `<pod-name>` spec for node selectors, affinity, or anti-affinity rules that may restrict which nodes it can schedule onto.
+4. List all nodes with their taints and compare with the tolerations configured for pod <pod-name> in namespace <namespace>.
 
-5. List all nodes and examine their taints, then compare with the pod’s tolerations to determine whether taints are preventing scheduling.
+5. Retrieve the node selectors and affinity rules for pod <pod-name> in namespace <namespace> to identify placement constraints.
 
-6. Retrieve ResourceQuota objects in namespace `<namespace>` and compare current usage against limits to see whether quotas are blocking new pod creation.
+6. Describe ResourceQuota resources in namespace <namespace> to see if CPU/memory/pod count quotas are exhausted.
 
-7. List PodDisruptionBudget objects in namespace `<namespace>` and review their specs to understand whether PDB constraints are limiting evictions or rescheduling needed to place the pod.
+7. List PodDisruptionBudgets in namespace <namespace> to see if PDBs are blocking pod scheduling.
+
+8. Check cluster autoscaler status (if enabled) by retrieving events in kube-system namespace filtered by reason ScaleUp to see if new nodes are being provisioned.
 
 ## Diagnosis
 
-1. Compare the timestamps when pods entered Pending state with the timestamps when Deployment resource requests were modified, and check whether Pending pods appear within 30 minutes of increases in requested CPU or memory.
+1. Analyze pod events from Playbook steps 1-2 to identify the scheduling failure reason. The scheduler provides detailed messages like "0/X nodes are available: ..." followed by why each node was rejected.
 
-2. Compare the pod Pending timestamps with node capacity and usage metrics (CPU, memory) from node metrics, and check whether Pending pods correlate with nodes running out of allocatable resources at the same time.
+2. If events indicate resource issues (from Playbook step 2):
+   - "Insufficient cpu": Pod CPU requests exceed available capacity
+   - "Insufficient memory": Pod memory requests exceed available capacity
+   - Compare pod requests (Playbook step 3) with node capacity and reduce requests or add nodes
 
-3. Compare the pod Pending timestamps with node Ready condition transition times, and check whether Pending pods appear within 5 minutes of nodes becoming NotReady or leaving the cluster.
+3. If events indicate taint issues (from Playbook step 4):
+   - "node(s) had taint {key=value:effect} that pod didn't tolerate"
+   - Add tolerations to pod spec or remove taints from nodes
+   - Check if nodes were recently tainted for maintenance
 
-4. Compare the pod Pending timestamps with changes to affinity and anti-affinity rules in pod specifications and check whether new or stricter placement rules were introduced within 30 minutes before pods became Pending.
+4. If events indicate affinity/selector issues (from Playbook step 5):
+   - "node(s) didn't match Pod's node affinity/selector"
+   - Verify nodes with required labels exist and are schedulable
+   - Relax placement constraints if too restrictive
 
-5. Compare the pod Pending timestamps with node taint modification times and check whether new taints were applied within 30 minutes before pods started failing to schedule.
+5. If ResourceQuota is exceeded (from Playbook step 6):
+   - Namespace has reached CPU, memory, or pod count limits
+   - Increase quota or reduce resource usage in namespace
 
-6. Compare the pod Pending timestamps with cluster scaling events, node maintenance windows, namespace ResourceQuota creation or update times, and PodDisruptionBudget change times, and check whether scheduling issues began within 1 hour after any of these changes.
+6. If PodDisruptionBudget blocks scheduling (from Playbook step 7):
+   - Too many pods already disrupted
+   - Wait for existing disruptions to resolve
 
-**If no correlation is found within the specified time windows**: Extend the search window (30 minutes → 1 hour, 1 hour → 2 hours), review scheduler logs for detailed scheduling failure reasons, check for gradual resource exhaustion patterns, examine node capacity changes over a longer period, and verify if quota or PDB constraints were recently tightened. Scheduling issues may result from cumulative resource pressure rather than immediate changes.
+7. If cluster autoscaler is not scaling up (from Playbook step 8):
+   - Check autoscaler logs for errors
+   - Verify cloud provider quota allows new nodes
+   - Check if node pool configuration matches pod requirements
+
+**To resolve Pending pods**: Address the specific scheduling constraint identified in the scheduler message. Common solutions include adding nodes, adjusting resource requests, adding tolerations, or relaxing placement constraints.
 

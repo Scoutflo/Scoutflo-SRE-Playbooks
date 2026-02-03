@@ -15,30 +15,36 @@ KubeHpaMaxedOut alerts fire; HPA cannot add new pods to handle increased load; a
 
 ## Playbook
 
-1. Retrieve the HorizontalPodAutoscaler `<hpa-name>` in namespace `<namespace>` and inspect its status to check current replicas, desired replicas, maximum replicas, and target metrics.
+1. Describe HPA <hpa-name> in namespace <namespace> to see:
+   - Current replicas, desired replicas, and maximum replicas
+   - Current metrics versus target metrics
+   - Conditions showing HPA is maxed out
+   - Events showing scaling constraints or high utilization
 
-2. Retrieve metrics for current resource usage (CPU, memory, or custom metrics) for pods managed by the HorizontalPodAutoscaler `<hpa-name>` in namespace `<namespace>` to verify high resource demand.
+2. Retrieve events for HPA <hpa-name> in namespace <namespace> sorted by timestamp to see the sequence of scaling events and constraints.
 
-3. Retrieve the Pod `<pod-name>` in namespace `<namespace>` managed by HPA and verify pod resource requests and limits to compare with actual usage and identify misconfigurations.
+3. Retrieve resource usage metrics for pods in namespace <namespace> with label app=<app-label> to verify high resource demand.
 
-4. Retrieve the ResourceQuota `<quota-name>` in namespace `<namespace>` and check for resource quota limits that may prevent scaling beyond current levels.
+4. Describe pod <pod-name> in namespace <namespace> to check resource requests and limits and compare with actual usage to identify misconfigurations.
 
-5. Retrieve events for the HorizontalPodAutoscaler `<hpa-name>` in namespace `<namespace>` and filter for scaling-related errors or constraints to identify scaling blockers.
+5. Describe ResourceQuota in namespace <namespace> and check for resource quota limits that may prevent scaling beyond current levels.
 
-6. Retrieve the Node `<node-name>` resources and verify node capacity and availability to support additional pod replicas if HPA could scale further.
+6. Analyse node capacity by describing nodes and checking allocated resources to verify if additional pod replicas can be supported if HPA could scale further.
 
 ## Diagnosis
 
-Compare HPA reaching maximum replicas timestamp with resource usage metric trends over the last 1 hour and verify whether resource demand consistently exceeded maximum replica capacity, using HPA metrics and pod resource usage as supporting evidence.
+1. Analyze HPA events from Playbook to identify when HPA reached maximum replicas. If events show scaling attempts that hit the maximum limit, use event timestamps to determine the duration of maxed-out state.
 
-Correlate HPA maxed out detection with resource quota exhaustion timestamps within 30 minutes and verify whether resource quotas prevented further scaling, using resource quota status and HPA scaling attempts as supporting evidence.
+2. If events indicate sustained high resource utilization, verify pod resource metrics from Playbook step 3. If target metrics consistently exceed thresholds while at maximum replicas, the maximum replica limit is too low for current demand.
 
-Analyze HPA target metric values over the last 15 minutes to determine if metrics consistently indicate need for more replicas, using HPA status and target metric values as supporting evidence.
+3. If events indicate resource quota constraints, verify ResourceQuota status from Playbook step 5. If quota limits prevent creating additional pods even if HPA maximum were increased, quota adjustment is required first.
 
-Compare pod resource requests with actual resource usage at maxed out times and verify whether misconfigured resource requests caused premature maxing out, using pod metrics and resource specifications as supporting evidence.
+4. If events indicate node capacity exhaustion, analyze node capacity from Playbook step 6. If cluster has no capacity for additional pods, increasing HPA maximum would not help until cluster capacity is expanded.
 
-Correlate HPA maxed out with node capacity exhaustion timestamps within 30 minutes and verify whether insufficient node capacity prevented scaling, using node metrics and cluster capacity data as supporting evidence.
+5. If events indicate misconfigured resource requests, compare pod resource requests with actual usage from Playbook step 4. If pods request more resources than they use, reducing requests would allow more replicas within the same capacity.
 
-Compare HPA maximum replica configuration with historical peak replica requirements over the last 7 days and verify whether maximum replicas are set too low for actual workload patterns, using HPA scaling history and workload metrics as supporting evidence.
+6. If events show HPA regularly hitting maximum at predictable times, analyze historical patterns. If maxed-out periods align with traffic patterns (e.g., business hours), the maximum limit needs adjustment for peak demand.
 
-If no correlation is found within the specified time windows: extend timeframes to 7 days for capacity analysis, review HPA target metric configurations, check for application performance issues causing high resource usage, verify cluster autoscaler effectiveness, examine historical scaling patterns. HPA may be maxed out due to sustained high load, inadequate maximum replica limits, or application inefficiencies rather than immediate configuration issues.
+7. If events indicate application performance issues, verify if high resource usage is due to inefficient application behavior. If resource usage is higher than expected for the workload, application optimization may reduce scaling needs.
+
+**If no correlation is found**: Extend timeframes to 7 days for capacity analysis, review HPA target metric configurations, check for application performance issues causing high resource usage, verify cluster autoscaler effectiveness, examine historical scaling patterns. HPA may be maxed out due to sustained high load, inadequate maximum replica limits, or application inefficiencies rather than immediate configuration issues.

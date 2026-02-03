@@ -15,30 +15,34 @@ StatefulSet update alerts fire; service degradation or unavailability; StatefulS
 
 ## Playbook
 
-1. Retrieve the StatefulSet `<statefulset-name>` in namespace `<namespace>` and inspect its status to check update status, current revision, and update revision to verify update progress.
+1. Describe StatefulSet <statefulset-name> in namespace <namespace> to see:
+   - Update status, current revision, and update revision
+   - Update strategy configuration
+   - Conditions showing why update is not rolled out
+   - Events showing FailedCreate, FailedScheduling, or FailedAttachVolume errors
 
-2. Retrieve the StatefulSet `<statefulset-name>` in namespace `<namespace>` and check if StatefulSet update was paused manually by examining StatefulSet status.
+2. Retrieve events for StatefulSet <statefulset-name> in namespace <namespace> sorted by timestamp to see the sequence of update rollout issues.
 
-3. Retrieve the Pod `<pod-name>` in namespace `<namespace>` belonging to the StatefulSet `<statefulset-name>` and check pod status to identify pods in Pending or Terminating states.
+3. Check rollout status for StatefulSet <statefulset-name> in namespace <namespace> to see if update is progressing or stuck.
 
-4. Retrieve events for the StatefulSet `<statefulset-name>` in namespace `<namespace>` and filter for error patterns including 'FailedCreate', 'FailedScheduling', 'FailedAttachVolume' to identify update blockers.
+4. List pods belonging to StatefulSet in namespace <namespace> with label app=<statefulset-label> and describe pods to identify pods in Pending or Terminating states.
 
-5. Retrieve the StatefulSet `<statefulset-name>` in namespace `<namespace>` and check pod template parameters including resource requests, node selectors, tolerations, and affinity rules to verify configuration issues.
+5. Retrieve StatefulSet <statefulset-name> configuration in namespace <namespace> and verify resource requests, node selectors, tolerations, and affinity rules.
 
-6. Retrieve PersistentVolumeClaim resources belonging to StatefulSet pods and verify PersistentVolumeClaim status to verify volume availability.
+6. List PersistentVolumeClaim resources in namespace <namespace> with label app=<statefulset-label> and describe PVCs to verify volume availability.
 
 ## Diagnosis
 
-Compare StatefulSet update stuck detection timestamps with StatefulSet update initiation times within 30 minutes and verify whether update became stuck when update started, using StatefulSet events and update history as supporting evidence.
+1. Analyze StatefulSet events from Playbook to identify the rollout blocker. Events showing "FailedCreate" indicate PVC provisioning or pod creation issues. Events showing "FailedScheduling" indicate node resource or affinity constraints. Events showing "FailedAttachVolume" indicate storage backend problems.
 
-Correlate StatefulSet update stuck with pod scheduling failure timestamps within 30 minutes and verify whether pod scheduling failures prevented update rollout, using pod events and StatefulSet update status as supporting evidence.
+2. If events indicate PVC issues (FailedCreate with volume-related messages), verify PVC status for the pending pod ordinal. StatefulSets create PVCs sequentially and wait for each PVC to be bound before creating the corresponding pod. Check if the StorageClass can provision volumes in the required zone.
 
-Compare StatefulSet update stuck with PersistentVolume binding failure timestamps within 10 minutes and verify whether volume binding failures prevented new pod creation during update, using PVC events and StatefulSet pod status as supporting evidence.
+3. If events indicate scheduling failures (FailedScheduling, InsufficientCPU, InsufficientMemory), correlate with node capacity from Playbook. Verify whether pod resource requests exceed available node capacity or if node selectors/affinity rules exclude all available nodes.
 
-Analyze StatefulSet update progress patterns over the last 1 hour to determine if update is completely stuck (resource issue) or progressing slowly (performance issue), using StatefulSet update status and pod creation events as supporting evidence.
+4. If events indicate pod readiness issues (pod created but not becoming Ready), analyze the pod that is blocking the rollout. StatefulSets use OrderedReady update strategy by default, so a single unhealthy pod blocks the entire rollout. Check pod logs and readiness probe configuration.
 
-Correlate StatefulSet update stuck with node capacity exhaustion timestamps within 30 minutes and verify whether insufficient cluster capacity prevented update rollout, using node metrics and StatefulSet scaling attempts as supporting evidence.
+5. If events indicate pod termination issues (pods stuck in Terminating state), check for finalizers preventing deletion or PodDisruptionBudget constraints blocking termination of the old pod revision.
 
-Compare StatefulSet update stuck with pod termination issues and verify whether old pods cannot terminate, blocking update progress, using pod termination events and StatefulSet update strategy as supporting evidence.
+6. If events indicate volume attachment failures (FailedAttachVolume, VolumeNotFound), verify that the PersistentVolume exists and is accessible from the node where the pod is scheduled. Check storage backend connectivity and volume zone alignment with node zones.
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for StatefulSet operations, review StatefulSet update strategy configuration, check for persistent resource constraints, verify PersistentVolume availability, examine historical StatefulSet update patterns. StatefulSet update may be stuck due to persistent resource constraints, volume zone mismatches, or cluster capacity limitations rather than immediate changes.
+7. If no clear event pattern exists, compare the StatefulSet's current revision with update revision from Playbook. If revisions differ, the controller is attempting to update but pods are not transitioning. Check partition settings in the update strategy that may be intentionally holding back the rollout.

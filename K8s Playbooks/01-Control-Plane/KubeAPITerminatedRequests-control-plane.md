@@ -15,30 +15,34 @@ KubeAPITerminatedRequests alerts fire; clients cannot interact with the cluster 
 
 ## Playbook
 
-1. Retrieve API server flow control metrics and identify which flow schemas are throttling traffic to determine which request types are being terminated.
+1. Describe pods in namespace kube-system with label component=kube-apiserver to retrieve detailed API server pod information including status, resource usage, and flow control configuration.
 
-2. Retrieve FlowSchema resources and inspect flow schema configurations and priority levels to understand request prioritization and identify misconfigurations.
+2. List events in namespace kube-system sorted by last timestamp to retrieve recent control plane events, filtering for flow control rejections, rate limiting, or terminated request errors.
 
-3. Retrieve API server metrics for request rates, terminated request rates, and flow control rejections to quantify the termination rate and identify patterns.
+3. Retrieve API server flow control metrics and identify which flow schemas are throttling traffic to determine which request types are being terminated.
 
-4. Retrieve the Pod `<pod-name>` in namespace `kube-system` with label `component=kube-apiserver` and check API server resource usage and capacity to verify if resource constraints are causing terminations.
+4. Retrieve FlowSchema resources and inspect flow schema configurations and priority levels to understand request prioritization and identify misconfigurations.
 
-5. Retrieve API server configuration and verify API server flow control configuration including priority and fairness settings to identify restrictive configurations.
+5. Retrieve API server metrics for request rates, terminated request rates, and flow control rejections to quantify the termination rate and identify patterns.
 
-6. Retrieve metrics for client API request rates and identify clients or controllers making excessive API requests that may trigger flow control.
+6. Retrieve API server configuration and verify API server flow control configuration including priority and fairness settings to identify restrictive configurations.
+
+7. Retrieve metrics for client API request rates and identify clients or controllers making excessive API requests that may trigger flow control.
 
 ## Diagnosis
 
-Compare API terminated request spike timestamps with API server flow control rejection timestamps within 5 minutes and verify whether terminations coincide with flow control activations, using flow control metrics and terminated request rates as supporting evidence.
+1. Analyze flow control and rate limiting events from Playbook to identify when request terminations began and which flow schemas are active. If events show flow control rejections or throttling, use event timestamps to determine the onset of terminations.
 
-Correlate API terminated requests with client API request rate spike timestamps within 5 minutes and verify whether high client request rates triggered flow control, using client API usage metrics and flow control rejections as supporting evidence.
+2. If events indicate specific flow schema activations, examine FlowSchema configurations from Playbook step 4. If events show particular priority levels being throttled, identify which request types or clients are affected and whether flow schema configuration is appropriate.
 
-Compare API terminated request patterns with flow schema priority configurations to determine if terminations are due to low-priority requests being throttled, using flow schema configurations and terminated request patterns as supporting evidence.
+3. If events indicate high client request rates, identify which clients or controllers are generating excessive API requests from Playbook step 7. If events show specific clients with high request volumes at termination timestamps, client behavior is triggering flow control.
 
-Analyze API terminated request patterns over the last 15 minutes to determine if terminations are consistent (capacity issue) or intermittent (burst traffic), using terminated request metrics and API server load as supporting evidence.
+4. If events indicate API server resource pressure, verify pod resource usage at event timestamps. If CPU or memory usage spiked when terminations increased, resource constraints forced flow control activation.
 
-Correlate API terminated requests with API server resource usage spikes within 5 minutes and verify whether resource constraints caused flow control to activate, using API server resource metrics and flow control activation times as supporting evidence.
+5. If events show terminations affecting specific request types (read vs write verbs), analyze which operations are being terminated. If write operations are prioritized over reads in flow schemas, adjust priority configurations accordingly.
 
-Compare API terminated request rates with historical patterns over the last 7 days and verify whether current terminations represent a new issue or ongoing capacity problems, using terminated request history and API server capacity data as supporting evidence.
+6. If events indicate consistent terminations (not intermittent), analyze API server capacity configuration. If terminations are steady rather than bursty, API server capacity may be insufficient for baseline load.
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for traffic analysis, review API server flow control configuration, check for client misconfigurations causing excessive requests, verify API server capacity settings, examine historical flow control patterns. API terminated requests may result from API server capacity limitations, misconfigured flow control, or client request patterns rather than immediate changes.
+7. If events indicate intermittent terminations, identify burst traffic patterns at event timestamps. If terminations correlate with specific time periods or operations, targeted traffic management can resolve the issue.
+
+**If no correlation is found**: Extend timeframes to 1 hour for traffic analysis, review API server flow control configuration, check for client misconfigurations causing excessive requests, verify API server capacity settings, examine historical flow control patterns. API terminated requests may result from API server capacity limitations, misconfigured flow control, or client request patterns rather than immediate changes.

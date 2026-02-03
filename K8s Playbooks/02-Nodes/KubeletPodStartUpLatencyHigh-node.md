@@ -15,30 +15,37 @@ KubeletPodStartUpLatencyHigh alerts fire; slow pod starts; pod startup latency e
 
 ## Playbook
 
-1. Retrieve metrics for kubelet pod startup latency on the Node `<node-name>` to verify current latency values and identify performance issues.
+1. Describe node <node-name> to see:
+   - Conditions section showing Ready status and DiskPressure condition
+   - Events section showing any pod startup or performance issues
+   - Allocated resources and current usage
 
-2. Retrieve kubelet logs from the Node `<node-name>` by accessing via Pod Exec tool or SSH if node access is available, and filter for pod startup-related patterns to identify startup delays.
+2. Retrieve events for node <node-name> sorted by timestamp to see the sequence of node issues that may relate to pod startup latency.
 
-3. Retrieve metrics for the Node `<node-name>` and check node storage I/O metrics including IOPS, throughput, and latency to identify storage performance issues.
+3. Retrieve metrics for kubelet pod startup latency on the Node <node-name> to verify current latency values and identify performance issues.
 
-4. Verify container image pull times and image pull performance on the Node `<node-name>` to identify image pull delays.
+4. Retrieve kubelet logs from the Node <node-name> by accessing via Pod Exec tool or SSH if node access is available, and filter for pod startup-related patterns to identify startup delays.
 
-5. Retrieve metrics for the Node `<node-name>` and check node resource usage including CPU, memory, and disk to identify resource constraints.
+5. Retrieve metrics for the Node <node-name> and check node storage I/O metrics including IOPS, throughput, and latency to identify storage performance issues.
 
-6. Retrieve the Node `<node-name>` and verify node conditions including DiskPressure that may affect pod startup performance.
+6. Verify container image pull times and image pull performance on the Node <node-name> to identify image pull delays.
+
+7. Retrieve metrics for the Node <node-name> and check node resource usage including CPU, memory, and disk to identify resource constraints.
 
 ## Diagnosis
 
-Compare pod startup latency increase timestamps with node storage I/O exhaustion detection times within 5 minutes and verify whether latency increased when storage IOPS were exhausted, using storage I/O metrics and pod startup latency as supporting evidence.
+1. Analyze node events from Playbook steps 1-2 to identify pod startup issues. Events showing "FailedCreatePodSandBox", "ImagePullBackOff", or "ContainerCreating" delays indicate specific startup bottlenecks. Note event timestamps and affected pods.
 
-Correlate pod startup latency spikes with container image pull duration increases within 10 minutes and verify whether slow image pulls caused startup latency increases, using image pull metrics and pod startup times as supporting evidence.
+2. If node events indicate DiskPressure condition, check node conditions from Playbook step 1 and correlate with storage I/O metrics from Playbook step 5. Disk pressure and IOPS exhaustion directly cause slow pod startup as container filesystem operations are delayed.
 
-Compare pod startup latency with node DiskPressure condition transitions within 5 minutes and verify whether disk pressure caused slow pod starts, using node conditions and pod startup latency as supporting evidence.
+3. If node events show image pull delays ("Pulling image" events with long durations), verify image pull performance from Playbook step 6. Slow image pulls from registry, large image sizes, or network bandwidth constraints cause startup latency.
 
-Analyze pod startup latency patterns over the last 15 minutes to determine if latency is consistently high (storage issue) or intermittent (resource constraints), using pod startup latency metrics and node resource usage as supporting evidence.
+4. If node events indicate container runtime issues, check kubelet logs from Playbook step 4 for container runtime errors or slow operations. Container runtime performance degradation affects all pod lifecycle operations.
 
-Correlate pod startup latency with pod density increases on node `<node-name>` within 30 minutes and verify whether high pod density caused startup delays, using pod density metrics and pod startup latency as supporting evidence.
+5. If pod startup latency metrics from Playbook step 3 show consistent high values, check node resource usage from Playbook step 7. CPU or memory constraints can cause slow container initialization and startup.
 
-Compare current pod startup latency with historical baseline latency for node `<node-name>` over the last 7 days and verify whether current latency represents a new issue or ongoing performance problems, using pod startup latency history and node performance baselines as supporting evidence.
+6. If startup latency is correlated with high pod density, compare current pod count with normal levels. High pod density increases container runtime overhead and PLEG processing time, indirectly affecting startup latency.
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for performance analysis, review container runtime configuration, check for storage performance degradation, verify node hardware health, examine historical pod startup performance patterns. Pod startup latency may be high due to storage performance issues, image pull delays, or node resource constraints rather than immediate changes.
+7. If startup latency is intermittent rather than consistent, check for resource contention patterns during peak usage periods or when many pods start simultaneously (such as during deployments or node recovery).
+
+**If no root cause is identified from events**: Review container runtime logs for performance issues, check storage subsystem health and IOPS limits, verify network connectivity to container registries, and examine if node hardware (disk, memory) is degraded or undersized for the workload.

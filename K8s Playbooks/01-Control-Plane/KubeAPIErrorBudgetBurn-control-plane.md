@@ -15,30 +15,34 @@ KubeAPIErrorBudgetBurn alerts fire; overall availability of Kubernetes cluster i
 
 ## Playbook
 
-1. Retrieve API server metrics for current availability, remaining error budget, and which verbs (read/write) contribute to the burn to quantify error budget consumption.
+1. Describe pods in namespace kube-system with label component=kube-apiserver to retrieve detailed API server pod information including status, resource usage, and any error conditions contributing to error budget burn.
 
-2. Retrieve logs from the Pod `<pod-name>` in namespace `kube-system` with label `component=kube-apiserver` and filter for error patterns including high error rates, timeouts, and slow requests tied to namespaces, users, or admission webhooks to identify error sources.
+2. List events in namespace kube-system sorted by last timestamp to retrieve recent control plane events, filtering for API server errors, timeouts, or admission webhook failures.
 
-3. Retrieve API server metrics for error spikes or latency issues to identify patterns and quantify degradation.
+3. Retrieve API server metrics for current availability, remaining error budget, and which verbs (read/write) contribute to the burn to quantify error budget consumption.
 
-4. Retrieve the Pod `<pod-name>` in namespace `kube-system` with label `component=etcd` and validate etcd health, check aggregated API servers, and verify admission webhooks that may amplify burn rates.
+4. Retrieve logs from the Pod `<pod-name>` in namespace `kube-system` with label `component=kube-apiserver` and filter for error patterns including high error rates, timeouts, and slow requests tied to namespaces, users, or admission webhooks to identify error sources.
 
-5. Retrieve API server metrics for request rates, error rates, and latency patterns to identify performance degradation patterns.
+5. Retrieve the Pod `<pod-name>` in namespace `kube-system` with label `component=etcd` and validate etcd health, check aggregated API servers, and verify admission webhooks that may amplify burn rates.
 
-6. Retrieve the Pod `<pod-name>` in namespace `kube-system` with label `component=kube-apiserver` and verify API server resource usage and capacity constraints to identify resource limitations.
+6. Retrieve API server metrics for request rates, error rates, and latency patterns to identify performance degradation patterns.
+
+7. Retrieve the Pod `<pod-name>` in namespace `kube-system` with label `component=kube-apiserver` and verify API server resource usage and capacity constraints to identify resource limitations.
 
 ## Diagnosis
 
-Compare API error budget burn detection timestamps with API server error rate spike times within 5 minutes and verify whether burn rate increased when error rates spiked, using API server error metrics and burn rate calculations as supporting evidence.
+1. Analyze API server events from Playbook to identify error patterns and timing. If events show timeout errors, admission webhook failures, or connection issues, use event timestamps to determine when error budget burn accelerated.
 
-Correlate API error budget burn with etcd health degradation timestamps within 2 minutes and verify whether etcd issues caused API server errors or slow responses, using etcd health metrics and API server error logs as supporting evidence.
+2. If events indicate high error rates or failed requests, examine API server logs for specific error types at event timestamps. If logs show 5xx errors, timeouts, or rejection patterns, identify which request types are contributing to error budget burn.
 
-Compare API error budget burn with admission webhook timeout or error timestamps within 5 minutes and verify whether admission webhook issues contributed to error budget burn, using admission webhook metrics and API server logs as supporting evidence.
+3. If events indicate etcd connectivity or performance issues, analyze etcd pod events and health from Playbook step 5. If etcd events show latency spikes, leader elections, or failures at timestamps correlating with error budget burn, etcd is the primary contributor.
 
-Analyze API server request latency patterns over the burn rate window to determine if burn is due to errors (high error rate) or latency (slow responses), using API server latency metrics and error rates as supporting evidence.
+4. If events indicate admission webhook timeouts or failures, review admission webhook metrics and logs. If webhook events show slow responses or errors at timestamps during burn periods, webhook latency is consuming error budget.
 
-Correlate API error budget burn with aggregated API server failure timestamps within 5 minutes and verify whether aggregated API issues contributed to error budget consumption, using aggregated API status and API server error logs as supporting evidence.
+5. If events indicate aggregated API server issues, verify aggregated API status from Playbook step 5. If aggregated API events show failures at timestamps correlating with burn, aggregated API problems are contributing to error budget consumption.
 
-Compare API error budget burn rate with historical burn rate patterns over the last 30 days and verify whether current burn rate represents a new issue or ongoing degradation, using error budget history and SLO metrics as supporting evidence.
+6. If events show API server resource pressure, verify pod resource usage at event timestamps. If CPU or memory approached limits during burn periods, resource constraints caused slow responses contributing to budget burn.
 
-If no correlation is found within the specified time windows: extend timeframes to 24 hours for infrastructure changes, review API server capacity and limits, check for gradual performance degradation, verify external dependency health, examine historical error budget consumption patterns. API error budget burn may result from sustained high load, capacity limitations, or gradual performance degradation rather than immediate changes.
+7. If events are inconclusive, analyze whether burn is due to errors (high 5xx rate) or latency (slow responses) by examining API server request duration metrics at event timestamps. If latency patterns dominate, focus on performance optimization; if errors dominate, focus on reliability issues.
+
+**If no correlation is found**: Extend timeframes to 24 hours for infrastructure changes, review API server capacity and limits, check for gradual performance degradation, verify external dependency health, examine historical error budget consumption patterns. API error budget burn may result from sustained high load, capacity limitations, or gradual performance degradation rather than immediate changes.

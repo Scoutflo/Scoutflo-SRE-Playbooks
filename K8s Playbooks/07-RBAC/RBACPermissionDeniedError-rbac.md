@@ -18,17 +18,19 @@ API operations fail with permission denied; pods cannot access required resource
 
 ## Playbook
 
-1. Check if current user can perform action `<action>` on resource `<resource>` to check current user's permissions.
+1. Test the exact failing permission using `kubectl auth can-i <verb> <resource> -n <namespace> --as=system:serviceaccount:<namespace>:<sa-name>` to confirm which specific action is denied.
 
-2. List role bindings in namespace `<namespace>` and cluster role bindings to check RoleBinding or ClusterRoleBinding configuration.
+2. List all permissions for the affected identity using `kubectl auth can-i --list -n <namespace> --as=system:serviceaccount:<namespace>:<sa-name>` to see granted permissions and identify gaps.
 
-3. Retrieve service account `<service-account-name>` in namespace `<namespace>` and verify service account permissions if service account is used.
+3. Check if any RoleBindings exist for the service account using `kubectl get rolebindings -n <namespace> -o yaml | grep -B5 -A10 "<sa-name>"` to find relevant bindings.
 
-4. Check role binding and cluster role binding modification timestamps to check for recent RBAC configuration changes.
+4. Check ClusterRoleBindings using `kubectl get clusterrolebindings -o yaml | grep -B5 -A10 "<sa-name>"` for cluster-wide permission grants.
 
-5. Retrieve logs from pod `<pod-name>` in namespace `<namespace>` or check API server logs to verify error messages in pod logs or API server logs.
+5. If a binding exists, describe the referenced role using `kubectl describe role <role-name> -n <namespace>` or `kubectl describe clusterrole <role-name>` to see granted permissions.
 
-6. List validating and mutating admission webhooks to check if webhooks block requests.
+6. Check for admission webhooks that may block requests using `kubectl get validatingwebhookconfigurations,mutatingwebhookconfigurations` and review their rules.
+
+7. Check API server logs for permission decisions using `kubectl logs -n kube-system -l component=kube-apiserver --tail=100 | grep -i "forbidden\|denied"` to identify the exact denial reason.
 
 ## Diagnosis
 

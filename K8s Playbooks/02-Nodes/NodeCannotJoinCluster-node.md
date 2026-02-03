@@ -18,31 +18,38 @@ Nodes cannot join the cluster; cluster scaling fails; new nodes remain unjoined;
 
 ## Playbook
 
-1. Check the join token validity by verifying token expiration times and whether the token is still valid for cluster joining.
+1. Describe node <node-name> (if the node appears in the cluster) to see:
+   - Conditions section showing registration status
+   - Events section showing join or registration failures
+   - System Info and kubelet version details
 
-2. Verify network connectivity between the new node and control plane nodes by testing connectivity to API server endpoint and required ports.
+2. Retrieve node events sorted by timestamp to see the sequence of node registration events and any join failures.
 
-3. On the new node, check kubelet configuration and verify if kubelet is configured with correct cluster endpoint and authentication credentials.
+3. List join tokens and verify token expiration times and whether the token is still valid for cluster joining.
 
-4. Verify that required ports (e.g., 6443 for API server) are open and accessible between the new node and control plane.
+4. Verify network connectivity between the new node and control plane nodes by testing connectivity to API server endpoint and required ports.
 
-5. Check kubelet logs on the new node using Pod Exec tool or SSH if node access is available and filter for join errors, authentication failures, or connectivity issues.
+5. On the new node, check kubelet configuration and verify if kubelet is configured with correct cluster endpoint and authentication credentials.
 
-6. Verify certificate authority (CA) certificate availability and validity on the new node for kubelet authentication.
+6. Check kubelet logs on the new node using Pod Exec tool or SSH if node access is available and filter for join errors, authentication failures, or connectivity issues.
+
+7. Verify certificate authority (CA) certificate availability and validity on the new node for kubelet authentication.
 
 ## Diagnosis
 
-1. Compare the node join failure timestamps with join token expiration timestamps, and check whether tokens expired within 1 hour before join failures.
+1. Analyze node events from Playbook steps 1-2 (if node appears in cluster) to identify registration failures. Events showing "RegisteredNode" failures, authentication errors, or TLS handshake failures indicate specific join issues. Note event timestamps and error messages.
 
-2. Compare the node join failure timestamps with network connectivity failure timestamps, and check whether network issues occurred within 10 minutes before join failures.
+2. If node events or kubelet logs indicate token-related errors ("token expired", "invalid token"), check join token validity from Playbook step 3. Bootstrap tokens have expiration times and may have expired before the join attempt.
 
-3. Compare the node join failure timestamps with firewall rule modification timestamps, and check whether firewall rules were changed within 10 minutes before join failures.
+3. If kubelet logs from Playbook step 6 show network connectivity errors ("connection refused", "no route to host", "timeout"), verify network connectivity from Playbook step 4. The node must reach the API server on port 6443 and other required control plane ports.
 
-4. Compare the node join failure timestamps with kubelet configuration modification timestamps on the new node, and check whether configuration changes occurred within 30 minutes before join failures.
+4. If network connectivity tests fail, check firewall rules and network policies. Required ports (6443 for API server, 10250 for kubelet, 2379-2380 for etcd if applicable) must be open between the new node and control plane.
 
-5. Compare the node join failure timestamps with control plane API server unavailability timestamps, and check whether API server issues occurred within 5 minutes before join failures.
+5. If kubelet logs show authentication or certificate errors, verify CA certificate availability from Playbook step 7. The new node must trust the cluster CA certificate to establish TLS connections.
 
-6. Compare the node join failure timestamps with cluster upgrade or certificate rotation timestamps, and check whether infrastructure changes occurred within 1 hour before join failures, affecting node registration.
+6. If kubelet configuration from Playbook step 5 shows incorrect API server endpoint or cluster settings, correct the configuration. Misconfigured cluster endpoint prevents kubelet from finding the control plane.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 10 minutes → 30 minutes, 1 hour → 24 hours for token expiration), review kubelet logs for gradual join issues, check for intermittent network connectivity problems, examine if join token management drifted over time, verify if firewall rules gradually became restrictive, and check for control plane API server performance degradation that may have developed. Node join failures may result from gradual infrastructure or configuration issues rather than immediate changes.
+7. If kubelet logs show API server unreachable errors, verify API server availability and health. Control plane issues prevent new nodes from joining even with correct configuration.
+
+**If no root cause is identified from events**: Verify the join command syntax and parameters are correct, check if the cluster uses custom admission controllers that may reject node registration, review control plane logs for node registration errors, and verify node meets cluster requirements (Kubernetes version compatibility, required labels, etc.).
 

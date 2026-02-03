@@ -18,11 +18,11 @@ Helm releases cannot complete installation; applications fail to deploy; resourc
 
 ## Playbook
 
-1. Check Helm release status for release `<release-name>` in namespace `<namespace>`.
+1. Retrieve the Helm release status for release `<release-name>` in namespace `<namespace>` to inspect installation state.
 
-2. Retrieve logs from failing pods in namespace `<namespace>` and filter for error patterns.
+2. Get events in the namespace `<namespace>` sorted by timestamp to identify Helm release failures and resource creation errors.
 
-3. Check Helm release events for release `<release-name>` in namespace `<namespace>`.
+3. Retrieve logs from failing pods in namespace `<namespace>` and filter for error patterns.
 
 4. Check Helm chart configuration to verify Helm chart values and templates.
 
@@ -32,16 +32,29 @@ Helm releases cannot complete installation; applications fail to deploy; resourc
 
 ## Diagnosis
 
-1. Compare the timestamps when Helm release entered PENDING_INSTALL state with Helm chart value change timestamps, and check whether pending state begins within 1 hour of chart value modifications.
+Begin by analyzing the Helm release status, namespace events, and pod states collected in the Playbook section. The release status message, resource creation events, and pod scheduling status provide the primary diagnostic signals.
 
-2. Compare the Helm release pending timestamps with pod creation failure timestamps from failing pod logs and Helm release events, and verify whether pending state correlates with pod creation failures at the same time.
+**If events show FailedCreate with RBAC or permission errors:**
+- Helm cannot create resources due to insufficient permissions. Check if the service account or user running Helm has ClusterRole or Role bindings for all resource types in the chart. Grant necessary RBAC permissions.
 
-3. Compare the Helm release pending timestamps with resource constraint timestamps from pod resource usage, and check whether pending state correlates with resource constraints.
+**If events show FailedScheduling for pods created by the chart:**
+- Pods cannot be scheduled due to resource constraints or node selectors. Check pod pending reasons. If `Insufficient cpu` or `Insufficient memory`, add cluster capacity or reduce resource requests.
 
-4. Compare the Helm release pending timestamps with deployment or configuration change timestamps, and verify whether pending state begins within 1 hour of deployment changes.
+**If events show admission webhook denied or validation errors:**
+- An admission controller is blocking resource creation. Check the event message for which webhook denied the request. Review the chart values against the webhook's validation policies.
 
-5. Compare the Helm release pending timestamps with Helm chart template error timestamps, and check whether pending state correlates with template validation failures.
+**If events show ResourceQuota exceeded:**
+- The namespace quota blocks resource creation. Check `kubectl get resourcequota -n <namespace>`. Either increase quota limits or reduce chart resource requirements.
 
-6. Compare the Helm release pending timestamps with namespace or RBAC issue timestamps from resource quota and role binding changes, and verify whether pending state correlates with permission or quota problems at the same time.
+**If Helm status shows "another operation in progress":**
+- A previous Helm operation did not complete cleanly. Run `helm history <release> -n <namespace>` to check for stuck releases. Use `helm rollback` to a previous revision or `helm uninstall` if appropriate.
 
-**If no correlation is found within the specified time windows**: Extend the search window (1 hour → 2 hours), review Helm chart templates for validation errors, check for resource name conflicts, examine namespace resource quotas for hidden constraints, verify if RBAC permissions are sufficient for all chart resources, check for admission webhook blocks, and review Helm release history for previous installation attempts. Pending installations may result from chart validation issues or resource conflicts not immediately visible in Helm events.
+**If chart resources are created but Deployment pods fail to start:**
+- The chart installed but application pods have issues. Check pod describe output for container startup errors. This is an application issue rather than a Helm issue.
+
+**If events are inconclusive, correlate timestamps:**
+1. Check if PENDING_INSTALL began after a failed upgrade attempt by reviewing Helm history.
+2. Check if resource quota changes occurred that blocked the installation.
+3. Check if admission webhooks were added or modified.
+
+**If no clear cause is identified:** Run `helm install --dry-run --debug` to validate the chart templates without applying. Check for template rendering errors or invalid resource specifications.

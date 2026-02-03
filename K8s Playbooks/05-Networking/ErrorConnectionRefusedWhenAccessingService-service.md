@@ -18,31 +18,35 @@ Service connections are refused; applications cannot connect to services; servic
 
 ## Playbook
 
-1. Retrieve the Service `<service-name>` in namespace `<namespace>` and inspect its configuration, ports, and selector to verify service setup.
+1. Describe the Service `<service-name>` in namespace `<namespace>` to inspect its configuration, ports, selector, and current state.
 
-2. List Endpoints for the Service `<service-name>` in namespace `<namespace>` and verify that pods are registered as endpoints and check their readiness status.
+2. Retrieve events for the Service `<service-name>` in namespace `<namespace>` sorted by timestamp to identify recent issues.
 
-3. Retrieve pods matching the service selector in namespace `<namespace>` and verify they exist, are running, have the correct labels, and are ready to accept connections.
+3. List Endpoints for the Service `<service-name>` in namespace `<namespace>` and verify that pods are registered as endpoints and check their readiness status.
 
-4. From a test pod, execute `curl` or `telnet` to the service endpoint using Pod Exec tool to test connectivity and verify if connections are refused.
+4. Retrieve pods matching the service selector in namespace `<namespace>` and verify they exist, are running, have the correct labels, and are ready to accept connections.
 
-5. Check the pod `<pod-name>` associated with the service and verify if the application is listening on the expected port by executing port checks using Pod Exec tool.
+5. From a test pod, execute curl or telnet to the service endpoint to test connectivity and verify if connections are refused.
 
-6. Check kube-proxy pod status in the kube-system namespace to verify if the service proxy is functioning correctly.
+6. Check the pod `<pod-name>` associated with the service and verify if the application is listening on the expected port by executing port checks.
+
+7. Check kube-proxy pod status in the `kube-system` namespace to verify if the service proxy is functioning correctly.
 
 ## Diagnosis
 
-1. Compare the connection refused error timestamps with pod Ready condition transition times for pods matching the service selector, and check whether pods became NotReady within 5 minutes before connection refused errors.
+1. Analyze service endpoints from Playbook to verify service has ready endpoints. If endpoints list is empty or shows no ready addresses, connections are refused because no backend pods are available.
 
-2. Compare the connection refused error timestamps with service port configuration modification timestamps, and check whether port changes occurred within 30 minutes before connection refused errors.
+2. If endpoints are empty, check service selector against pod labels from Playbook. If selector does not match pod labels, no pods are selected as endpoints and all connections are refused.
 
-3. Compare the connection refused error timestamps with pod application restart or crash timestamps, and check whether application failures occurred within 5 minutes before connection refused errors.
+3. If selector matches, check pod Ready condition from Playbook. If pods are not Ready (failing readiness probes or still starting), they are excluded from endpoints. Check pod events for readiness probe failure details.
 
-4. Compare the connection refused error timestamps with endpoint removal timestamps, and check whether endpoints were removed within 5 minutes before connection refused errors.
+4. If pods are Ready and in endpoints, verify application is listening on the expected port from Playbook. If container process is not bound to the targetPort, connections reach the pod but are refused by the OS.
 
-5. Compare the connection refused error timestamps with kube-proxy restart or failure timestamps, and check whether proxy issues occurred within 5 minutes before connection refused errors.
+5. If application is listening, check service port and targetPort configuration from Playbook. If port mismatch exists (service port differs from targetPort or container port), traffic is forwarded to wrong ports.
 
-6. Compare the connection refused error timestamps with NetworkPolicy modification timestamps that may affect service traffic, and check whether policy changes occurred within 10 minutes before connection refused errors.
+6. If port configuration is correct, check kube-proxy status from Playbook. If kube-proxy is not running or iptables/ipvs rules are stale, traffic routing to endpoints fails.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour), review kube-proxy logs for gradual performance degradation, check for intermittent endpoint update issues, examine if service port configurations drifted over time, verify if application port listening issues developed gradually, and check for network path problems that may have accumulated. Connection refused errors may result from gradual service or infrastructure degradation rather than immediate configuration changes.
+7. If kube-proxy is healthy, check NetworkPolicy rules from Playbook for ingress policies. If policies block traffic on the service port or from the client source, connections are refused at the network layer.
+
+**If no configuration issue is found**: Check if pods have multiple containers and traffic is routed to wrong container port, verify if init containers are blocking main container startup, review if liveness probes are killing pods before readiness is achieved, and examine if resource limits cause application crashes after startup.
 

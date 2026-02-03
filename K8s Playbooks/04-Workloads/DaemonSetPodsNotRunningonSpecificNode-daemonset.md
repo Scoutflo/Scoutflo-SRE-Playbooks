@@ -18,39 +18,35 @@ DaemonSet pod is missing on the specific node; node-level functionality is unava
 
 ## Playbook
 
-1. Retrieve the DaemonSet `<daemonset-name>` in namespace `<namespace>` and inspect its status and status conditions to verify which nodes are missing pods.
+1. Describe DaemonSet <daemonset-name> in namespace <namespace> to see:
+   - Desired versus ready number of pods
+   - Node selector, tolerations, and affinity rules configuration
+   - Conditions showing why pods are not running on specific nodes
+   - Events showing FailedCreate or scheduling errors
 
-2. Verify that the DaemonSet controller is running and functioning by checking DaemonSet controller pod status in the kube-system namespace.
+2. Retrieve events for DaemonSet <daemonset-name> in namespace <namespace> sorted by timestamp to see the sequence of deployment failures.
 
-3. Retrieve the node `<node-name>` and inspect its labels, taints, and scheduling status to verify if it matches DaemonSet requirements.
+3. Verify that the DaemonSet controller is running by listing kube-controller-manager pods in kube-system namespace.
 
-4. Retrieve the DaemonSet `<daemonset-name>` and inspect pod template tolerations to verify if they match the node's taints.
+4. Describe node <node-name> and inspect its labels, taints, and scheduling status to verify if it matches DaemonSet requirements.
 
-5. Retrieve the DaemonSet `<daemonset-name>` and inspect pod template node selector and affinity rules to verify if they match the node's labels.
+5. Retrieve resource usage metrics for node <node-name> to verify if insufficient CPU, memory, or other resources are preventing DaemonSet pod creation.
 
-6. List events on node `<node-name>` and filter for DaemonSet-related events, focusing on events with reasons such as `FailedCreate` or messages indicating why the pod cannot be created.
-
-7. Check the node `<node-name>` for resource availability and verify if insufficient CPU, memory, or other resources are preventing DaemonSet pod creation.
-
-8. Check for PodDisruptionBudget conflicts that may prevent DaemonSet pod creation on the specific node.
+6. List PodDisruptionBudget resources in namespace <namespace> to check for conflicts that may prevent DaemonSet pod creation on the specific node.
 
 ## Diagnosis
 
-1. Compare the DaemonSet pod missing timestamps on the specific node with DaemonSet controller restart or failure timestamps, and check whether controller issues occurred within 5 minutes before the DaemonSet pod became missing.
+1. Analyze DaemonSet and pod events from Playbook to identify why the pod is not running on the specific node. Events showing "FailedScheduling" with the node name indicate scheduling constraints specific to that node. Events showing "FailedCreate" indicate pod creation blockers.
 
-2. Compare the DaemonSet pod missing timestamps on the specific node with node taint addition timestamps, and check whether new taints were applied within 30 minutes before the DaemonSet pod became missing.
+2. If events indicate taint-related failures for the specific node, compare the node's taints with DaemonSet tolerations. The specific node may have taints that other nodes do not have, such as custom workload isolation taints or maintenance taints.
 
-3. Compare the DaemonSet pod missing timestamps with DaemonSet toleration modification timestamps, and check whether tolerations were removed or modified within 30 minutes before the pod stopped matching node taints.
+3. If events indicate resource constraints on the specific node (InsufficientCPU, InsufficientMemory), compare available resources on that node versus other nodes where DaemonSet pods are running. The specific node may have higher utilization from other workloads.
 
-4. Compare the DaemonSet pod missing timestamps with node label modification timestamps, and check whether required labels were removed or changed within 30 minutes before the DaemonSet pod became missing.
+4. If the specific node's labels do not match DaemonSet nodeSelector, verify whether this node should have the required labels. The node may be missing labels that other nodes have, or may have been added to a different node pool.
 
-5. Compare the DaemonSet pod missing timestamps with PodDisruptionBudget creation or modification timestamps, and check whether PDB conflicts occurred within 30 minutes before the DaemonSet pod could not be created on the specific node.
+5. If the node is cordoned or has spec.unschedulable=true, DaemonSet pods cannot be scheduled. Check node status from Playbook to identify if the node was intentionally marked unschedulable for maintenance.
 
-6. Compare the DaemonSet pod missing timestamps with node resource exhaustion timestamps, and check whether the node ran out of resources within 30 minutes before the DaemonSet pod could not be created.
+6. If the node shows NotReady condition or has resource pressure conditions (MemoryPressure, DiskPressure, PIDPressure), the kubelet may not be accepting new pods. Verify node conditions and kubelet health on the specific node.
 
-7. Compare the DaemonSet pod missing timestamps with node cordoning or unschedulable status change timestamps, and check whether the node became unschedulable within 30 minutes before the DaemonSet pod became missing.
-
-8. Compare the DaemonSet pod missing timestamps with DaemonSet node selector or affinity rule modification timestamps, and check whether scheduling constraints were added or made more restrictive within 30 minutes before the pod became missing.
-
-**If no correlation is found within the specified time windows**: Extend the search window (30 minutes → 1 hour, 1 hour → 2 hours), review DaemonSet controller logs for gradual scheduling issues on the specific node, check for intermittent node availability problems, examine if node taints or labels were always incompatible but only recently enforced, verify if node resource constraints developed over time, and check for cumulative scheduling restrictions. DaemonSet pod missing on a specific node may result from gradual node state changes rather than immediate configuration modifications.
+7. If no scheduling event exists and the pod simply does not exist on that node, verify that the node matches all DaemonSet scheduling requirements including nodeSelector, nodeAffinity, and tolerations. Also check if a PodDisruptionBudget is preventing pod creation by blocking necessary evictions.
 

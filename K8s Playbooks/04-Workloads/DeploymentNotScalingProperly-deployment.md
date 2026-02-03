@@ -18,32 +18,39 @@ Deployments cannot scale to desired replica count; applications experience insuf
 
 ## Playbook
 
-1. Retrieve deployment `<deployment-name>` in namespace `<namespace>` and check current number of replicas versus desired replicas.
+1. Describe deployment <deployment-name> in namespace <namespace> to see:
+   - Replicas status (desired/current/ready/available)
+   - Conditions showing why scaling is failing
+   - Events showing FailedCreate, FailedScheduling, or scaling errors
 
-2. List all nodes and retrieve resource usage metrics to check for resource constraints.
+2. List events in namespace <namespace> filtered by involved object name <deployment-name> and sorted by last timestamp to see the sequence of scaling failures.
 
-3. Retrieve horizontal pod autoscaler `<hpa-name>` in namespace `<namespace>` and check HPA configuration if HPA is used.
+3. Describe horizontal pod autoscaler <hpa-name> in namespace <namespace> to check HPA configuration if HPA is used.
 
-4. List pods in namespace `kube-system` and filter for metrics server pods to check status.
+4. List all nodes and retrieve resource usage metrics to check for resource constraints.
 
-5. List events in namespace `<namespace>` and filter for deployment-related events to check for scaling issues.
+5. List pods in namespace kube-system with label k8s-app=metrics-server to check metrics server status.
 
-6. List pods in namespace `<namespace>` and filter for deployment pods to verify pod status and readiness.
+6. List pods in namespace <namespace> with label app=<app-label> to verify pod status and readiness.
 
-7. Retrieve ResourceQuota objects in namespace `<namespace>` to verify if quotas block scaling.
+7. Describe ResourceQuota objects in namespace <namespace> to verify if quotas block scaling.
 
 ## Diagnosis
 
-1. Compare the timestamps when deployment scaling failures occurred (from replica count mismatches) with HPA configuration change timestamps, and check whether scaling failures begin within 30 minutes of HPA changes.
+1. Analyze deployment events from Playbook steps 1-2 to identify the primary scaling failure reason. Events showing "FailedScheduling" indicate scheduling constraints. Events showing "FailedCreate" indicate pod creation failures. Events showing "exceeded quota" indicate resource quota limits. Events showing "ScalingReplicaSet" followed by failures indicate scaling operation issues.
 
-2. Compare the scaling failure timestamps with resource constraint event timestamps from node resource usage and failed pod creation events, and verify whether scaling failures correlate with resource constraints at the same time.
+2. If events indicate scheduling failures (FailedScheduling with "Insufficient cpu" or "Insufficient memory"), correlate with node resource metrics from Playbook step 4 to confirm cluster capacity is exhausted. Verify which nodes have available capacity and whether node selectors or affinity rules are limiting scheduling options.
 
-3. Compare the scaling failure timestamps with metrics server pod status issue timestamps, and check whether scaling failures begin within 5 minutes of metrics server problems.
+3. If events indicate resource quota issues (messages containing "exceeded quota" or "forbidden"), verify quota status from Playbook step 7 and compare with deployment resource requests to determine if quota increase is needed or resource requests should be reduced.
 
-4. Compare the scaling failure timestamps with deployment modification timestamps, and verify whether scaling failures correlate with deployment changes within 30 minutes.
+4. If HPA is configured, analyze HPA status from Playbook step 3 to identify scaling decision issues. Check for "unable to get metrics" or "failed to compute desired" messages indicating metrics server problems. Verify current metrics values versus target thresholds.
 
-5. Compare the scaling failure timestamps with node capacity constraint timestamps from node resource metrics, and check whether scaling failures correlate with insufficient node capacity.
+5. If HPA shows metrics collection failures, verify metrics server pod status from Playbook step 5. If metrics server pods are not running or unhealthy, HPA cannot make scaling decisions.
 
-6. Compare the scaling failure timestamps with pod readiness issue timestamps and resource quota limit timestamps, and verify whether scaling failures correlate with pod readiness problems or quota exhaustion at the same time.
+6. If events indicate pod readiness failures (pods created but not becoming ready), analyze pod status from Playbook step 6 to identify why pods are not passing readiness probes. This may indicate application-level issues preventing scale-up completion.
 
-**If no correlation is found within the specified time windows**: Extend the search window (30 minutes → 1 hour, 5 minutes → 10 minutes), review HPA metrics for calculation issues, check metrics server availability and accuracy, examine pod readiness probe failures, verify if resource quotas were recently tightened, check for node taint or affinity constraints, and review deployment strategy settings. Scaling failures may result from cumulative resource pressure or HPA calculation issues not immediately visible in single event timestamps.
+7. If events indicate image pull failures for new pods, verify image availability and registry connectivity. Scaling cannot complete if new pod images cannot be pulled.
+
+8. If events are inconclusive but scaling is not occurring, verify deployment replicas configuration matches expected values and check if deployment is paused or has conflicting HPA/manual scaling settings.
+
+**If no clear failure reason is identified from events**: Review HPA event history for scaling decision patterns, check if node autoscaler is enabled and functioning, verify cluster-autoscaler logs for pending scale-up decisions, examine if pod disruption budgets are limiting scale-down operations, and check for rate limiting on API server affecting controller operations.

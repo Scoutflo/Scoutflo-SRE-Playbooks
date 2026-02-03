@@ -18,33 +18,35 @@ Pods are terminated unexpectedly; containers are killed by OOM; applications los
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect container termination exit code to confirm exit code 137 and container termination reason to verify OOM kill.
+1. Describe pod <pod-name> in namespace <namespace> to inspect container termination exit code to confirm exit code 137 and container termination reason to verify OOM kill.
 
-2. List events in namespace `<namespace>` and filter for OOM kill events associated with the pod, focusing on events with reasons such as `OOMKilled` or messages containing "out of memory".
+2. Retrieve events in namespace <namespace> for pod <pod-name> sorted by timestamp to identify OOM kill events associated with the pod, focusing on events with reasons such as OOMKilled or messages containing "out of memory".
 
 3. Check the node where the pod was scheduled for node-level memory pressure conditions (MemoryPressure) and system OOM kill events by checking node status conditions and system logs (dmesg) using Pod Exec tool or SSH if node access is available.
 
-4. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and review resource limits, specifically `resources.limits.memory`, to verify if memory limits are too restrictive.
+4. Retrieve the Deployment <deployment-name> in namespace <namespace> and review resource limits, specifically resources.limits.memory, to verify if memory limits are too restrictive.
 
-5. Check the pod `<pod-name>` resource usage metrics to verify actual memory consumption compared to configured limits and identify if memory usage is approaching or exceeding limits.
+5. Check the pod <pod-name> resource usage metrics to verify actual memory consumption compared to configured limits and identify if memory usage is approaching or exceeding limits.
 
-6. Retrieve logs from the pod `<pod-name>` in namespace `<namespace>` and filter for memory-related errors, allocation failures, or application memory issues that may indicate memory leaks or excessive usage.
+6. Retrieve logs from the pod <pod-name> in namespace <namespace> and filter for memory-related errors, allocation failures, or application memory issues that may indicate memory leaks or excessive usage.
 
 ## Diagnosis
 
-1. Compare the pod termination timestamps (exit code 137) with pod memory usage metric spikes, and check whether memory consumption exceeded limits within 5 minutes before termination.
+1. Analyze pod events from Playbook steps 1-2 to confirm the OOMKilled termination reason. Events showing "OOMKilled" in the termination reason field confirm memory exhaustion as the root cause. Exit code 137 indicates SIGKILL (128 + 9).
 
-2. Compare the pod termination timestamps with node-level OOM kill event timestamps from system logs (dmesg), and check whether system OOM kills occurred within 5 minutes before pod terminations.
+2. If container termination reason shows "OOMKilled" (from Playbook step 1), there are two possible scenarios:
+   - Container memory limit exceeded: The container used more memory than its configured limit (resources.limits.memory)
+   - Node-level OOM: The node ran out of memory and the kernel killed the container
 
-3. Compare the pod termination timestamps with node MemoryPressure condition timestamps, and check whether node-level memory pressure occurred within 5 minutes before pod OOM kills.
+3. If pod events show OOMKilled without node MemoryPressure condition (from Playbook step 3), the issue is container-level memory limits being too restrictive. Compare actual memory usage (Playbook step 5) with configured limits (Playbook step 4) to determine appropriate limit increases.
 
-4. Compare the pod termination timestamps with memory limit modification timestamps in the deployment, and check whether memory limits were reduced within 30 minutes before OOM kills began.
+4. If node conditions show MemoryPressure (from Playbook step 3), the issue is node-level memory exhaustion. Check system logs (dmesg) for kernel OOM killer messages and identify which processes consumed excessive memory.
 
-5. Compare the pod termination timestamps with deployment rollout or image update timestamps, and check whether application changes occurred within 1 hour before OOM kills, indicating the new version may have memory leaks or higher memory requirements.
+5. If pod logs (Playbook step 6) show memory allocation failures, OutOfMemoryError, or similar errors before termination, the application has a memory leak or insufficient heap configuration. Review application memory settings (e.g., JVM heap size, Node.js max-old-space-size).
 
-6. Compare the pod termination timestamps with application error log timestamps indicating memory allocation failures or memory-related errors, and check whether memory issues were logged within 5 minutes before termination.
+6. If events indicate recent deployment changes, correlate OOM kill onset with deployment rollout timestamps to identify if new application versions have higher memory requirements or memory leaks.
 
-7. Compare the pod termination timestamps with cluster scaling events or workload increases that may have caused resource competition, and check whether resource pressure increased within 30 minutes before OOM kills.
+7. If memory usage metrics show gradual increase over time before OOMKill, investigate memory leaks in the application code or unbounded caching.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review application logs for gradual memory leak patterns, check for intermittent memory spikes from specific operations, examine memory usage trends for gradual increase over time, verify if application dependencies started consuming more memory, and check for node-level memory pressure that may have developed gradually. OOM kills may result from cumulative memory pressure rather than immediate limit changes.
+**If no clear root cause is identified from pod events**: Review application-specific memory configurations, check for memory-intensive operations that may cause spikes, verify if memory requests are set appropriately for scheduling, examine if other pods on the same node are consuming excessive memory, and consider implementing memory profiling to identify leak sources.
 

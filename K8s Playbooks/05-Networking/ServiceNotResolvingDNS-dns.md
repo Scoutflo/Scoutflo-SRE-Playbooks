@@ -18,39 +18,50 @@ Service DNS names cannot be resolved; cluster-internal service discovery fails; 
 
 ## Playbook
 
-1. List pods in the kube-system namespace and check CoreDNS pod status to verify if DNS pods are running and ready.
+1. Describe CoreDNS pods in `kube-system` namespace using `kubectl describe pod -n kube-system -l k8s-app=kube-dns` to inspect pod details, conditions, status, and recent events.
 
-2. Retrieve the kube-dns Service in the kube-system namespace and verify it exists and has endpoints to ensure DNS service is accessible.
+2. Retrieve events in `kube-system` namespace using `kubectl get events -n kube-system --field-selector involvedObject.name=coredns --sort-by='.metadata.creationTimestamp'` to identify recent CoreDNS-related events and issues.
 
-3. Retrieve CoreDNS pod `<coredns-pod-name>` in namespace kube-system and inspect its status, logs, and events to identify why DNS is not functioning.
+3. Retrieve the kube-dns Service in the kube-system namespace and verify it exists and has endpoints to ensure DNS service is accessible.
 
-4. Check CoreDNS plugin status by executing `coredns -plugins` using Pod Exec tool in CoreDNS pod to verify if plugins are functioning correctly.
+4. Retrieve CoreDNS pod logs in namespace kube-system and inspect for errors to identify why DNS is not functioning.
 
-5. Check upstream DNS server availability by reviewing CoreDNS logs for upstream DNS connection failures or timeouts.
+5. Check CoreDNS plugin status by executing `coredns -plugins` using Pod Exec tool in CoreDNS pod to verify if plugins are functioning correctly.
 
-6. From a test pod, execute `nslookup <service-name>.<namespace>.svc.cluster.local` or equivalent DNS queries using Pod Exec tool to test DNS resolution and verify if queries are working.
+6. Check upstream DNS server availability by reviewing CoreDNS logs for upstream DNS connection failures or timeouts.
 
-7. Check CoreDNS configuration by retrieving ConfigMap `coredns` in namespace kube-system and reviewing DNS server configuration and upstream server settings.
+7. From a test pod, execute `nslookup <service-name>.<namespace>.svc.cluster.local` or equivalent DNS queries using Pod Exec tool to test DNS resolution and verify if queries are working.
 
-8. List NetworkPolicy objects in namespace kube-system and check if policies are blocking DNS traffic to or from CoreDNS pods.
+8. Check CoreDNS configuration by retrieving ConfigMap `coredns` in namespace kube-system and reviewing DNS server configuration and upstream server settings.
+
+9. List NetworkPolicy objects in namespace kube-system and check if policies are blocking DNS traffic to or from CoreDNS pods.
 
 ## Diagnosis
 
-1. Compare the DNS resolution failure timestamps with CoreDNS pod restart or crash timestamps, and check whether DNS pod failures occurred within 5 minutes before DNS resolution failures.
+Begin by analyzing the events and CoreDNS status collected in the Playbook section. CoreDNS pod state, kube-dns service endpoints, and DNS query test results provide the primary diagnostic signals.
 
-2. Compare the DNS resolution failure timestamps with upstream DNS server unavailability timestamps from CoreDNS logs, and check whether upstream DNS issues occurred within 5 minutes before DNS resolution failures.
+**If CoreDNS pods show CrashLoopBackOff or are not Ready:**
+- The DNS service is down. Check the pod termination reason from describe output. If OOMKilled, increase memory limits. If configuration errors appear in logs, review the Corefile in ConfigMap `coredns`.
 
-3. Compare the DNS resolution failure timestamps with CoreDNS plugin failure timestamps, and check whether plugin failures occurred within 5 minutes before DNS resolution failures.
+**If kube-dns service exists but shows no endpoints:**
+- CoreDNS pods are not registered with the service. Verify pods have the label `k8s-app=kube-dns` and are in Ready state. Check if the service selector matches the pod labels.
 
-4. Compare the DNS resolution failure timestamps with CoreDNS configuration modification timestamps, and check whether DNS configuration changes occurred within 30 minutes before resolution failures.
+**If CoreDNS logs show SERVFAIL or NXDOMAIN for cluster domains:**
+- CoreDNS cannot resolve the requested service. Verify the service exists in the specified namespace. Check that the service has a valid ClusterIP and is not headless without endpoints.
 
-5. Compare the DNS resolution failure timestamps with kube-dns service or endpoint modification timestamps, and check whether DNS service changes occurred within 10 minutes before resolution failures.
+**If CoreDNS logs show upstream connection failures:**
+- External DNS resolution fails, which may affect cluster DNS if plugins are chained. Verify upstream DNS servers in the Corefile are reachable. This typically affects external domain resolution, not cluster-internal services.
 
-6. Compare the DNS resolution failure timestamps with NetworkPolicy creation or modification timestamps that may affect DNS traffic, and check whether policy changes occurred within 10 minutes before DNS failures.
+**If DNS queries work from CoreDNS pod but fail from other pods:**
+- Network path to CoreDNS is blocked. Check NetworkPolicies in kube-system that might restrict ingress. Verify the CNI plugin is functioning on nodes where failing pods run.
 
-7. Compare the DNS resolution failure timestamps with CoreDNS resource constraint or OOM kill timestamps, and check whether resource issues occurred within 5 minutes before DNS pod failures.
+**If the service exists but nslookup returns the wrong IP or no result:**
+- DNS cache may contain stale entries, or the service was recently modified. Check if service ClusterIP changed recently. CoreDNS caches may take time to update.
 
-8. Compare the DNS resolution failure timestamps with cluster upgrade or CoreDNS deployment update timestamps, and check whether infrastructure changes occurred within 1 hour before DNS resolution failures.
+**If events are inconclusive, correlate timestamps:**
+1. Check if resolution failures began after CoreDNS pod restarts by matching failure times with pod restart timestamps.
+2. Check if the CoreDNS ConfigMap was recently modified by examining the ConfigMap resource version.
+3. Check if cluster upgrades occurred that might have affected CoreDNS by reviewing cluster events.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review CoreDNS logs for gradual performance degradation, check for intermittent DNS query processing issues, examine if DNS configuration accumulated problems over time, verify if network path issues developed gradually, and check for DNS cache or query limit issues that may have accumulated. DNS resolution failures may result from gradual CoreDNS or infrastructure degradation rather than immediate changes.
+**If no clear cause is identified:** Test DNS resolution for multiple services to determine if the issue is service-specific or cluster-wide. Check CoreDNS metrics for query success/failure rates if metrics are available.
 

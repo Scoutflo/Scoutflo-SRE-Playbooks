@@ -15,30 +15,38 @@ KubeDeploymentGenerationMismatch alerts fire; service degradation or unavailabil
 
 ## Playbook
 
-1. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and inspect its status to check observed generation versus desired generation and identify the mismatch.
+1. Describe deployment <deployment-name> in namespace <namespace> to see:
+   - Observed generation versus desired generation
+   - Replicas status (desired/updated/ready/available)
+   - Conditions showing why rollout is stuck
+   - Events showing Failed, ProgressDeadlineExceeded, or ReplicaSetCreateError errors
 
-2. Retrieve rollout history for the Deployment `<deployment-name>` in namespace `<namespace>` to identify recent updates or rollbacks that may have caused the mismatch.
+2. List events in namespace <namespace> filtered by involved object name <deployment-name> and sorted by last timestamp to see the sequence of generation mismatch issues.
 
-3. Retrieve events for the Deployment `<deployment-name>` in namespace `<namespace>` and filter for error patterns including 'Failed', 'ProgressDeadlineExceeded', 'ReplicaSetCreateError' to identify deployment issues.
+3. Retrieve rollout history for deployment <deployment-name> in namespace <namespace> to identify recent updates or rollbacks that may have caused the mismatch.
 
-4. Retrieve ReplicaSet resources belonging to the Deployment `<deployment-name>` in namespace `<namespace>` and check ReplicaSet status and replica counts to verify replica distribution.
+4. List ReplicaSet resources in namespace <namespace> with label app=<app-label> and check ReplicaSet status and replica counts to verify replica distribution.
 
-5. Retrieve the Pod `<pod-name>` in namespace `<namespace>` belonging to the Deployment `<deployment-name>` and check pod status to identify pods in failed or error states.
+5. List pods in namespace <namespace> with label app=<app-label> and describe pod <pod-name> to identify pods in failed or error states.
 
-6. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and verify deployment update strategy and check if rollout is paused to identify update blockers.
+6. Retrieve deployment <deployment-name> in namespace <namespace> and check the update strategy configuration and whether rollout is paused to identify update blockers.
 
 ## Diagnosis
 
-Compare deployment generation mismatch detection timestamps with deployment update or rollback initiation times within 30 minutes and verify whether generation mismatch began when update or rollback started, using deployment events and rollout history as supporting evidence.
+1. Analyze deployment events from Playbook steps 1-2 to identify the primary failure reason. Events showing "ProgressDeadlineExceeded" indicate rollout timeout. Events showing "ReplicaSetCreateError" indicate ReplicaSet creation failures. Events showing "FailedCreate" indicate pod creation issues. Events showing "Paused" indicate intentionally paused rollout.
 
-Correlate deployment generation mismatch with ReplicaSet creation failure timestamps within 30 minutes and verify whether ReplicaSet creation failures prevented generation update, using ReplicaSet events and deployment status as supporting evidence.
+2. If events indicate ProgressDeadlineExceeded, check deployment conditions from Playbook step 1 to identify the specific reason rollout did not complete. Correlate with rollout history from Playbook step 3 to determine if this is a new update or a stuck previous update.
 
-Compare deployment generation mismatch with pod scheduling failure timestamps within 30 minutes and verify whether pod scheduling failures prevented deployment from achieving desired generation, using pod events and deployment status as supporting evidence.
+3. If events indicate ReplicaSet creation failures, analyze ReplicaSet status from Playbook step 4 to identify which generation's ReplicaSet failed. Check for resource quota constraints or admission webhook rejections in the event messages.
 
-Analyze deployment generation mismatch patterns over the last 1 hour to determine if mismatch is persistent (reconciliation failure) or transient (update in progress), using deployment status history and ReplicaSet status as supporting evidence.
+4. If events indicate scheduling failures (FailedScheduling), correlate pod pending status from Playbook step 5 with the new ReplicaSet to confirm new pods cannot be scheduled. Verify resource constraints from node capacity data.
 
-Correlate deployment generation mismatch with resource quota exhaustion timestamps within 30 minutes and verify whether quota limits prevented ReplicaSet or pod creation, using resource quota status and deployment events as supporting evidence.
+5. If events indicate image pull failures (ErrImagePull, ImagePullBackOff), verify the new image reference from the deployment spec and check if the new image exists and is accessible.
 
-Compare deployment generation mismatch with node capacity exhaustion timestamps within 30 minutes and verify whether insufficient cluster capacity prevented deployment from achieving desired generation, using node metrics and deployment scaling attempts as supporting evidence.
+6. If events indicate pod crashes (CrashLoopBackOff, Error) for new pods, analyze pod describe output from Playbook step 5 to identify why new version pods are failing. This indicates application-level issues with the new deployment version.
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for deployment operations, review deployment update strategy configuration, check for persistent resource constraints, verify deployment controller health, examine historical deployment generation patterns. Deployment generation mismatch may result from persistent resource constraints, deployment controller issues, or cluster capacity limitations rather than immediate changes.
+7. If deployment shows "Paused: true" from Playbook step 6, the generation mismatch is expected behavior during a paused rollout. Verify if pause was intentional or requires manual intervention to resume.
+
+8. If events are inconclusive, compare observed generation versus desired generation from Playbook step 1 and correlate with rollout history from Playbook step 3 to determine if mismatch is due to a recent update, a rollback attempt, or a stuck reconciliation.
+
+**If no clear failure reason is identified from events**: Review deployment controller logs for reconciliation errors, check for persistent resource constraints across the cluster, verify deployment controller pod health in kube-system namespace, and examine if the deployment has been modified multiple times in quick succession causing controller backlog.

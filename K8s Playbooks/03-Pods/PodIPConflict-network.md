@@ -18,31 +18,31 @@ Pods have duplicate IP addresses; network routing fails; pods cannot communicate
 
 ## Playbook
 
-1. List all pods and retrieve their IP addresses to identify pods with duplicate IP addresses.
+1. Describe the pod `<pod-name>` in namespace `<namespace>` with IP conflict to retrieve detailed information including network configuration and IP assignment.
 
-2. Retrieve the pod `<pod-name>` in namespace `<namespace>` with IP conflict and inspect its network configuration and IP assignment.
+2. Retrieve events for the pod `<pod-name>` in namespace `<namespace>` sorted by timestamp to identify IP allocation failures and network-related issues.
 
-3. List pods in the kube-system namespace and check CNI plugin pod status (e.g., Calico, Flannel, Cilium) to verify if the network plugin is running and functioning.
+3. List all pods across all namespaces and retrieve their IP addresses to identify pods with duplicate IP addresses.
 
-4. Retrieve logs from CNI plugin pods in the kube-system namespace and filter for IP allocation errors, conflicts, or CIDR issues.
+4. List pods in the `kube-system` namespace and check CNI plugin pod status (e.g., Calico, Flannel, Cilium) to verify if the network plugin is running and functioning.
 
-5. Check cluster pod CIDR configuration and verify if CIDR ranges are correctly configured and do not overlap.
+5. Retrieve logs from CNI plugin pods in the `kube-system` namespace and filter for IP allocation errors, conflicts, or CIDR issues.
 
-6. List events in namespace `<namespace>` and filter for network-related events, focusing on events with reasons such as `FailedCreatePodSandbox` or messages indicating IP allocation failures.
+6. Check cluster pod CIDR configuration to verify if CIDR ranges are correctly configured and do not overlap.
 
 ## Diagnosis
 
-1. Compare the pod IP conflict timestamps with CNI plugin pod restart or failure timestamps, and check whether network plugin failures occurred within 5 minutes before IP conflicts.
+1. Analyze pod events from Playbook to identify FailedCreatePodSandbox or IP allocation failure errors. If events show IP allocation conflicts or IPAM errors, note the specific error message indicating the conflict source.
 
-2. Compare the pod IP conflict timestamps with pod CIDR configuration modification timestamps, and check whether CIDR range changes occurred within 30 minutes before IP conflicts.
+2. If events indicate IP conflicts, check the list of all pod IPs from Playbook to identify pods with duplicate IP addresses. If multiple pods share the same IP, identify which pods are affected and their respective nodes.
 
-3. Compare the pod IP conflict timestamps with cluster network plugin deployment update timestamps, and check whether network plugin updates occurred within 1 hour before IP conflicts.
+3. If duplicate IPs are confirmed, check CNI plugin pod status in kube-system from Playbook. If CNI pods show failures, restarts, or NotReady state, the network plugin IPAM is not functioning correctly.
 
-4. Compare the pod IP conflict timestamps with node addition or removal timestamps, and check whether cluster scaling events occurred within 30 minutes before IP conflicts, potentially causing CIDR overlap.
+4. If CNI pods are healthy, review CNI plugin logs from Playbook for IPAM errors, IP pool exhaustion, or CIDR overlap warnings. If logs show IP pool exhaustion, the allocated CIDR range has no available addresses.
 
-5. Compare the pod IP conflict timestamps with CNI plugin configuration modification timestamps, and check whether network plugin settings were changed within 30 minutes before IP conflicts.
+5. If IPAM is functioning, check cluster pod CIDR configuration from Playbook. If CIDR ranges overlap between nodes or conflict with node CIDRs, IP allocation produces duplicates.
 
-6. Compare the pod IP conflict timestamps with IP address pool exhaustion timestamps, and check whether IP pools ran out of available addresses within 30 minutes before IP conflicts.
+6. If CIDR configuration is correct, verify recent node additions from Playbook events. If new nodes were added without proper CIDR allocation, node CIDR ranges may overlap with existing nodes.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review CNI plugin logs for gradual IP allocation issues, check for intermittent network plugin failures, examine if IP address pools gradually exhausted over time, verify if CIDR configurations drifted gradually, and check for network plugin resource constraints that may have accumulated. IP conflicts may result from gradual network plugin issues rather than immediate configuration changes.
+**If no IPAM configuration issue is found**: Review CNI plugin version compatibility, check if manual IP assignments conflict with IPAM allocations, verify if multiple CNI plugins are installed causing conflicts, and examine if CNI plugin database or state store is corrupted.
 

@@ -18,31 +18,31 @@ Pods cannot start; deployments remain at 0 replicas; rolling updates fail; appli
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect container waiting state reason and message fields to confirm `ImagePullBackOff` or `ErrImagePull` and capture the exact error.
+1. Describe pod <pod-name> in namespace <namespace> to inspect container waiting state reason and message fields to confirm ImagePullBackOff or ErrImagePull and capture the exact error - look in Events section for "Failed to pull image" with the specific reason (auth error, not found, timeout).
 
-2. List events in namespace `<namespace>` and filter for image pull errors associated with the pod, focusing on events with reasons such as `Failed` and messages containing "pull" or `ErrImagePull`.
+2. Retrieve events in namespace <namespace> for pod <pod-name> sorted by timestamp to see the sequence of image pull errors, focusing on events with reasons such as Failed and messages containing "pull" or ErrImagePull.
 
-3. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and verify that each container's `image` field (registry, repository, tag, or digest) is correct and exists in the target registry.
+3. Retrieve the Deployment <deployment-name> in namespace <namespace> and verify that each container's image field (registry, repository, tag, or digest) is correct and exists in the target registry.
 
-4. Check the pod spec for `imagePullSecrets`, then retrieve and validate those Secret objects in namespace `<namespace>` to confirm they exist and contain valid credentials for the registry.
+4. Check the pod spec for imagePullSecrets for pod <pod-name> in namespace <namespace>, then retrieve and validate those Secret objects to confirm they exist and contain valid credentials for the registry.
 
-5. From a test pod, execute `curl <registry-url>` or an equivalent HTTP request using Pod Exec tool to verify network connectivity and basic reachability to the container registry endpoint.
+5. Verify network connectivity and basic reachability to the container registry endpoint <registry-url> from a test pod in the cluster.
 
-6. On the node where the pod is scheduled, verify disk space availability (for example, using `df -h` via Pod Exec tool or SSH if node access is available) in the image storage directories to ensure there is enough space to pull the image.
+6. On the node where the pod is scheduled, verify disk space availability in the image storage directories to ensure there is enough space to pull the image.
 
 ## Diagnosis
 
-1. Compare the image pull failure event timestamps with image pull secret modification timestamps (secret.metadata.creationTimestamp or secret.metadata.annotations timestamps), and check whether failures began within 10 minutes of a secret update.
+1. Analyze pod events from Playbook to identify the specific image pull error type. Events showing "Failed to pull image" with "unauthorized" indicate authentication issues. Events showing "manifest unknown" or "not found" indicate the image or tag does not exist. Events showing "timeout" or "i/o timeout" indicate network connectivity problems.
 
-2. Compare the image pull failure event timestamps with the results and timestamps of registry connectivity tests (for example, `curl <registry-url>` from a test pod), and check whether network failures or timeouts coincide with the start of image pull errors.
+2. If events indicate authentication failure, verify imagePullSecrets from Playbook validation results. Confirm the Secret exists, is correctly referenced in the pod spec, and contains valid base64-encoded credentials. Check if the credentials have expired or been rotated.
 
-3. Compare the image pull failure event timestamps with Deployment image change timestamps, and check whether failures began within 1 hour after the image reference was changed.
+3. If events indicate image not found, use the image name from Playbook deployment inspection to verify correctness. Check if the registry hostname is correct, the repository path exists, and the tag or digest is valid. Verify the image was not recently deleted or if the tag was moved.
 
-4. Compare the image pull failure event timestamps with Deployment modification timestamps, and check whether a new deployment or rollout occurred within 1 hour before failures started.
+4. If events indicate network issues, use the Playbook connectivity test results to determine if the registry is reachable from cluster nodes. Check for DNS resolution failures, firewall rules blocking registry ports (typically 443), or NetworkPolicies restricting egress.
 
-5. Compare the image pull failure event timestamps with container registry maintenance windows and node disk space checks, and check whether registry outages or low disk conditions on the pulling node occurred at the same time as failures.
+5. If events indicate rate limiting or quota exhaustion, check if the registry enforces pull limits. For public registries like Docker Hub, configure imagePullSecrets with authenticated credentials to increase rate limits.
 
-6. Compare the image pull failure event timestamps with NetworkPolicy modification timestamps in namespaces that control egress to the registry, and check whether new or updated policies were applied within 10 minutes before pull errors began.
+6. If events indicate node-level issues, verify disk space availability from Playbook node checks. Check if the node has sufficient space in /var/lib/docker or /var/lib/containerd for image layers.
 
-**If no correlation is found within the specified time windows**: Extend the search window (10 minutes → 30 minutes, 1 hour → 2 hours), review registry connectivity from multiple nodes to identify network path issues, check for gradual registry performance degradation, examine image pull secret expiration that may have occurred earlier, verify if registry maintenance or rate limiting was introduced, and check node disk space trends for gradual exhaustion. Image pull failures may result from network or registry issues that developed over time.
+**If no clear cause is identified from events**: Check if multiple pods on the same node are failing (indicating node-specific issue), verify registry TLS certificates are trusted by the container runtime, examine if a proxy or service mesh is intercepting registry traffic, and review if the image requires specific platform architecture (amd64 vs arm64).
 

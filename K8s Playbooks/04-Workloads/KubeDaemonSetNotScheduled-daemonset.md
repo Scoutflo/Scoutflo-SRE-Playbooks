@@ -15,30 +15,32 @@ DaemonSet scheduling alerts fire; service degradation or unavailability; DaemonS
 
 ## Playbook
 
-1. Retrieve the DaemonSet `<daemonset-name>` in namespace `<namespace>` and inspect its status to check number scheduled versus desired number scheduled and identify the mismatch.
+1. Describe DaemonSet <daemonset-name> in namespace <namespace> to see:
+   - Number scheduled versus desired number scheduled
+   - Node selector, tolerations, and affinity rule configurations
+   - Conditions showing why pods are not scheduled
+   - Events showing FailedScheduling, InsufficientCPU, InsufficientMemory, or Unschedulable errors
 
-2. Retrieve the Pod `<pod-name>` in namespace `<namespace>` belonging to the DaemonSet `<daemonset-name>` and check pod status to identify pods in Pending state.
+2. Retrieve events for DaemonSet <daemonset-name> in namespace <namespace> sorted by timestamp to see the sequence of scheduling failures.
 
-3. Retrieve events for the Pod `<pod-name>` in namespace `<namespace>` and filter for scheduling error patterns including 'FailedScheduling', 'InsufficientCPU', 'InsufficientMemory', 'Unschedulable' to identify scheduling blockers.
+3. List pods belonging to DaemonSet in namespace <namespace> with label app=<daemonset-label> and describe pods to identify pods in Pending state and scheduling blockers.
 
-4. Retrieve the DaemonSet `<daemonset-name>` in namespace `<namespace>` and check DaemonSet pod template parameters including resource requests, node selectors, tolerations, and affinity rules to verify configuration issues.
+4. Describe node <node-name> to verify node availability, conditions, taints, and compatibility with DaemonSet tolerations.
 
-5. Retrieve the Node `<node-name>` resources and verify node availability and conditions for nodes where DaemonSet pods should be scheduled.
-
-6. Retrieve the Node `<node-name>` resources and check node taints and verify compatibility with DaemonSet tolerations to identify taint/toleration mismatches.
+5. Retrieve node resource usage metrics to verify resource availability for nodes where DaemonSet pods should be scheduled.
 
 ## Diagnosis
 
-Compare DaemonSet scheduling failure timestamps with node taint or label change timestamps within 10 minutes and verify whether scheduling failures began after node configuration changes, using node taint/label history and pod scheduling events as supporting evidence.
+1. Analyze DaemonSet and pod events from Playbook to identify the scheduling blocker. Events showing "FailedScheduling" with specific reasons (InsufficientCPU, InsufficientMemory, node(s) had taint) indicate the exact constraint preventing pod placement.
 
-Correlate DaemonSet scheduling failures with DaemonSet configuration change timestamps within 30 minutes and verify whether scheduling failures began after DaemonSet template updates, using DaemonSet modification history and pod scheduling events as supporting evidence.
+2. If events indicate taint-related failures (node(s) had taint that the pod didn't tolerate), compare node taints from Playbook with DaemonSet tolerations. DaemonSets require explicit tolerations for node taints. Common missing tolerations include node-role.kubernetes.io/master, node-role.kubernetes.io/control-plane, or custom taints.
 
-Analyze pod scheduling failure patterns over the last 15 minutes to determine if failures are due to resource constraints, node availability, or configuration mismatches, using pod events and node conditions as supporting evidence.
+3. If events indicate resource constraints (InsufficientCPU, InsufficientMemory), compare DaemonSet pod resource requests with node allocatable resources. DaemonSet pods compete with other pods for node resources. Verify if existing pods consume resources that DaemonSet pods need.
 
-Compare DaemonSet pod resource requests with node available resources at scheduling failure times and verify whether resource constraints prevented scheduling, using node metrics and pod resource specifications as supporting evidence.
+4. If events indicate node selector mismatches (node(s) didn't match Pod's node affinity/selector), verify that the DaemonSet's nodeSelector or nodeAffinity matches labels on target nodes. Check if expected node labels exist using node descriptions from Playbook.
 
-Correlate DaemonSet scheduling failures with node condition transitions within 5 minutes and verify whether node NotReady or resource pressure conditions prevented scheduling, using node conditions and pod scheduling events as supporting evidence.
+5. If events indicate nodes are unschedulable (node(s) were unschedulable), check node conditions for cordoned nodes or nodes with scheduling disabled. Cordoned nodes prevent new pod scheduling including DaemonSet pods.
 
-Compare DaemonSet toleration configurations with node taint configurations and verify whether missing or incorrect tolerations prevented pods from scheduling on tainted nodes, using DaemonSet tolerations and node taints as supporting evidence.
+6. If pods are Pending but no clear scheduling failure event exists, check if the nodes are in NotReady state. DaemonSet pods are not scheduled to NotReady nodes by default. Verify node conditions from Playbook.
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for configuration changes, review DaemonSet selector and toleration configurations, check for persistent resource constraints, verify node feature discovery label changes, examine historical DaemonSet scheduling patterns. DaemonSet scheduling failures may result from configuration mismatches, persistent resource constraints, or node pool changes rather than immediate changes.
+7. If DaemonSet uses nodeAffinity with requiredDuringSchedulingIgnoredDuringExecution, pods will not schedule if no nodes match the affinity rules. Verify that at least some nodes in the cluster match the specified node affinity expressions.

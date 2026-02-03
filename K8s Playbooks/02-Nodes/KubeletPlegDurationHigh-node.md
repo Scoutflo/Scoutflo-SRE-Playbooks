@@ -15,30 +15,37 @@ KubeletPlegDurationHigh alerts fire; kubelet pod lifecycle management is slow; p
 
 ## Playbook
 
-1. Retrieve metrics for kubelet PLEG duration on the Node `<node-name>` to verify current PLEG duration values and identify performance degradation.
+1. Describe node <node-name> to see:
+   - Conditions section showing Ready status and pressure conditions (MemoryPressure, DiskPressure, PIDPressure)
+   - Events section showing any PLEG-related or performance issues
+   - Allocated resources and pod count
 
-2. Retrieve kubelet logs from the Node `<node-name>` by accessing via Pod Exec tool or SSH if node access is available, and filter for PLEG-related error patterns to identify PLEG issues.
+2. Retrieve events for node <node-name> sorted by timestamp to see the sequence of node issues that may relate to PLEG performance.
 
-3. List Pod resources scheduled on the Node `<node-name>` and check pod density by counting pods scheduled on the node to verify high pod density.
+3. Retrieve metrics for kubelet PLEG duration on the Node <node-name> to verify current PLEG duration values and identify performance degradation.
 
-4. Verify container runtime health and performance on the Node `<node-name>` to identify container runtime issues.
+4. Retrieve kubelet logs from the Node <node-name> by accessing via Pod Exec tool or SSH if node access is available, and filter for PLEG-related error patterns to identify PLEG issues.
 
-5. Retrieve metrics for the Node `<node-name>` and check node resource usage including CPU, memory, and disk I/O to identify resource constraints.
+5. List pods scheduled on node <node-name> and check pod density by counting pods scheduled on the node to verify high pod density.
 
-6. Retrieve the Node `<node-name>` and verify node conditions including MemoryPressure, DiskPressure, and PIDPressure that may affect PLEG performance.
+6. Verify container runtime health and performance on the Node <node-name> to identify container runtime issues.
+
+7. Retrieve metrics for the Node <node-name> and check node resource usage including CPU, memory, and disk I/O to identify resource constraints.
 
 ## Diagnosis
 
-Compare PLEG duration increase timestamps with pod density increase times on node `<node-name>` within 30 minutes and verify whether PLEG duration increased when pod count increased, using pod density metrics and PLEG duration measurements as supporting evidence.
+1. Analyze node events from Playbook steps 1-2 to identify performance-related issues. Events indicating resource pressure (MemoryPressure, DiskPressure, PIDPressure) or container runtime issues provide context for PLEG performance degradation. Note event timestamps to correlate with PLEG duration spikes.
 
-Correlate PLEG duration spikes with container runtime performance degradation timestamps within 5 minutes and verify whether container runtime slowdowns caused PLEG duration increases, using container runtime metrics and PLEG duration as supporting evidence.
+2. If node events indicate high pod density or frequent pod churn, check pod count from Playbook step 5. PLEG must query the container runtime for each pod's status, so high pod density directly increases PLEG duration.
 
-Compare PLEG duration with node resource pressure condition transitions within 5 minutes and verify whether resource pressure (MemoryPressure, DiskPressure) caused PLEG performance degradation, using node conditions and PLEG duration metrics as supporting evidence.
+3. If node events indicate resource pressure conditions, check node conditions from Playbook step 1 and resource metrics from Playbook step 7. Memory pressure or disk I/O constraints slow container runtime operations that PLEG depends on.
 
-Analyze PLEG duration patterns over the last 15 minutes to determine if duration is consistently high (performance issue) or intermittent (resource constraints), using PLEG duration metrics and node resource usage as supporting evidence.
+4. If kubelet logs from Playbook step 4 show PLEG-related errors or warnings ("PLEG is not healthy", "relist exceeded threshold"), this confirms PLEG performance issues and may indicate the specific bottleneck.
 
-Correlate PLEG duration increases with disk I/O or storage performance degradation timestamps within 5 minutes and verify whether storage performance issues affected PLEG, using disk I/O metrics and PLEG duration as supporting evidence.
+5. If container runtime health from Playbook step 6 shows degradation, verify container runtime performance. PLEG duration is directly tied to container runtime responsiveness; slow runtime causes slow PLEG.
 
-Compare current PLEG duration with historical baseline PLEG duration for node `<node-name>` over the last 7 days and verify whether current duration represents a new issue or ongoing performance problems, using PLEG duration history and node performance baselines as supporting evidence.
+6. If PLEG duration metrics from Playbook step 3 show sustained high values without resource pressure, check for container runtime configuration issues or underlying storage performance problems affecting container state queries.
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for performance analysis, review container runtime configuration, check for storage performance issues, verify node hardware health, examine historical PLEG performance patterns. PLEG duration may be high due to container runtime performance issues, high pod density, or node resource constraints rather than immediate changes.
+7. If PLEG duration is intermittent rather than consistent, correlate with periods of high pod scheduling activity or container lifecycle events. Burst activity can temporarily overwhelm PLEG processing capacity.
+
+**If no root cause is identified from events**: Review container runtime logs for performance issues, check disk I/O metrics for storage bottlenecks, verify node has sufficient resources for the pod density, and examine if container runtime configuration (such as container log rotation) is causing overhead.

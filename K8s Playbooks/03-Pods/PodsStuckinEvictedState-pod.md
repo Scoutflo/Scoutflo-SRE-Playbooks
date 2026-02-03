@@ -18,31 +18,37 @@ Evicted pods remain in the cluster; pod resources are not released; deployments 
 
 ## Playbook
 
-1. List pods in namespace `<namespace>` and filter for pods with status `Evicted` to identify all evicted pods.
+1. Describe pod <pod-name> in namespace <namespace> to inspect status.reason and status.message to confirm eviction reason and identify which resource pressure caused the eviction.
 
-2. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect `status.reason` and `status.message` to confirm eviction reason and identify which resource pressure caused the eviction.
+2. Retrieve events in namespace <namespace> for pod <pod-name> sorted by timestamp to identify eviction events, focusing on events with reasons such as Evicted and messages indicating the resource pressure type (memory, disk, PID).
 
-3. List events in namespace `<namespace>` and filter for eviction events, focusing on events with reasons such as `Evicted` and messages indicating the resource pressure type (memory, disk, PID).
+3. List pods in namespace <namespace> and filter for pods with status Evicted to identify all evicted pods.
 
 4. Check the node where the pod was evicted and verify its resource pressure conditions (MemoryPressure, DiskPressure, PIDPressure) to understand current node state.
 
-5. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and review resource requests to verify if requests are reasonable relative to node capacity.
+5. Retrieve the Deployment <deployment-name> in namespace <namespace> and review resource requests to verify if requests are reasonable relative to node capacity.
 
 6. Check node resource usage metrics to verify current available resources and identify if node-level resource pressure persists.
 
 ## Diagnosis
 
-1. Compare the pod eviction timestamps with node MemoryPressure condition transition timestamps, and check whether memory pressure occurred within 5 minutes before pod evictions.
+1. Analyze pod events from Playbook steps 1-2 to identify the eviction reason. The status.reason field shows "Evicted" and status.message indicates the specific resource pressure (memory, disk, PID) that triggered the eviction.
 
-2. Compare the pod eviction timestamps with node DiskPressure condition transition timestamps, and check whether disk pressure occurred within 5 minutes before pod evictions.
+2. If eviction message indicates MemoryPressure (from Playbook step 1), the node ran out of memory. Check node conditions (Playbook step 4) to confirm MemoryPressure and review node memory usage metrics (Playbook step 6) to identify memory-hungry pods.
 
-3. Compare the pod eviction timestamps with node resource usage metric spikes (CPU, memory, disk), and check whether resource exhaustion occurred within 5 minutes before evictions.
+3. If eviction message indicates DiskPressure, the node ran out of disk space. Common causes include:
+   - Container logs consuming too much space
+   - Container images filling the disk
+   - emptyDir volumes growing unbounded
+   - Application writing excessive data to ephemeral storage
 
-4. Compare the pod eviction timestamps with deployment resource request modification timestamps, and check whether resource requests were increased within 30 minutes before evictions, causing nodes to exceed capacity.
+4. If eviction message indicates PIDPressure, the node has too many running processes. Check for runaway process spawning in containers.
 
-5. Compare the pod eviction timestamps with cluster scaling events or workload increases, and check whether resource competition increased within 30 minutes before evictions.
+5. If multiple pods were evicted simultaneously (from Playbook step 3), there was a significant resource pressure event on the node. Lower-priority pods are evicted first based on QoS class (BestEffort, then Burstable, then Guaranteed).
 
-6. Compare the pod eviction timestamps with node maintenance, cordoning, or draining operations, and check whether node operations occurred within 1 hour before evictions, potentially causing resource pressure.
+6. If deployment resource requests (from Playbook step 5) are too low relative to actual usage, pods may be scheduled on nodes with insufficient capacity. Increase resource requests to ensure proper scheduling.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review node resource usage trends for gradual exhaustion, check for cumulative resource pressure from multiple workloads, examine if eviction thresholds were recently adjusted, verify if node capacity decreased due to other resource allocations, and check for gradual workload growth that exceeded node capacity over time. Pod evictions may result from cumulative resource pressure rather than immediate changes.
+7. Evicted pods remain in Evicted state until manually deleted or garbage collected. They do not automatically restart; the deployment controller creates new pods on other nodes.
+
+**To prevent future evictions**: Set appropriate resource requests and limits, configure pod priority classes for critical workloads, implement horizontal pod autoscaling, add more nodes to the cluster, or reduce resource consumption in applications.
 

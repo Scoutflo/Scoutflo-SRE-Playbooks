@@ -18,31 +18,41 @@ Ingress endpoints cause infinite redirects; browsers show redirect loop errors; 
 
 ## Playbook
 
-1. Retrieve the Ingress `<ingress-name>` in namespace `<namespace>` and inspect its rules, annotations, and redirect configurations to identify potential loop sources.
+1. Describe the Ingress `<ingress-name>` in namespace `<namespace>` using `kubectl describe ingress <ingress-name> -n <namespace>` and inspect its rules, annotations, and redirect configurations to identify potential loop sources.
 
-2. Retrieve logs from the ingress controller pod `<controller-pod-name>` in namespace `<namespace>` and filter for redirect loop errors, circular redirect messages, or routing conflicts.
+2. List events in namespace `<namespace>` using `kubectl get events -n <namespace> --field-selector involvedObject.name=<ingress-name> --sort-by='.lastTimestamp'` and filter for ingress-related events, focusing on events with reasons such as `Sync`, `Failed`, or messages indicating redirect or routing issues.
 
-3. Check ingress annotations for SSL/TLS redirect configurations (e.g., `nginx.ingress.kubernetes.io/ssl-redirect`, `cert-manager.io/issuer`) and verify if redirects are creating loops.
+3. Retrieve logs from the ingress controller pod `<controller-pod-name>` in namespace `<namespace>` and filter for redirect loop errors, circular redirect messages, or routing conflicts.
 
-4. Retrieve all Ingress resources in namespace `<namespace>` and check for conflicting rules or overlapping paths that may cause redirect loops.
+4. Check ingress annotations for SSL/TLS redirect configurations (e.g., `nginx.ingress.kubernetes.io/ssl-redirect`, `cert-manager.io/issuer`) and verify if redirects are creating loops.
 
-5. Retrieve the backend Service `<service-name>` and check if the application itself is redirecting traffic, which may combine with ingress redirects to create loops.
+5. Retrieve all Ingress resources in namespace `<namespace>` and check for conflicting rules or overlapping paths that may cause redirect loops.
 
 6. From a test pod, execute `curl` with redirect following disabled using Pod Exec tool to trace redirect paths and identify where loops occur.
 
 ## Diagnosis
 
-1. Compare the ingress redirect loop timestamps with ingress rule modification timestamps, and check whether routing rules were changed within 30 minutes before redirect loops began.
+Begin by analyzing the Ingress describe output and curl trace results collected in the Playbook section. The Ingress annotations, TLS configuration, and redirect path trace provide the primary diagnostic signals.
 
-2. Compare the ingress redirect loop timestamps with ingress SSL/TLS redirect annotation modification timestamps, and check whether redirect configurations were added or modified within 30 minutes before loops.
+**If Ingress has `nginx.ingress.kubernetes.io/ssl-redirect: "true"` and backend also redirects to HTTPS:**
+- Both ingress and application are forcing HTTPS, creating a loop. Set `nginx.ingress.kubernetes.io/ssl-redirect: "false"` on the Ingress since TLS termination happens at the ingress controller.
 
-3. Compare the ingress redirect loop timestamps with conflicting ingress resource creation timestamps, and check whether overlapping ingress rules were added within 30 minutes before redirect loops.
+**If curl trace shows HTTP to HTTPS redirect followed by HTTPS to HTTP redirect:**
+- The backend application is redirecting to HTTP while the ingress forces HTTPS. Configure the backend to use HTTPS URLs in its redirects, or set appropriate headers like `X-Forwarded-Proto` to inform the backend it's behind TLS termination.
 
-4. Compare the ingress redirect loop timestamps with backend service redirect configuration modification timestamps, and check whether application redirects were introduced within 30 minutes before loops.
+**If multiple Ingress resources match the same hostname with different redirect rules:**
+- Conflicting Ingress resources are causing the loop. List all Ingress resources matching the hostname and consolidate redirect rules into a single Ingress or ensure paths do not overlap.
 
-5. Compare the ingress redirect loop timestamps with ingress controller configuration or annotation modification timestamps, and check whether controller redirect settings were changed within 30 minutes before loops.
+**If curl trace shows redirects between paths that match different Ingress rules:**
+- Path-based routing is creating a redirect cycle. Review all Ingress path rules for the hostname. Ensure application redirects target paths handled by the same backend or adjust Ingress path matching.
 
-6. Compare the ingress redirect loop timestamps with certificate or TLS configuration change timestamps, and check whether SSL/TLS changes occurred within 1 hour before redirect loops, indicating certificate redirects may be causing issues.
+**If the backend application implements its own redirect logic:**
+- The application's redirect URL conflicts with ingress routing. Check application configuration for redirect URLs. Ensure redirects use the correct protocol and hostname that the ingress expects.
 
-**If no correlation is found within the specified time windows**: Extend the search window (30 minutes → 1 hour, 1 hour → 2 hours), review ingress controller logs for gradual redirect rule processing issues, check for intermittent redirect conflicts, examine if ingress rules accumulated redirect configurations over time, verify if backend service redirect behavior changed gradually, and check for certificate renewal or TLS configuration drift that may have introduced redirect loops. Redirect loops may result from cumulative configuration changes rather than immediate modifications.
+**If events are inconclusive, correlate timestamps:**
+1. Check if the loop started after adding TLS configuration or ssl-redirect annotation by examining Ingress modification history.
+2. Check if the loop began after creating a new Ingress for the same hostname.
+3. Check if backend Deployment changes introduced application-level redirects.
+
+**If no clear cause is identified:** Temporarily disable ssl-redirect and test with HTTP only to isolate whether the issue is TLS-related. Capture the full redirect chain using `curl -L -v --max-redirs 10` to trace the exact loop pattern.
 

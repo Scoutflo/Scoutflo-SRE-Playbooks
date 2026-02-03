@@ -18,31 +18,44 @@ Ingress endpoints return 502 Bad Gateway errors; external traffic cannot reach a
 
 ## Playbook
 
-1. Retrieve the Ingress `<ingress-name>` in namespace `<namespace>` and inspect its configuration and backend service references to verify routing rules.
+1. Describe the Ingress `<ingress-name>` in namespace `<namespace>` using `kubectl describe ingress <ingress-name> -n <namespace>` and inspect its configuration, backend service references, and annotations to verify routing rules.
 
-2. Retrieve logs from the ingress controller pod `<controller-pod-name>` in namespace `<namespace>` and filter for 502 errors, backend connection failures, or service unreachable messages related to the ingress.
+2. List events in namespace `<namespace>` using `kubectl get events -n <namespace> --field-selector involvedObject.name=<ingress-name> --sort-by='.lastTimestamp'` and filter for ingress-related events, focusing on events with reasons such as `Failed`, `Sync`, or messages indicating backend connection or routing errors.
 
-3. Retrieve the Service `<service-name>` referenced as a backend in the ingress and verify it exists, has endpoints, and check its port configuration.
+3. Retrieve logs from the ingress controller pod `<controller-pod-name>` in namespace `<namespace>` and filter for 502 errors, backend connection failures, or service unreachable messages related to the ingress.
 
-4. List Endpoints for the Service `<service-name>` in namespace `<namespace>` and verify that pods are registered as endpoints and are ready.
+4. Retrieve the Service `<service-name>` referenced as a backend in the ingress and verify it exists, has endpoints, and check its port configuration.
 
-5. Retrieve pods associated with the backend service and check their Ready condition and status to verify if pods are running and ready to receive traffic.
+5. List Endpoints for the Service `<service-name>` in namespace `<namespace>` and verify that pods are registered as endpoints and are ready.
 
 6. From a test pod, execute `curl` or `wget` to the backend service endpoint directly using Pod Exec tool to test connectivity and verify if the service is accessible internally.
 
 ## Diagnosis
 
-1. Compare the ingress 502 error timestamps with backend service endpoint change timestamps, and check whether endpoints became unavailable within 5 minutes before 502 errors began.
+Begin by analyzing the Ingress describe output and backend service status collected in the Playbook section. The service endpoints, backend pod readiness, and controller error logs provide the primary diagnostic signals.
 
-2. Compare the ingress 502 error timestamps with pod Ready condition transition times for backend pods, and check whether pods became NotReady within 5 minutes before 502 errors.
+**If the backend service shows no endpoints:**
+- No healthy pods are available. Check if pods matching the service selector exist. If pods exist, verify they pass readiness probes. Fix pod health issues before the ingress can route traffic.
 
-3. Compare the ingress 502 error timestamps with service port configuration modification timestamps, and check whether port changes occurred within 30 minutes before 502 errors.
+**If endpoints exist but pods are in NotReady state:**
+- Pods are running but failing readiness probes. Check pod logs for application startup errors. Verify readiness probe configuration matches the application's actual health endpoint.
 
-4. Compare the ingress 502 error timestamps with backend pod restart or crash timestamps, and check whether pod failures occurred within 5 minutes before 502 errors.
+**If the service port does not match the container port:**
+- Port mismatch prevents traffic from reaching the application. Verify the service `targetPort` matches the container port where the application listens. Check Ingress `backend.service.port` matches the service port.
 
-5. Compare the ingress 502 error timestamps with NetworkPolicy modification timestamps that may affect backend service traffic, and check whether policy changes occurred within 10 minutes before 502 errors.
+**If curl directly to the backend service ClusterIP fails:**
+- The backend service itself is unreachable. Check if NetworkPolicies block traffic to the service. Verify the application is listening on the expected port.
 
-6. Compare the ingress 502 error timestamps with deployment rollout or image update timestamps for backend pods, and check whether application changes occurred within 1 hour before 502 errors, indicating the new version may have different port or health check behavior.
+**If curl to backend succeeds but ingress returns 502:**
+- The ingress controller cannot reach the backend. Check if NetworkPolicies block traffic from the ingress controller namespace to the backend namespace. Verify the controller can resolve the service DNS name.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review backend service logs for gradual performance degradation, check for intermittent pod readiness issues, examine if service port configurations drifted over time, verify if network path issues developed gradually, and check for DNS or service discovery issues affecting backend connectivity. 502 errors may result from gradual backend service degradation rather than immediate configuration changes.
+**If controller logs show upstream connection timeout:**
+- The backend is too slow to respond. Check backend pod resource usage for CPU or memory pressure. Increase ingress proxy timeout annotations if the backend legitimately needs more time.
+
+**If events are inconclusive, correlate timestamps:**
+1. Check if 502 errors began after a Deployment rollout by comparing error onset with pod creation timestamps.
+2. Check if errors align with pod restarts or OOM kills in the backend.
+3. Check if service or endpoint resources were modified.
+
+**If no clear cause is identified:** Exec into a debug pod in the ingress controller namespace and curl the backend service directly to test network connectivity from the controller's perspective.
 

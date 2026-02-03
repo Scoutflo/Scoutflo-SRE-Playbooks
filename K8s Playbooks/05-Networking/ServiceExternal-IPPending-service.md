@@ -18,31 +18,31 @@ LoadBalancer services have no external IP; external traffic cannot reach service
 
 ## Playbook
 
-1. Retrieve the Service `<service-name>` in namespace `<namespace>` and inspect its status, `status.loadBalancer.ingress`, and conditions to verify External-IP Pending state.
+1. Describe the Service `<service-name>` in namespace `<namespace>` to inspect its status, `status.loadBalancer.ingress`, and conditions to verify External-IP Pending state.
 
-2. List events in namespace `<namespace>` and filter for service-related events, focusing on events with reasons such as `FailedToCreateLoadBalancer` or messages indicating load balancer provisioning failures.
+2. Retrieve events for the Service `<service-name>` in namespace `<namespace>` sorted by timestamp to identify load balancer provisioning failures.
 
 3. List nodes and check their cloud provider labels and annotations to verify if the cluster is properly integrated with the cloud provider.
 
 4. Check cloud provider integration by verifying node provider IDs, cloud controller manager pod status, or cloud provider service account permissions.
 
-5. Retrieve logs from the service controller or cloud controller manager pod in the kube-system namespace and filter for load balancer provisioning errors.
+5. Retrieve logs from the service controller or cloud controller manager pod in the `kube-system` namespace and filter for load balancer provisioning errors.
 
 6. Verify cloud provider account permissions and quotas to ensure load balancer creation is allowed and quota limits are not exceeded.
 
 ## Diagnosis
 
-1. Compare the service External-IP Pending timestamps with cloud controller manager pod restart or failure timestamps, and check whether controller issues occurred within 5 minutes before load balancer provisioning failures.
+1. Analyze service events from Playbook to identify load balancer provisioning errors. If events show FailedToCreateLoadBalancer or similar errors, the event message indicates the specific provisioning failure reason.
 
-2. Compare the service External-IP Pending timestamps with node cloud provider label or annotation modification timestamps, and check whether cloud provider integration changes occurred within 30 minutes before provisioning failures.
+2. If events show provisioning failures, check cloud controller manager pod status from Playbook. If cloud-controller-manager pods are not running, crashing, or showing errors, load balancer provisioning requests are not processed.
 
-3. Compare the service External-IP Pending timestamps with cloud provider API unavailability or error timestamps, and check whether provider API issues occurred within 10 minutes before provisioning failures.
+3. If cloud controller manager is healthy, review cloud controller manager logs from Playbook for API errors. If logs show authentication failures, permission denied, or API quota exceeded errors, cloud provider credentials or permissions are insufficient.
 
-4. Compare the service External-IP Pending timestamps with service controller configuration modification timestamps, and check whether controller settings were changed within 30 minutes before provisioning failures.
+4. If credentials are valid, check service configuration from Playbook. If service lacks required annotations for cloud provider (e.g., load balancer type, subnet selection), provisioning fails due to incomplete configuration.
 
-5. Compare the service External-IP Pending timestamps with cloud provider quota or limit exhaustion timestamps, and check whether quota limits were reached within 30 minutes before provisioning failures.
+5. If configuration is complete, verify node cloud provider labels from Playbook. If nodes lack required provider ID or cloud labels, cloud controller cannot determine where to provision load balancer.
 
-6. Compare the service External-IP Pending timestamps with cluster upgrade or cloud provider integration update timestamps, and check whether infrastructure changes occurred within 1 hour before load balancer provisioning failures.
+6. If node labels are correct, check cloud provider quota and limits. If load balancer quota is exhausted or account limits are reached, new load balancers cannot be created until resources are freed.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review cloud controller manager logs for gradual provisioning issues, check for intermittent cloud provider API connectivity problems, examine if cloud provider permissions were gradually restricted, verify if quota limits accumulated over time, and check for cloud provider service degradation that may have developed gradually. External-IP Pending issues may result from gradual cloud provider integration problems rather than immediate changes.
+**If no provisioning issue is found**: Verify cloud provider API endpoint is reachable from the cluster, check if VPC or subnet configuration supports load balancer creation, review if required IAM roles/service accounts have load balancer management permissions, and examine if cloud provider is experiencing regional outages or service degradation.
 

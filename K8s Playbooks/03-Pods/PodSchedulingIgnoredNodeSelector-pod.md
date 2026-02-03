@@ -18,13 +18,13 @@ Pods cannot be scheduled; deployments fail to scale; applications remain unavail
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect pod node selector configuration to identify which node selector is specified.
+1. Describe pod <pod-name> in namespace <namespace> to inspect pod node selector configuration to identify which node selector is specified.
 
-2. List all nodes and retrieve their labels to compare with the pod's node selector and identify which labels are missing or mismatched.
+2. Retrieve events in namespace <namespace> for pod <pod-name> sorted by timestamp to identify scheduler events, focusing on events with messages indicating node selector mismatches or "0/X nodes are available" with selector reasons.
 
-3. List events in namespace `<namespace>` and filter for scheduler events associated with the pod, focusing on events with messages indicating node selector mismatches or "0/X nodes are available" with selector reasons.
+3. List all nodes and retrieve their labels to compare with the pod's node selector and identify which labels are missing or mismatched.
 
-4. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and review the pod template's node selector configuration to verify the selector is correctly specified.
+4. Retrieve the Deployment <deployment-name> in namespace <namespace> and review the pod template's node selector configuration to verify the selector is correctly specified.
 
 5. Verify if node labels were recently removed or changed that may have caused previously schedulable pods to become unschedulable.
 
@@ -32,17 +32,24 @@ Pods cannot be scheduled; deployments fail to scale; applications remain unavail
 
 ## Diagnosis
 
-1. Compare the pod Pending timestamps with node label modification timestamps, and check whether required node labels were removed or changed within 30 minutes before pods became Pending.
+1. Analyze pod events from Playbook steps 1-2 to identify the node selector mismatch. Events showing "0/X nodes are available" with "node(s) didn't match Pod's node affinity/selector" confirm the selector is not matching any nodes.
 
-2. Compare the pod Pending timestamps with deployment node selector modification timestamps, and check whether node selector changes occurred within 30 minutes before pods became Pending.
+2. If pod node selector (from Playbook step 1) requires specific labels, compare with actual node labels (from Playbook step 3). Common mismatches include:
+   - Typos in label keys or values
+   - Labels that were removed from nodes
+   - Labels that exist only on cordoned or NotReady nodes
+   - Case sensitivity issues in label values
 
-3. Compare the pod Pending timestamps with node removal or cordoning timestamps, and check whether nodes that previously matched the selector were removed or made unschedulable within 30 minutes before scheduling failures.
+3. If deployment node selector (from Playbook step 4) was recently changed, verify the new selector matches available nodes. Roll back the change if the selector is incorrect.
 
-4. Compare the pod Pending timestamps with cluster scaling events or node provisioning timestamps, and check whether new nodes were added but lack required labels within 30 minutes before scheduling failures.
+4. If nodes exist with matching labels but are unschedulable (from Playbook step 5), check for:
+   - Node cordoned for maintenance
+   - Node taints that the pod does not tolerate
+   - Node resource exhaustion preventing new pod placement
 
-5. Compare the pod Pending timestamps with deployment rollout or pod template update timestamps, and check whether node selector configuration changes occurred within 1 hour before pods became Pending, indicating new selector requirements may be incompatible with current cluster nodes.
+5. If node selector uses labels for specific node pools (e.g., GPU nodes, high-memory nodes), verify those node pools are provisioned and healthy.
 
-6. Compare the pod Pending timestamps with node label addition timestamps, and check whether required labels were added to nodes within 30 minutes after pods became Pending, indicating a timing mismatch between label addition and pod scheduling.
+6. If the node selector conflicts with other scheduling constraints (from Playbook step 6), such as affinity rules or tolerations, the combined constraints may be unsatisfiable. Simplify scheduling requirements.
 
-**If no correlation is found within the specified time windows**: Extend the search window (30 minutes → 1 hour, 1 hour → 2 hours), review scheduler logs for detailed node selector evaluation reasons, check for gradual node label drift over time, examine if node selectors were always incompatible but only recently enforced, verify if node capacity changes affected selector satisfaction, and check for cumulative scheduling constraints from multiple selectors. Node selector scheduling failures may result from gradual cluster state changes rather than immediate configuration modifications.
+**To resolve node selector issues**: Either add the required labels to existing nodes using `kubectl label node <node-name> <key>=<value>`, or update the pod specification to use labels that exist on available nodes. For dynamic node provisioning (cloud environments), ensure autoscaler is configured to provision nodes with the required labels.
 

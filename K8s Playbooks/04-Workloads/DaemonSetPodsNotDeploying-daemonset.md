@@ -18,35 +18,35 @@ DaemonSet pods are not created; node-level functionality is unavailable; monitor
 
 ## Playbook
 
-1. Retrieve the DaemonSet `<daemonset-name>` in namespace `<namespace>` and inspect its status, desired number of nodes, current number of nodes, and status conditions to identify deployment issues.
+1. Describe DaemonSet <daemonset-name> in namespace <namespace> to see:
+   - Desired number of nodes versus current/ready number
+   - Node selector, tolerations, and affinity rules configuration
+   - Conditions showing why pods are not deploying
+   - Events showing FailedCreate or scheduling errors
 
-2. Verify that the DaemonSet controller is running and functioning by checking DaemonSet controller pod status in the kube-system namespace and reviewing controller logs.
+2. Retrieve events for DaemonSet <daemonset-name> in namespace <namespace> sorted by timestamp to see the sequence of deployment failures.
 
-3. List all nodes and check their labels, taints, and scheduling status to verify if any nodes match the DaemonSet's node selector and toleration requirements.
+3. Verify that the DaemonSet controller is running by listing kube-controller-manager pods in kube-system namespace and retrieve controller logs.
 
-4. Retrieve the DaemonSet `<daemonset-name>` and inspect pod template node selector, tolerations, and affinity rules to verify scheduling configuration.
+4. List all nodes and check their labels, taints, and scheduling status by describing nodes to verify if any nodes match the DaemonSet's requirements.
 
-5. List events in namespace `<namespace>` and filter for DaemonSet-related events, focusing on events with reasons such as `FailedCreate` or messages indicating why pods cannot be created.
+5. Retrieve node resource usage metrics to verify if insufficient CPU, memory, or other resources are preventing DaemonSet pod creation.
 
-6. Check nodes for resource availability and verify if insufficient CPU, memory, or other resources are preventing DaemonSet pod creation.
-
-7. Check for PodDisruptionBudget conflicts that may prevent DaemonSet pod creation.
+6. List PodDisruptionBudget resources in namespace <namespace> to check for conflicts that may prevent DaemonSet pod creation.
 
 ## Diagnosis
 
-1. Compare the DaemonSet pod deployment failure timestamps with DaemonSet controller restart or failure timestamps, and check whether controller issues occurred within 5 minutes before pod deployment failures.
+1. Analyze DaemonSet events from Playbook to identify why pods are not deploying. Events showing "FailedCreate" indicate the controller cannot create pods. Events showing "FailedScheduling" on multiple nodes indicate cluster-wide scheduling constraints.
 
-2. Compare the DaemonSet pod deployment failure timestamps with DaemonSet node selector modification timestamps, and check whether node selector changes occurred within 30 minutes before pods stopped deploying.
+2. If events indicate controller issues (no events being generated, stale events only), verify kube-controller-manager status from Playbook. The DaemonSet controller runs within kube-controller-manager and must be healthy to create pods.
 
-3. Compare the DaemonSet pod deployment failure timestamps with node taint addition timestamps, and check whether new taints were applied within 30 minutes before DaemonSet pods could not be scheduled.
+3. If events indicate node selector mismatches across all nodes, the DaemonSet's nodeSelector may specify labels that no nodes have. Verify that at least some nodes in the cluster have the required labels. This is common after DaemonSet configuration changes or node pool migrations.
 
-4. Compare the DaemonSet pod deployment failure timestamps with DaemonSet toleration modification timestamps, and check whether tolerations were removed or modified within 30 minutes before pods stopped matching node taints.
+4. If events indicate taint-related failures on all nodes, compare cluster-wide node taints with DaemonSet tolerations. All nodes may have taints that the DaemonSet does not tolerate, such as control-plane taints on single-node clusters.
 
-5. Compare the DaemonSet pod deployment failure timestamps with PodDisruptionBudget creation or modification timestamps, and check whether PDB conflicts occurred within 30 minutes before DaemonSet pods could not be created.
+5. If events indicate resource constraints cluster-wide (InsufficientCPU, InsufficientMemory on all nodes), the DaemonSet's resource requests exceed available capacity on all nodes. Verify pod resource requests against node allocatable resources.
 
-6. Compare the DaemonSet pod deployment failure timestamps with node resource exhaustion timestamps, and check whether nodes ran out of resources within 30 minutes before DaemonSet pods could not be created.
+6. If no pods exist and no scheduling events appear, verify the DaemonSet's desired number scheduled is greater than zero. Check if nodeSelector or nodeAffinity rules exclude all nodes in the cluster.
 
-7. Compare the DaemonSet pod deployment failure timestamps with node removal or cluster scaling events, and check whether eligible nodes were removed within 30 minutes before DaemonSet pods became unavailable.
-
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review DaemonSet controller logs for gradual scheduling issues, check for intermittent node availability problems, examine if node selectors or tolerations were always incompatible but only recently enforced, verify if node resource constraints developed over time, and check for cumulative scheduling restrictions. DaemonSet pod deployment failures may result from gradual cluster state changes rather than immediate configuration modifications.
+7. If the DaemonSet controller is running but pods are not being created, check for resource quota restrictions in the DaemonSet's namespace that may prevent pod creation. Also verify if the namespace has any LimitRange that conflicts with DaemonSet pod specs.
 

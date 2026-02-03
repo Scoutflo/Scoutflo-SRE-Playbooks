@@ -18,11 +18,11 @@ Namespaces remain in Terminating state; namespace cleanup is blocked; resources 
 
 ## Playbook
 
-1. Retrieve the namespace `<namespace-name>` and inspect namespace deletion timestamp and finalizers to confirm Terminating state and identify which finalizers are present (kubernetes finalizer or custom finalizers).
+1. Describe the namespace `<namespace-name>` to inspect namespace deletion timestamp, finalizers, and status to confirm Terminating state and identify which finalizers are present (kubernetes finalizer or custom finalizers).
 
-2. List all resources in namespace `<namespace-name>` using `kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get --show-kind --ignore-not-found -n <namespace-name>` and identify resources that have finalizers preventing deletion.
+2. Retrieve events for the namespace `<namespace-name>` sorted by timestamp to identify deletion-related events and finalizer processing failures.
 
-3. List events in namespace `<namespace-name>` and filter for deletion-related events, focusing on events with reasons such as `FailedDelete` or messages indicating finalizer processing failures.
+3. List all resources in namespace `<namespace-name>` to identify resources that have finalizers preventing deletion.
 
 4. Check API server finalizer processing by reviewing API server logs for finalizer processing timeouts or errors.
 
@@ -34,19 +34,17 @@ Namespaces remain in Terminating state; namespace cleanup is blocked; resources 
 
 ## Diagnosis
 
-1. Compare the namespace deletion failure timestamps with API server finalizer processing timeout event timestamps, and check whether finalizer processing timeouts occurred within 5 minutes before namespace deletion failures.
+1. Analyze namespace status and finalizers from Playbook to identify deletion blockers. Check metadata.finalizers to see which finalizers remain on the namespace. The namespace cannot be deleted until all finalizers are removed.
 
-2. Compare the namespace deletion failure timestamps with finalizer controller restart or failure timestamps, and check whether controller issues occurred within 5 minutes before namespace deletion failures.
+2. If the namespace has remaining resources with finalizers, identify those resources from Playbook. Resources must be deleted before the namespace can be deleted. Each resource with finalizers requires its controller to process the finalizer before deletion completes.
 
-3. Compare the namespace deletion failure timestamps with custom resource creation timestamps in the namespace, and check whether resources with finalizers were created within 30 minutes before deletion failures.
+3. If events indicate finalizer controller failures or timeouts, identify which controller is responsible for the stuck finalizers. Common controllers include Istio, Prometheus Operator, cert-manager, or custom operators. Verify the controller is running and healthy.
 
-4. Compare the namespace deletion failure timestamps with finalizer addition timestamps to resources in the namespace, and check whether finalizers were added within 30 minutes before namespace deletion failures.
+4. If the responsible controller has been deleted or is not running, the finalizers will never be processed automatically. The finalizers must be manually removed from the affected resources. Identify the specific resources and finalizer names from Playbook.
 
-5. Compare the namespace deletion failure timestamps with CustomResourceDefinition modification timestamps, and check whether CRD changes occurred within 30 minutes before namespace deletion failures.
+5. If events indicate API server errors during finalizer processing, verify API server health and connectivity. Finalizer processing requires successful API server communication. Check API server logs for errors related to the namespace.
 
-6. Compare the namespace deletion failure timestamps with cluster upgrade or operator update timestamps, and check whether infrastructure changes occurred within 1 hour before namespace deletion failures, affecting finalizer processing.
+6. If resources reference deleted CustomResourceDefinitions, those resources become orphaned and cannot be processed normally. Check if any CRDs used by resources in the namespace have been deleted, leaving resources without a functioning API.
 
-7. Compare the namespace deletion failure timestamps with API server unavailability or performance degradation timestamps, and check whether API server issues occurred within 5 minutes before finalizer processing failures.
-
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review finalizer controller logs for gradual processing issues, check for intermittent API server connectivity problems, examine if finalizers were always present but only recently enforced, verify if finalizer controllers experienced gradual performance degradation, and check for resource quota or limit constraints that may prevent cleanup operations. Namespace deletion failures may result from cumulative finalizer processing issues rather than immediate changes.
+7. If all visible resources are deleted but namespace remains Terminating, the namespace-level "kubernetes" finalizer may be stuck. Verify kube-controller-manager is healthy and can process namespace deletions. Check controller-manager logs for namespace controller errors.
 

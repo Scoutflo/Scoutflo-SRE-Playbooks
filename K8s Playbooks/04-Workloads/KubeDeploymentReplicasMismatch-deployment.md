@@ -15,30 +15,37 @@ KubeDeploymentReplicasMismatch alerts fire; service degradation or unavailabilit
 
 ## Playbook
 
-1. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and inspect its status to check current replicas versus desired replicas and identify the mismatch.
+1. Describe deployment <deployment-name> in namespace <namespace> to see:
+   - Replicas status (desired/current/ready/available)
+   - Conditions showing why replicas mismatch
+   - Events showing FailedCreate, FailedScheduling, or ReplicaSetCreateError errors
 
-2. Retrieve ReplicaSet resources belonging to the Deployment `<deployment-name>` in namespace `<namespace>` and check ReplicaSet status and replica counts to verify replica distribution.
+2. List events in namespace <namespace> filtered by involved object name <deployment-name> and sorted by last timestamp to see the sequence of replica mismatch issues.
 
-3. Retrieve the Pod `<pod-name>` in namespace `<namespace>` belonging to the Deployment `<deployment-name>` and check pod status to identify pods in Pending, CrashLoopBackOff, or NotReady states.
+3. List ReplicaSet resources in namespace <namespace> with label app=<app-label> and check ReplicaSet status and replica counts to verify replica distribution.
 
-4. Retrieve events for the Deployment `<deployment-name>` in namespace `<namespace>` and filter for error patterns including 'FailedCreate', 'FailedScheduling', 'ReplicaSetCreateError' to identify deployment issues.
+4. List pods in namespace <namespace> with label app=<app-label> and describe pod <pod-name> to identify pods in Pending, CrashLoopBackOff, or NotReady states.
 
-5. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and check pod template parameters including resource requests, node selectors, tolerations, and affinity rules to verify configuration issues.
+5. Retrieve deployment <deployment-name> in namespace <namespace> in YAML format to verify resource requests, node selectors, tolerations, and affinity rules in the pod template.
 
-6. Retrieve the Node `<node-name>` resources and verify node capacity and availability across the cluster for scheduling additional pods.
+6. Describe nodes to check allocated resources and verify capacity availability across the cluster for scheduling additional pods.
 
 ## Diagnosis
 
-Compare deployment replica mismatch detection timestamps with deployment scaling event timestamps within 30 minutes and verify whether mismatch began when deployment attempted to scale, using deployment events and scaling history as supporting evidence.
+1. Analyze deployment events from Playbook steps 1-2 to identify the primary failure reason. Events showing "FailedScheduling" indicate resource or scheduling constraints. Events showing "FailedCreate" indicate ReplicaSet creation issues. Events showing "BackOff" or "CrashLoopBackOff" indicate pod crash loops. Events showing "Unhealthy" or "FailedReadiness" indicate readiness probe failures.
 
-Correlate deployment replica mismatch with pod scheduling failure timestamps within 30 minutes and verify whether pod scheduling failures prevented achieving desired replica count, using pod events and deployment status as supporting evidence.
+2. If events indicate scheduling failures (FailedScheduling with messages like "Insufficient cpu" or "Insufficient memory"), correlate pod pending timestamps from Playbook step 4 with node capacity data from Playbook step 6 to confirm resource exhaustion as root cause. Verify which resource (CPU, memory, or both) is constrained and on which nodes.
 
-Compare deployment replica mismatch with resource quota exhaustion timestamps within 30 minutes and verify whether resource quotas prevented pod creation, using resource quota status and deployment events as supporting evidence.
+3. If events indicate resource quota issues (messages containing "exceeded quota" or "forbidden: exceeded quota"), verify quota status from namespace resource quotas and compare with deployment resource requests from Playbook step 5 to confirm quota as the blocking factor.
 
-Analyze pod status patterns over the last 15 minutes to determine if replica mismatch is due to scheduling failures, pod crashes, or readiness probe failures, using pod status and events as supporting evidence.
+4. If events indicate pod crashes (CrashLoopBackOff, Error, or OOMKilled), analyze pod describe output from Playbook step 4 to identify container exit codes and termination reasons. Exit code 137 indicates OOMKilled, exit code 1 indicates application error.
 
-Correlate deployment replica mismatch with node capacity exhaustion timestamps within 30 minutes and verify whether insufficient cluster capacity prevented scaling, using node metrics and deployment scaling attempts as supporting evidence.
+5. If events indicate image pull failures (ErrImagePull, ImagePullBackOff), verify image name and tag from deployment spec in Playbook step 5 and check for registry connectivity or authentication issues.
 
-Compare deployment replica mismatch with HPA scaling event timestamps within 30 minutes and verify whether HPA scaling conflicts or resource constraints caused mismatch, using HPA events and deployment status as supporting evidence.
+6. If events indicate readiness probe failures, analyze pod conditions and probe configuration from Playbook step 4 to identify application-level issues preventing replicas from becoming ready.
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for deployment operations, review deployment resource requests, check for persistent resource constraints, verify pod disruption budgets, examine historical deployment scaling patterns. Deployment replica mismatch may result from cluster capacity limitations, resource quota constraints, or persistent scheduling issues rather than immediate changes.
+7. If events indicate node affinity or taint issues (messages containing "didn't match node selector" or "node(s) had taints"), compare deployment tolerations and affinity rules from Playbook step 5 with available node labels and taints from Playbook step 6.
+
+8. If events are inconclusive or show only generic errors, compare ReplicaSet status from Playbook step 3 to verify replica distribution across generations and identify if mismatch is due to stuck rollout versus scaling failure.
+
+**If no clear failure reason is identified from events**: Review deployment modification history to identify recent changes, check for HPA conflicts if autoscaling is configured, verify pod disruption budgets are not blocking scaling, and examine historical deployment patterns. Replica mismatch may result from cumulative resource pressure or intermittent scheduling constraints.

@@ -18,31 +18,36 @@ Containers cannot read or write to volumes; volume mount permissions are denied;
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect pod security context and container security context to verify user ID (runAsUser) and group ID (fsGroup) settings.
+1. Describe pod <pod-name> in namespace <namespace> to inspect pod security context, container security context, user ID (runAsUser), group ID (fsGroup), and volume mount configurations.
 
-2. Retrieve logs from the pod `<pod-name>` in namespace `<namespace>` and filter for permission denied errors, access denied messages, or filesystem permission failures.
+2. Retrieve events for pod <pod-name> in namespace <namespace> sorted by timestamp to identify FailedMount errors or permission-related issues.
 
-3. List events in namespace `<namespace>` and filter for volume-related events, focusing on events with reasons such as `FailedMount` or messages indicating permission issues.
+3. Retrieve logs from pod <pod-name> in namespace <namespace> and filter for permission denied errors, access denied messages, or filesystem permission failures.
 
-4. Check the PersistentVolumeClaim `<pvc-name>` and PersistentVolume to verify volume ownership and permissions on the storage backend.
+4. Describe PersistentVolumeClaim <pvc-name> in namespace <namespace> to inspect the PVC status and verify volume ownership settings.
 
-5. From the pod `<pod-name>`, execute `ls -la` on the mounted volume path using Pod Exec tool to check file permissions and ownership.
+5. Describe PersistentVolume <pv-name> to inspect the volume status and verify permissions on the storage backend.
 
-6. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and review security context configuration in the pod template to verify fsGroup and runAsUser settings.
+6. Execute a directory listing on the mounted volume path from pod <pod-name> to check file permissions and ownership.
+
+7. Describe Deployment <deployment-name> in namespace <namespace> and review security context configuration in the pod template to verify fsGroup and runAsUser settings.
 
 ## Diagnosis
 
-1. Compare the volume permission denied error timestamps with pod security context modification timestamps in the deployment, and check whether security context changes occurred within 30 minutes before permission errors.
+1. Analyze pod events from Playbook step 2 to identify the specific permission error type. Events showing "FailedMount" with permission-related messages indicate the exact failure point. If the error mentions "permission denied" on a specific path, the issue is filesystem-level; if it mentions "operation not permitted", the issue is security context-related.
 
-2. Compare the volume permission denied error timestamps with PersistentVolume creation or modification timestamps, and check whether volume ownership changes occurred within 30 minutes before permission errors.
+2. If events indicate FailedMount errors, examine the pod logs from Playbook step 3 for the specific permission denied message. The error path and operation (read/write/execute) will indicate whether the issue is:
+   - File ownership mismatch (check runAsUser from step 1 against volume permissions from step 6)
+   - Group permission mismatch (check fsGroup from step 1 against volume group ownership from step 6)
+   - SELinux or seccomp restrictions (security context from step 1/7)
 
-3. Compare the volume permission denied error timestamps with deployment rollout or pod template update timestamps, and check whether security context changes occurred within 1 hour before permission errors.
+3. If pod security context from Playbook step 1 shows runAsUser or fsGroup settings, compare these values against the actual file ownership from step 6. A mismatch between container UID/GID and volume ownership is the most common cause of permission denied errors.
 
-4. Compare the volume permission denied error timestamps with storage class or provisioner modification timestamps, and check whether storage backend changes occurred within 30 minutes before permission errors.
+4. If security context appears correct, check the PVC and PV status from Playbook steps 4-5. If the volume was recently provisioned or migrated, default permissions from the storage backend may not match application requirements.
 
-5. Compare the volume permission denied error timestamps with pod user ID or group ID modification timestamps, and check whether runAsUser or fsGroup changes occurred within 30 minutes before permission errors.
+5. If the deployment security context from Playbook step 7 differs from the running pod (step 1), a recent deployment rollout likely introduced the permission mismatch. Correlate deployment timestamps with when permission errors first appeared in events.
 
-6. Compare the volume permission denied error timestamps with cluster security policy or PodSecurityPolicy modification timestamps, and check whether security policy changes occurred within 1 hour before permission errors.
+6. If all security contexts appear consistent, the issue may be at the storage backend level. Check if the PV storage backend (from step 5) has its own permission model that overrides Kubernetes fsGroup settings.
 
 **If no correlation is found within the specified time windows**: Extend the search window (30 minutes → 1 hour, 1 hour → 2 hours), review pod logs for gradual permission issues, check for intermittent filesystem permission problems, examine if security context configurations drifted over time, verify if volume ownership changed gradually, and check for storage backend permission changes that may have accumulated. Volume permission issues may result from gradual security context or storage configuration drift rather than immediate changes.
 

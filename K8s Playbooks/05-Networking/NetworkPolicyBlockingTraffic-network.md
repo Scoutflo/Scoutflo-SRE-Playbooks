@@ -18,31 +18,31 @@ Legitimate traffic is blocked; pods cannot communicate as required; applications
 
 ## Playbook
 
-1. List NetworkPolicy objects in namespace `<namespace>` and review their rules, selectors, and policy types to identify which policies may be blocking traffic.
+1. Describe NetworkPolicy `<policy-name>` in namespace `<namespace>` to retrieve detailed information including ingress and egress rules, pod selectors, and namespace selectors.
 
-2. Retrieve the NetworkPolicy `<policy-name>` in namespace `<namespace>` and inspect its ingress and egress rules, pod selectors, and namespace selectors to verify policy configuration.
+2. Retrieve events in namespace `<namespace>` sorted by timestamp and filter for NetworkPolicyDenied reason to identify network-related issues and policy blocking events.
 
-3. Retrieve the pod `<pod-name>` that is experiencing blocked traffic and verify its labels match or do not match NetworkPolicy selectors.
+3. List NetworkPolicy resources in namespace `<namespace>` and review their rules, selectors, and policy types to identify which policies may be blocking traffic.
 
-4. List events in namespace `<namespace>` and filter for network-related events, focusing on events with reasons such as `NetworkPolicyDenied` or messages indicating policy blocking.
+4. Describe pod `<pod-name>` in namespace `<namespace>` and retrieve its labels to verify whether labels match or do not match NetworkPolicy selectors.
 
-5. From a test pod, execute connectivity tests to verify which traffic is being blocked and which policies are enforcing the blocks.
+5. Execute connectivity tests from a test pod using Pod Exec tool to verify which traffic is being blocked and which policies are enforcing the blocks.
 
-6. Check if default deny policies exist in the namespace that may be blocking all traffic unless explicitly allowed.
+6. List NetworkPolicy resources in namespace `<namespace>` and check for default deny policies (policyTypes containing Ingress or Egress with empty rules) that may be blocking all traffic unless explicitly allowed.
 
 ## Diagnosis
 
-1. Compare the network traffic blocking timestamps with NetworkPolicy creation timestamps, and check whether new policies were added within 10 minutes before traffic was blocked.
+1. Analyze NetworkPolicy events and pod events from Playbook to identify NetworkPolicyDenied errors or connection failures. If events show explicit policy denial messages, the blocking policy is identified in the event details.
 
-2. Compare the network traffic blocking timestamps with NetworkPolicy rule modification timestamps, and check whether policy rules were changed within 10 minutes before traffic blocking.
+2. If events indicate policy blocking, check the NetworkPolicy pod selectors against pod labels from Playbook data. If pod labels do not match policy selectors, the pod is subject to default deny behavior without explicit allow rules.
 
-3. Compare the network traffic blocking timestamps with pod label modification timestamps, and check whether pod labels were changed within 30 minutes before traffic blocking, causing selector mismatches.
+3. If pod labels match policy selectors, review ingress and egress rules in the NetworkPolicy from Playbook. If rules do not include the required ports, protocols, or source/destination selectors, traffic is blocked by overly restrictive rules.
 
-4. Compare the network traffic blocking timestamps with default deny NetworkPolicy creation timestamps, and check whether default deny policies were added within 10 minutes before traffic blocking.
+4. If ingress/egress rules appear correct, check for default deny policies (policyTypes with Ingress or Egress but empty rules) from Playbook data. If default deny exists without corresponding allow policies, all traffic is blocked.
 
-5. Compare the network traffic blocking timestamps with NetworkPolicy namespace selector modification timestamps, and check whether namespace selectors were changed within 10 minutes before traffic blocking.
+5. If no default deny is blocking, check namespace selectors in NetworkPolicy rules from Playbook. If namespace selectors do not match the source/destination namespace labels, cross-namespace traffic is blocked.
 
-6. Compare the network traffic blocking timestamps with network plugin restart or configuration modification timestamps, and check whether network infrastructure changes occurred within 1 hour before traffic blocking, affecting policy enforcement.
+6. If NetworkPolicy configuration appears correct, verify network plugin pod status in kube-system from Playbook data. If network plugin pods show failures or restarts, policy enforcement may be inconsistent or delayed.
 
-**If no correlation is found within the specified time windows**: Extend the search window (10 minutes → 30 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review network plugin logs for gradual policy enforcement issues, check for intermittent policy rule processing problems, examine if network policies accumulated restrictive rules over time, verify if pod labels drifted gradually causing selector mismatches, and check for network plugin updates that may have changed policy enforcement behavior. Network policy blocking may result from cumulative policy restrictions rather than immediate changes.
+**If no policy misconfiguration is found**: Review network plugin logs for policy synchronization issues, check if multiple overlapping policies create unintended restrictions, verify if namespace labels changed affecting namespace selectors, and examine if network plugin version or configuration changes affected policy enforcement behavior.
 

@@ -15,30 +15,36 @@ KubeJobFailed alerts fire; failure of processing scheduled tasks; job cannot com
 
 ## Playbook
 
-1. Retrieve the Job `<job-name>` in namespace `<namespace>` and inspect its status to check completion status, failed pod count, and failure reason.
+1. Describe job <job-name> in namespace <namespace> to see:
+   - Completion status and failed pod count
+   - Backoff limit and active deadline seconds configuration
+   - Conditions showing failure reason
+   - Events showing Failed, Error, or BackoffLimitExceeded errors
 
-2. Retrieve events for the Job `<job-name>` in namespace `<namespace>` and filter for error patterns including 'Failed', 'Error', 'BackoffLimitExceeded' to identify failure causes.
+2. Retrieve events for job <job-name> in namespace <namespace> sorted by timestamp to see the sequence of failure events.
 
-3. Retrieve the Pod `<pod-name>` in namespace `<namespace>` belonging to the Job `<job-name>` and check pod status to identify failed pods.
+3. List pods belonging to job <job-name> in namespace <namespace> and describe failed pods to identify their status.
 
-4. Retrieve logs from the Pod `<pod-name>` in namespace `<namespace>` for container `<container-name>` and filter for error patterns including 'fatal', 'panic', 'exception', 'failed', 'error' to identify application errors.
+4. Retrieve logs from the failed job pod <pod-name> in namespace <namespace> to identify fatal, panic, exception, or error patterns.
 
-5. Retrieve the Job `<job-name>` in namespace `<namespace>` and check job configuration including backoff limit, active deadline seconds, and restart policy to verify configuration issues.
+5. Describe node <node-name> where job pods ran to verify resource availability and conditions.
 
-6. Retrieve the Node `<node-name>` for nodes where job pods ran and verify node resource availability and conditions to identify resource constraints.
+6. Retrieve previous container logs from pod <pod-name> in namespace <namespace> if pod restarted to identify the root cause of failures.
 
 ## Diagnosis
 
-Compare job failure timestamps with job creation or start timestamps within the job execution window and verify whether job failed immediately after start (configuration issue) or after running (application error), using job events and pod status as supporting evidence.
+1. Analyze job and pod events from Playbook to identify failure mode and timing. If events show BackoffLimitExceeded, DeadlineExceeded, or pod failures, use event timestamps and error messages to determine the failure category.
 
-Correlate job pod failure timestamps with node condition transitions within 5 minutes and verify whether node resource pressure or failures caused job pod failures, using node conditions and pod events as supporting evidence.
+2. If events indicate job failed immediately after start, examine job configuration and container setup. If failure events occurred within seconds of job start, configuration issues, image pull failures, or container startup problems are the likely cause.
 
-Compare job failure patterns across multiple job pods to determine if failures are consistent (application bug) or isolated (resource constraints), using pod logs and exit codes as supporting evidence.
+3. If events indicate job failed after running for a period, analyze pod logs from Playbook steps 4 and 6. If logs show application errors, exceptions, or panic traces at failure timestamps, application-level bugs or data issues caused the failure.
 
-Analyze job pod exit codes and log error patterns to identify root cause categories (application errors, resource constraints, configuration issues), using pod logs and container status as supporting evidence.
+4. If events indicate pod OOMKilled or resource-related termination, verify job resource requests against actual usage. If resource events show memory or CPU limits exceeded, resource constraints caused job pod failures.
 
-Correlate job failures with resource quota exhaustion timestamps within 30 minutes and verify whether quota limits prevented job pod creation or caused failures, using resource quota status and job events as supporting evidence.
+5. If events indicate node issues, analyze node conditions from Playbook step 5. If node events show resource pressure, disk issues, or NotReady conditions at job failure timestamps, node-level problems caused pod eviction or failures.
 
-Compare job resource requests with node available resources at failure times and verify whether resource constraints caused job failures, using node metrics and job resource specifications as supporting evidence.
+6. If events indicate scheduling failures, verify resource quota and node capacity. If quota events show exhaustion or scheduling events show insufficient resources, capacity constraints prevented job completion.
 
-If no correlation is found within the specified time windows: extend timeframes to job execution duration, review job application logic, check for external dependency failures, verify job configuration parameters, examine historical job execution patterns. Job failures may result from application bugs, data issues, or external dependency problems rather than immediate infrastructure changes.
+7. If events show consistent failures across all job pods, the issue is deterministic (application bug or data issue). If failures are isolated to specific pods, transient issues like node problems or network failures may be the cause.
+
+**If no correlation is found**: Extend timeframes to job execution duration, review job application logic, check for external dependency failures, verify job configuration parameters, examine historical job execution patterns. Job failures may result from application bugs, data issues, or external dependency problems rather than immediate infrastructure changes.

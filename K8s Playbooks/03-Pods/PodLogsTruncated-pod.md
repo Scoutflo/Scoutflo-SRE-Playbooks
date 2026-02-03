@@ -18,31 +18,44 @@ Pod logs are incomplete; log entries are truncated; troubleshooting is impaired;
 
 ## Playbook
 
-1. Retrieve logs from the pod `<pod-name>` in namespace `<namespace>` and verify if logs are truncated by checking for cut-off entries or missing log lines.
+1. Describe pod <pod-name> in namespace <namespace> to inspect pod status and container states to understand the pod configuration and logging context.
 
-2. On the node where the pod is scheduled, check container runtime log rotation configuration using Pod Exec tool or SSH if node access is available to verify log size limits and rotation settings.
+2. Retrieve events in namespace <namespace> for pod <pod-name> sorted by timestamp to identify pod-related events that may indicate logging or storage issues.
 
-3. Check container runtime log buffer settings to verify if buffers are too small and causing truncation.
+3. Retrieve logs from the pod <pod-name> in namespace <namespace> and verify if logs are truncated by checking for cut-off entries or missing log lines.
 
-4. Verify log file sizes on the node filesystem to check if log files are being rotated or truncated.
+4. On the node where the pod is scheduled, check container runtime log rotation configuration using Pod Exec tool or SSH if node access is available to verify log size limits and rotation settings.
 
-5. Check cluster logging system configuration if centralized logging is used to verify if log collection is truncating logs.
+5. Check container runtime log buffer settings to verify if buffers are too small and causing truncation.
 
-6. Review container runtime documentation for default log size limits and rotation policies.
+6. Verify log file sizes on the node filesystem to check if log files are being rotated or truncated.
+
+7. Check cluster logging system configuration if centralized logging is used to verify if log collection is truncating logs.
+
+8. Review container runtime documentation for default log size limits and rotation policies.
 
 ## Diagnosis
 
-1. Compare the pod log truncation timestamps with container runtime log rotation configuration modification timestamps, and check whether rotation settings were changed within 30 minutes before log truncation began.
+1. Analyze pod events from Playbook steps 1-2 to identify any storage or logging-related issues. Events showing disk pressure or container runtime errors may indicate the cause of log truncation.
 
-2. Compare the pod log truncation timestamps with container runtime log buffer size modification timestamps, and check whether buffer size changes occurred within 30 minutes before log truncation.
+2. If pod logs show cut-off entries or missing lines (from Playbook step 3), verify container runtime log rotation settings (from Playbook step 4):
+   - Docker: Check --log-opt max-size and --log-opt max-file settings
+   - Containerd: Check max-size and max-file in config.toml
 
-3. Compare the pod log truncation timestamps with node disk space pressure timestamps, and check whether disk space issues occurred within 5 minutes before log truncation, causing aggressive rotation.
+3. If log files on the node are small despite heavy log output (from Playbook step 6), the container runtime is rotating logs aggressively. Common default limits:
+   - Docker: 10MB per log file, 1 file (no rotation)
+   - Containerd: configurable, often 10-100MB
 
-4. Compare the pod log truncation timestamps with cluster logging system configuration modification timestamps, and check whether logging system changes occurred within 30 minutes before log truncation.
+4. If node shows DiskPressure condition or low disk space, the runtime may be truncating logs to free space. Clear disk space or increase node storage capacity.
 
-5. Compare the pod log truncation timestamps with container runtime update or upgrade timestamps, and check whether runtime changes occurred within 1 hour before log truncation, affecting default log settings.
+5. If container runtime log buffer is too small (from Playbook step 5), individual log lines may be truncated. This typically affects very long log lines (>16KB).
 
-6. Compare the pod log truncation timestamps with pod high log output rate timestamps, and check whether applications started producing excessive logs within 30 minutes before truncation, exceeding log limits.
+6. If centralized logging is configured (from Playbook step 7), check if the log shipper (Fluentd, Filebeat, etc.) is failing to collect logs before rotation. Common issues include:
+   - Log shipper pod not running
+   - Log shipper falling behind on high-volume logs
+   - Network issues preventing log delivery
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review container runtime logs for gradual log rotation issues, check for intermittent log buffer overflow problems, examine if log rotation configurations drifted over time, verify if node disk space gradually decreased causing aggressive rotation, and check for application log output increases that may have accumulated. Log truncation may result from gradual log management policy changes or application behavior rather than immediate configuration modifications.
+7. If application produces excessive logs, consider implementing application-level log rate limiting or adjusting log verbosity to reduce output volume.
+
+**To prevent log truncation**: Increase container runtime log size limits, ensure adequate node disk space, configure centralized logging with sufficient collection capacity, and review application logging patterns to reduce unnecessary verbose output.
 

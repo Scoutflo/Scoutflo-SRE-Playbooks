@@ -18,31 +18,31 @@ Pods cannot reach external APIs or services; outbound internet connectivity fail
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect its network configuration and DNS settings to verify pod networking setup.
+1. Describe the pod `<pod-name>` in namespace `<namespace>` to retrieve detailed information including network configuration and DNS settings.
 
-2. List NetworkPolicy objects in namespace `<namespace>` and review their egress rules to verify if policies are blocking external traffic.
+2. Retrieve events for the pod `<pod-name>` in namespace `<namespace>` sorted by timestamp to identify network-related issues and egress blocking events.
 
-3. From the pod `<pod-name>`, execute `curl` or `wget` to external service URLs using Pod Exec tool to test outbound connectivity and verify if external connections are blocked.
+3. List NetworkPolicy objects in namespace `<namespace>` and review their egress rules to verify if policies are blocking external traffic.
 
-4. From the pod `<pod-name>`, execute `nslookup` or `dig` for external domains using Pod Exec tool to test DNS resolution for external services.
+4. From the pod `<pod-name>`, execute curl or wget to external service URLs to test outbound connectivity and verify if external connections are blocked.
 
-5. Check cluster egress gateway or network plugin configuration to verify if egress traffic routing is correctly configured.
+5. From the pod `<pod-name>`, execute nslookup or dig for external domains to test DNS resolution for external services.
 
-6. List events in namespace `<namespace>` and filter for network-related events, focusing on events with reasons such as `NetworkPolicyDenied` or messages indicating egress blocking.
+6. Check cluster egress gateway or network plugin configuration to verify if egress traffic routing is correctly configured.
 
 ## Diagnosis
 
-1. Compare the pod external connectivity failure timestamps with NetworkPolicy creation or modification timestamps, and check whether egress-blocking policies were added or modified within 10 minutes before external connectivity failures.
+1. Analyze pod events from Playbook to identify network-related errors or egress blocking events. If events show connection timeout or refused errors to external services, note the specific external endpoints failing.
 
-2. Compare the pod external connectivity failure timestamps with pod DNS configuration modification timestamps, and check whether DNS policy changes occurred within 30 minutes before external connectivity failures.
+2. If events indicate connectivity failures, check DNS resolution test results from Playbook. If nslookup or dig for external domains fails, the issue is DNS resolution rather than network connectivity.
 
-3. Compare the pod external connectivity failure timestamps with cluster egress gateway or network plugin configuration modification timestamps, and check whether egress routing changes occurred within 30 minutes before connectivity failures.
+3. If DNS resolution works, check NetworkPolicy egress rules from Playbook data. If egress policies exist without rules allowing external traffic (0.0.0.0/0 or specific external CIDRs), egress traffic is blocked by policy.
 
-4. Compare the pod external connectivity failure timestamps with firewall rule modification timestamps, and check whether firewall rules were changed within 10 minutes before external connectivity failures.
+4. If NetworkPolicy allows egress, review connectivity test results (curl/wget) from Playbook. If connections timeout rather than refuse, check firewall rules or security groups blocking outbound traffic.
 
-5. Compare the pod external connectivity failure timestamps with external DNS resolution failure timestamps, and check whether DNS issues occurred within 5 minutes before external connectivity failures.
+5. If firewall rules are not blocking, verify pod network configuration and DNS settings from Playbook. If dnsPolicy is incorrect or nameserver configuration is missing, DNS-based external service resolution fails.
 
-6. Compare the pod external connectivity failure timestamps with cluster network plugin restart or failure timestamps, and check whether network infrastructure issues occurred within 1 hour before external connectivity failures.
+6. If pod network configuration is correct, check network plugin and egress gateway status from Playbook data. If egress routing is misconfigured or NAT is not functioning, pods cannot reach external networks.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review network plugin logs for gradual egress routing issues, check for intermittent firewall rule enforcement, examine if network policies accumulated egress restrictions over time, verify if DNS resolution for external domains degraded gradually, and check for external service availability issues that may have developed. External connectivity failures may result from gradual network policy or infrastructure changes rather than immediate modifications.
+**If no egress configuration issue is found**: Verify external service availability independently, check if proxy or egress gateway is required for external access, review cloud provider NAT gateway or internet gateway configuration, and examine if specific external IPs or domains are blocked by organizational firewall policies.
 

@@ -18,11 +18,11 @@ HTTPS connections fail; SSL/TLS handshake errors occur; certificates cannot be v
 
 ## Playbook
 
-1. Retrieve the Ingress `<ingress-name>` in namespace `<namespace>` and inspect its TLS configuration including TLS section and TLS secret references.
+1. Describe the Ingress `<ingress-name>` in namespace `<namespace>` using `kubectl describe ingress <ingress-name> -n <namespace>` and inspect its TLS configuration including TLS section, annotations, and TLS secret references.
 
-2. Retrieve the Secret `<tls-secret-name>` referenced in the ingress TLS configuration and verify it exists, contains valid certificate and key data, and is not expired.
+2. List events in namespace `<namespace>` using `kubectl get events -n <namespace> --field-selector involvedObject.name=<ingress-name> --sort-by='.lastTimestamp'` and filter for TLS-related events, focusing on events with reasons such as `Failed`, `Sync`, or messages indicating certificate or secret issues.
 
-3. List events in namespace `<namespace>` and filter for TLS-related events, focusing on events with reasons such as `Failed` or messages indicating certificate or secret issues.
+3. Retrieve the Secret `<tls-secret-name>` referenced in the ingress TLS configuration and verify it exists, contains valid certificate and key data, and is not expired.
 
 4. Check ingress annotations for certificate issuer configurations (e.g., `cert-manager.io/issuer`, `cert-manager.io/cluster-issuer`) and verify if certificate management is configured.
 
@@ -32,17 +32,30 @@ HTTPS connections fail; SSL/TLS handshake errors occur; certificates cannot be v
 
 ## Diagnosis
 
-1. Compare the ingress TLS failure timestamps with TLS secret deletion or modification timestamps, and check whether secrets were removed or changed within 10 minutes before TLS failures.
+Begin by analyzing the Ingress describe output, TLS secret status, and cert-manager resources collected in the Playbook section. The TLS secret contents, certificate validity, and issuer status provide the primary diagnostic signals.
 
-2. Compare the ingress TLS failure timestamps with certificate expiration timestamps, and check whether certificates expired within 1 hour before TLS failures.
+**If the TLS secret referenced in the Ingress does not exist:**
+- The certificate secret is missing. Check if cert-manager is configured to create it. Verify the Ingress has correct cert-manager annotations. If manually managing certificates, create the secret with valid `tls.crt` and `tls.key` data.
 
-3. Compare the ingress TLS failure timestamps with certificate issuer modification or unavailability timestamps, and check whether issuer issues occurred within 30 minutes before TLS failures.
+**If the TLS secret exists but contains invalid or expired certificate data:**
+- The certificate is expired or malformed. Decode the certificate using `openssl x509 -in <cert> -text -noout` to check validity dates and subject. Renew the certificate manually or trigger cert-manager renewal.
 
-4. Compare the ingress TLS failure timestamps with ingress TLS configuration modification timestamps, and check whether TLS settings were changed within 30 minutes before failures.
+**If cert-manager Certificate resource shows status other than Ready:**
+- Certificate issuance or renewal is failing. Check the Certificate status conditions for error messages. Check CertificateRequest and Order resources for detailed failure reasons.
 
-5. Compare the ingress TLS failure timestamps with cert-manager pod restart or failure timestamps, and check whether certificate management issues occurred within 5 minutes before TLS failures.
+**If cert-manager logs show ACME challenge failures:**
+- Let's Encrypt validation is failing. For HTTP-01 challenges, verify the Ingress allows traffic to `/.well-known/acme-challenge/` path. For DNS-01, verify DNS provider credentials and permissions.
 
-6. Compare the ingress TLS failure timestamps with certificate renewal or issuance failure timestamps, and check whether certificate renewal failed within 1 hour before TLS failures.
+**If the Ingress controller logs show TLS handshake errors:**
+- The certificate may not match the hostname or the certificate chain is incomplete. Verify the certificate Subject Alternative Names include the Ingress hostname. Check if intermediate certificates are included in `tls.crt`.
 
-**If no correlation is found within the specified time windows**: Extend the search window (10 minutes → 30 minutes, 30 minutes → 1 hour, 1 hour → 24 hours), review cert-manager logs for gradual certificate processing issues, check for intermittent certificate issuer availability problems, examine if certificate expiration warnings were missed, verify if TLS secret access permissions changed over time, and check for DNS or Let's Encrypt validation issues affecting certificate issuance. TLS configuration failures may result from gradual certificate management issues rather than immediate changes.
+**If TLS works for some hostnames but not others:**
+- Multiple TLS sections may conflict or a specific hostname lacks a certificate. Verify each hostname in the Ingress has a corresponding TLS entry or is covered by a wildcard certificate.
+
+**If events are inconclusive, correlate timestamps:**
+1. Check if TLS failures began after the secret was deleted or modified by examining secret resource version.
+2. Check if failures align with cert-manager pod restarts or Issuer modifications.
+3. Check certificate expiration dates against failure timestamps.
+
+**If no clear cause is identified:** Test TLS configuration using `openssl s_client -connect <host>:443 -servername <hostname>` to inspect the certificate chain returned by the ingress controller.
 

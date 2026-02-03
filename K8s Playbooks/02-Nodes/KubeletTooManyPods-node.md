@@ -15,30 +15,35 @@ KubeletTooManyPods alerts fire; running many pods on a single node places strain
 
 ## Playbook
 
-1. List Pod resources scheduled on the Node `<node-name>` and check the number of pods on node to verify high pod density.
+1. Describe node <node-name> to see:
+   - Conditions section showing Ready status and any pressure conditions
+   - Capacity and Allocatable sections showing max pods configuration
+   - Non-terminated Pods section showing current pod count and resource usage
 
-2. Retrieve the Node `<node-name>` and retrieve node capacity metrics including maximum pods configuration and current pod count to verify pod capacity limits.
+2. Retrieve events for node <node-name> sorted by timestamp to see the sequence of node issues related to pod capacity.
 
-3. Retrieve metrics for the Node `<node-name>` and check node resource usage including CPU, memory, and network to identify resource pressure from high pod density.
+3. List pods scheduled on node <node-name> and check the number of pods on node to verify high pod density.
 
-4. Retrieve the Node `<node-name>` and verify node conditions and performance metrics to assess impact of high pod density.
+4. Retrieve resource usage metrics for node <node-name> to see current CPU and memory utilization from high pod density.
 
-5. List Pod resources across the cluster and check pod distribution across the cluster to identify if pod density is concentrated on specific nodes.
+5. List pods across all namespaces and check pod distribution to identify if pod density is concentrated on specific nodes.
 
 6. Verify cluster autoscaler status and node availability for redistributing pod load by checking cluster autoscaler configuration and node pool status.
 
 ## Diagnosis
 
-Compare pod count increase timestamps on node `<node-name>` with deployment or HPA scaling event timestamps within 30 minutes and verify whether pod count increased when workloads scaled, using pod count metrics and deployment scaling history as supporting evidence.
+1. Analyze node events from Playbook step 2 to identify when pod capacity warnings or scheduling events occurred. Events indicating "FailedScheduling" with reason "TooManyPods" or node capacity warnings show the timeline of capacity exhaustion.
 
-Correlate high pod count detection with node performance degradation timestamps within 5 minutes and verify whether high pod density caused node performance issues, using node performance metrics and pod count as supporting evidence.
+2. If node events indicate sudden pod count increase, check the pods list from Playbook step 3 to identify which workloads recently scheduled to this node. Look for recent pod creation timestamps and identify the deployments, jobs, or daemonsets responsible.
 
-Compare pod count on node `<node-name>` with other node pod counts to determine if high pod density is isolated (scheduling issue) or cluster-wide (capacity issue), using pod distribution across nodes and node capacity data as supporting evidence.
+3. If node events show gradual pod accumulation, compare pod distribution from Playbook step 5 across all nodes. Uneven distribution indicates scheduling imbalances due to node affinity, taints, or resource constraints on other nodes.
 
-Analyze pod count growth trends on node `<node-name>` over the last 24 hours to identify if growth is gradual (normal scaling) or sudden (scheduling imbalance), using pod count history and scheduling events as supporting evidence.
+4. If node events indicate resource pressure alongside high pod count, check resource usage metrics from Playbook step 4. High pod density combined with MemoryPressure or DiskPressure indicates the node is resource-constrained.
 
-Correlate high pod count with pod scheduling failure timestamps on other nodes within 30 minutes and verify whether scheduling constraints caused pods to concentrate on node `<node-name>`, using pod scheduling events and node availability as supporting evidence.
+5. If node capacity and allocatable values from Playbook step 1 show the pod limit is being reached, verify whether the node's maxPods configuration is appropriate for the node size and workload requirements.
 
-Compare current pod count with node maximum pod capacity configuration to verify whether pod count is approaching or exceeding limits, using node capacity settings and current pod count as supporting evidence.
+6. If cluster autoscaler is enabled, check autoscaler status from Playbook step 6 to verify whether new nodes should be provisioned to distribute the pod load, and why scaling may not be occurring.
 
-If no correlation is found within the specified time windows: extend timeframes to 24 hours for capacity analysis, review pod scheduling policies, check for cluster capacity limitations, verify node pool configurations, examine historical pod distribution patterns. High pod count may result from scheduling imbalances, cluster capacity constraints, or workload distribution issues rather than immediate changes.
+7. If high pod count is isolated to this node while other nodes have capacity, investigate pod scheduling constraints (nodeSelector, affinity rules, tolerations) that force pods to this specific node.
+
+**If no root cause is identified from events**: Review pod scheduling policies and affinity rules, check for taints on other nodes preventing scheduling, verify cluster-wide capacity and whether new nodes can be added, and examine workload scaling configurations that may be creating excessive pods.

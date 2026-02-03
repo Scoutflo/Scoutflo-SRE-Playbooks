@@ -18,31 +18,44 @@ KubeIngressNotReady or KubeIngressDown alerts fire; external traffic cannot reac
 
 ## Playbook
 
-1. Retrieve the Ingress `<ingress-name>` in namespace `<namespace>` and inspect its status, rules, and backend service references to verify configuration.
+1. Describe the Ingress `<ingress-name>` in namespace `<namespace>` using `kubectl describe ingress <ingress-name> -n <namespace>` and inspect its status, rules, annotations, and backend service references to verify configuration.
 
-2. List IngressController pods in the ingress controller namespace (typically `ingress-nginx` or `kube-system`) and check their status and readiness to confirm the controller is running.
+2. List events in namespace `<namespace>` using `kubectl get events -n <namespace> --field-selector involvedObject.name=<ingress-name> --sort-by='.lastTimestamp'` and filter for ingress-related events, focusing on events with reasons such as `Failed`, `Sync`, or messages indicating routing or backend errors.
 
-3. Retrieve logs from the ingress controller pod `<controller-pod-name>` in namespace `<namespace>` and filter for errors related to the ingress resource, backend services, or routing failures.
+3. List IngressController pods in the ingress controller namespace (typically `ingress-nginx` or `kube-system`) and check their status and readiness to confirm the controller is running.
 
-4. Retrieve the Service `<service-name>` referenced as a backend in the ingress and verify it exists, has endpoints, and is accessible.
+4. Retrieve logs from the ingress controller pod `<controller-pod-name>` in namespace `<namespace>` and filter for errors related to the ingress resource, backend services, or routing failures.
 
-5. List Endpoints for the Service `<service-name>` in namespace `<namespace>` and verify that pods are registered as endpoints and are ready.
+5. Retrieve the Service `<service-name>` referenced as a backend in the ingress and verify it exists, has endpoints, and is accessible.
 
 6. From a test pod, execute `curl` or `wget` to the ingress hostname or IP address using Pod Exec tool to test connectivity and verify routing behavior.
 
 ## Diagnosis
 
-1. Compare the ingress routing failure timestamps with ingress controller pod restart or crash timestamps, and check whether controller failures occurred within 5 minutes before routing issues began.
+Begin by analyzing the Ingress describe output and events collected in the Playbook section. The Ingress status, controller pod state, and backend service availability provide the primary diagnostic signals.
 
-2. Compare the ingress routing failure timestamps with ingress resource modification timestamps, and check whether configuration changes were made within 30 minutes before routing failures.
+**If ingress controller pods are not Running or show CrashLoopBackOff:**
+- The ingress controller is down. This is the root cause. Investigate controller pod failures using the IngressControllerPodsCrashLooping playbook before continuing.
 
-3. Compare the ingress routing failure timestamps with backend service endpoint change timestamps, and check whether endpoints became unavailable within 5 minutes before routing issues.
+**If Ingress status shows no address assigned:**
+- The ingress controller has not processed this Ingress resource. Check if the IngressClass matches the controller's class. Verify the controller is watching the correct namespace.
 
-4. Compare the ingress routing failure timestamps with NetworkPolicy modification timestamps that may affect ingress controller or backend service traffic, and check whether policy changes occurred within 10 minutes before routing failures.
+**If backend service has no endpoints (shown in Ingress describe):**
+- No pods are available to serve traffic. Verify pods matching the service selector exist and are Ready. Check if the service selector labels match pod labels exactly.
 
-5. Compare the ingress routing failure timestamps with DNS configuration change timestamps or ingress hostname updates, and check whether DNS changes occurred within 30 minutes before routing issues.
+**If curl test returns 502 Bad Gateway:**
+- The controller reaches the service but backend pods are not responding. Follow the IngressReturning502BadGateway playbook for detailed diagnosis.
 
-6. Compare the ingress routing failure timestamps with cluster network changes, node maintenance, or ingress controller deployment updates, and check whether infrastructure changes occurred within 1 hour before routing failures.
+**If curl test returns 404 Not Found:**
+- No Ingress rule matches the request. Check that the hostname and path in the request match the Ingress rules. Follow the IngressShows404 playbook if needed.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review ingress controller logs for gradual performance degradation, check for DNS propagation delays, examine backend service health trends, verify if ingress controller resource constraints developed over time, and check for network path issues that may have accumulated. Ingress routing issues may result from gradual system degradation rather than immediate configuration changes.
+**If DNS resolution for the ingress hostname fails:**
+- DNS is not configured for the Ingress hostname. Verify DNS records point to the ingress controller's external IP or load balancer. This is external to Kubernetes.
+
+**If events are inconclusive, correlate timestamps:**
+1. Check if routing failures began after Ingress modifications by examining the Ingress resource version changes.
+2. Check if failures align with backend Deployment changes by comparing with Deployment rollout timestamps.
+3. Check if NetworkPolicies were added that block controller-to-backend traffic.
+
+**If no clear cause is identified:** Test the backend service directly from within the cluster using a debug pod to bypass the ingress controller and isolate whether the issue is in routing or the backend itself.
 

@@ -18,31 +18,43 @@ Pods cannot resolve service DNS names; cluster-internal service discovery fails;
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect its DNS configuration in `spec.dnsPolicy` and `spec.dnsConfig` to verify DNS settings.
+1. Describe the pod `<pod-name>` in namespace `<namespace>` using `kubectl describe pod <pod-name> -n <namespace>` to inspect its DNS configuration in `spec.dnsPolicy` and `spec.dnsConfig`, and review pod conditions and events.
 
-2. List pods in the kube-system namespace and check CoreDNS pod status to verify if DNS pods are running and ready.
+2. Retrieve events for the pod using `kubectl get events -n <namespace> --field-selector involvedObject.name=<pod-name> --sort-by='.metadata.creationTimestamp'` to identify recent events related to DNS access issues.
 
-3. Retrieve the kube-dns Service in the kube-system namespace and verify it exists and has endpoints to ensure DNS service is accessible.
+3. List pods in the kube-system namespace and check CoreDNS pod status to verify if DNS pods are running and ready.
 
-4. From the pod `<pod-name>`, execute `nslookup <service-name>.<namespace>.svc.cluster.local` or equivalent DNS queries using Pod Exec tool to test DNS resolution.
+4. Retrieve the kube-dns Service in the kube-system namespace and verify it exists and has endpoints to ensure DNS service is accessible.
 
-5. List NetworkPolicy objects in namespace `<namespace>` and namespace kube-system and check if policies are blocking DNS traffic to or from CoreDNS pods.
+5. From the pod `<pod-name>`, execute `nslookup <service-name>.<namespace>.svc.cluster.local` or equivalent DNS queries using Pod Exec tool to test DNS resolution.
 
-6. Retrieve CoreDNS pod `<coredns-pod-name>` in namespace kube-system and inspect its status, logs, and events to identify why DNS is not functioning.
+6. List NetworkPolicy objects in namespace `<namespace>` and namespace kube-system and check if policies are blocking DNS traffic to or from CoreDNS pods.
+
+7. Retrieve CoreDNS pod logs in namespace kube-system and inspect for errors to identify why DNS is not functioning.
 
 ## Diagnosis
 
-1. Compare the pod DNS access failure timestamps with CoreDNS pod restart or crash timestamps, and check whether DNS pod failures occurred within 5 minutes before DNS access failures.
+Begin by analyzing the pod describe output and events collected in the Playbook section. The pod's DNS configuration, CoreDNS pod status, and kube-dns service state provide the primary diagnostic signals.
 
-2. Compare the pod DNS access failure timestamps with pod DNS configuration modification timestamps, and check whether DNS policy or config changes occurred within 30 minutes before DNS access failures.
+**If pod describe shows dnsPolicy: None or custom dnsConfig:**
+- The pod has custom DNS settings that may be misconfigured. Verify that `dnsConfig.nameservers` includes the kube-dns service IP (typically 10.96.0.10). If dnsPolicy is None, all DNS settings must be explicitly provided.
 
-3. Compare the pod DNS access failure timestamps with NetworkPolicy creation or modification timestamps that may affect DNS traffic, and check whether policy changes occurred within 10 minutes before DNS access failures.
+**If CoreDNS pods in kube-system are not Running or Ready:**
+- Cluster DNS service is unavailable. This is the root cause. Investigate CoreDNS pod failures separately using the CoreDNSPodsCrashLooping playbook before continuing.
 
-4. Compare the pod DNS access failure timestamps with kube-dns service or endpoint modification timestamps, and check whether DNS service changes occurred within 10 minutes before DNS access failures.
+**If kube-dns service has no endpoints:**
+- The DNS service exists but has no backend pods. Check if CoreDNS pods exist and are labeled correctly with `k8s-app=kube-dns`. Verify CoreDNS Deployment replicas are not scaled to zero.
 
-5. Compare the pod DNS access failure timestamps with CoreDNS configuration modification timestamps, and check whether DNS configuration changes occurred within 30 minutes before DNS access failures.
+**If NetworkPolicies exist in the pod's namespace or kube-system:**
+- Network policies may block DNS traffic. Check if policies allow egress to kube-dns service on port 53 (UDP and TCP). Check if kube-system policies allow ingress from the pod's namespace.
 
-6. Compare the pod DNS access failure timestamps with cluster network plugin restart or failure timestamps, and check whether network infrastructure issues occurred within 1 hour before DNS access failures.
+**If DNS queries from the pod time out but CoreDNS is healthy:**
+- Network connectivity between the pod and CoreDNS is blocked. Verify the pod's node has network connectivity to CoreDNS pod nodes. Check CNI plugin status on both nodes.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review CoreDNS logs for gradual performance degradation, check for intermittent DNS query processing issues, examine if DNS configuration accumulated problems over time, verify if network policies gradually restricted DNS access, and check for DNS cache or query limit issues that may have accumulated. DNS access failures may result from gradual CoreDNS or network infrastructure degradation rather than immediate changes.
+**If events are inconclusive, correlate timestamps:**
+1. Check if DNS failures began after the pod was created with a specific DNS policy by examining pod creation time and DNS configuration.
+2. Check if failures correlate with NetworkPolicy changes by comparing failure onset with policy creation timestamps.
+3. Check if the kube-dns service or endpoints were modified by examining service resource version changes.
+
+**If no clear cause is identified:** Create a debug pod in the same namespace with default DNS settings to isolate whether the issue is pod-specific or namespace-wide. Test DNS resolution to both cluster services and external domains.
 

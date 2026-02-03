@@ -18,39 +18,37 @@ API requests take longer than 1 second to complete; kubectl commands experience 
 
 ## Playbook
 
-1. Retrieve API server pod status in kube-system namespace and check for restarts, crashes, or health issues that may indicate underlying problems.
+1. Describe API server pods in namespace kube-system with label component=kube-apiserver to retrieve detailed API server pod information including status, restarts, resource usage, and any warning conditions.
 
-2. Retrieve API server pod metrics and logs to identify high latency patterns, focusing on request duration (apiserver_request_duration_seconds), queue depth (apiserver_request_queue_depth), and error rates.
+2. Retrieve events in namespace kube-system sorted by timestamp, filtering for API server errors, throttling events, or performance-related issues.
 
-3. Check etcd leader status by retrieving the etcd endpoints in kube-system namespace and verify if etcd leader election issues are occurring.
+3. Retrieve API server pod metrics and logs to identify high latency patterns, focusing on request duration (apiserver_request_duration_seconds), queue depth (apiserver_request_queue_depth), and error rates.
 
-4. Check etcd performance metrics and health status since API server depends on etcd for storage backend, focusing on etcd_request_duration_seconds and etcd_leader_changes metrics to verify if etcd latency is contributing to API server delays.
+4. Check etcd leader status by retrieving the etcd endpoints in kube-system namespace and verify if etcd leader election issues are occurring.
 
-5. Check API server admission webhook latency by reviewing admission webhook metrics (apiserver_admission_webhook_admission_duration_seconds) to verify if webhook timeouts are causing delays.
+5. Check etcd performance metrics and health status since API server depends on etcd for storage backend, focusing on etcd_request_duration_seconds and etcd_leader_changes metrics to verify if etcd latency is contributing to API server delays.
 
-6. Check API server pod resource usage (CPU and memory) to verify if resource constraints are causing performance degradation.
+6. Check API server admission webhook latency by reviewing admission webhook metrics (apiserver_admission_webhook_admission_duration_seconds) to verify if webhook timeouts are causing delays.
 
-7. List events in the kube-system namespace and filter for API server errors, throttling events, or performance-related issues.
+7. Check API server pod resource usage (CPU and memory) to verify if resource constraints are causing performance degradation.
 
 8. Review API server audit logs or metrics for patterns in request types, clients, or operations that may be causing high load.
 
 ## Diagnosis
 
-1. Compare the API server high latency timestamps with etcd performance degradation timestamps (etcd_request_duration_seconds spikes), and check whether etcd latency increases occur within 5 minutes before API server latency spikes.
+1. Analyze API server pod events from Playbook to identify if API server is restarting, resource constrained, or experiencing errors. If events indicate pod restarts or CrashLoopBackOff, correlate restart timestamps with latency spikes to confirm instability as root cause.
 
-2. Compare the API server high latency timestamps with etcd leader election change timestamps (etcd_leader_changes), and check whether leader election issues occurred within 5 minutes before API server latency spikes.
+2. If events indicate resource pressure (OOMKilled, CPU throttling), verify API server pod resource usage against configured limits. If CPU or memory usage approaches limits during latency spike timestamps from events, resource constraints are the likely cause.
 
-3. Compare the API server high latency timestamps with admission webhook response time spikes (apiserver_admission_webhook_admission_duration_seconds), and check whether webhook timeouts occurred within 5 minutes before API server latency increases.
+3. If events indicate etcd connectivity issues or timeout errors, analyze etcd pod events and health status. If etcd events show leader elections, slow requests, or unavailability at timestamps preceding API server latency events, etcd is the root cause.
 
-4. Compare the API server high latency timestamps with API server request queue depth spikes (apiserver_request_queue_depth), and check whether queue depth increases occurred within 5 minutes before latency issues, indicating request backlog.
+4. If events indicate admission webhook timeouts or failures, review admission webhook metrics and logs. If webhook response times exceed thresholds at event timestamps, webhook latency is contributing to API server delays.
 
-5. Compare the API server high latency timestamps with API server pod resource usage spikes (CPU or memory), and check whether resource pressure coincides with latency increases within 5 minutes.
+5. If events are inconclusive, analyze API server request queue depth metrics at event timestamps. If queue depth increases precede latency spikes, request backlog from high load is the likely cause.
 
-6. Compare the API server high latency timestamps with API server pod restart or crash timestamps, and check whether pod instability occurs within 5 minutes before latency issues.
+6. If no pod-level issues are found, examine cluster-level events for scaling operations, large resource creations, or controller reconciliation storms. If cluster events show high-volume operations at timestamps preceding latency issues, load-related factors are the cause.
 
-7. Compare the API server high latency timestamps with cluster scaling events or large resource creation timestamps, and check whether high-load operations occurred within 30 minutes before latency increases.
+7. If events indicate network or infrastructure changes, correlate infrastructure change timestamps from events with latency onset. If changes occurred within 1 hour before latency began, infrastructure modifications may be the root cause.
 
-8. Compare the API server high latency timestamps with cluster upgrade, maintenance windows, or infrastructure change timestamps, and check whether system changes occurred within 1 hour before latency problems began.
-
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review API server logs for gradual performance degradation patterns, check for cumulative resource pressure from multiple controllers or clients, examine etcd storage growth or compaction issues that may have developed over time, verify if network path issues accumulated gradually, and check for authentication or authorization processing delays that may have increased over time. API server latency may result from gradual system degradation rather than immediate changes.
+**If no correlation is found**: Review API server logs for gradual performance degradation patterns, check for cumulative resource pressure from multiple controllers or clients, examine etcd storage growth or compaction issues, verify if network path issues accumulated gradually, and check for authentication or authorization processing delays. API server latency may result from gradual system degradation rather than immediate changes.
 

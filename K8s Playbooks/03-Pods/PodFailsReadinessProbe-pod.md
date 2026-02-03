@@ -18,31 +18,50 @@ Pods remain in NotReady state; services have no endpoints; traffic cannot reach 
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect pod ready status and Ready condition to confirm readiness probe failures.
+1. Describe pod <pod-name> in namespace <namespace> to see Ready condition status and Events showing "Readiness probe failed" with the specific failure (HTTP error, connection refused, timeout).
 
-2. List events in namespace `<namespace>` and filter for readiness probe failure events associated with the pod, focusing on events with reasons such as `Unhealthy` and messages containing "readiness probe failed".
+2. Retrieve events for pod <pod-name> in namespace <namespace> filtered by reason Unhealthy to see probe failure timestamps and messages.
 
-3. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and review the readiness probe configuration including probe path, port, initial delay, period, and timeout settings to verify probe settings.
+3. Retrieve the readiness probe configuration for pod <pod-name> in namespace <namespace> to see path, port, initialDelaySeconds, periodSeconds, timeoutSeconds.
 
-4. Retrieve logs from the pod `<pod-name>` in namespace `<namespace>` and filter for application errors, startup issues, or health check endpoint problems that may prevent readiness.
+4. Execute a request to the readiness endpoint from inside pod <pod-name> to verify the endpoint is responding.
 
-5. From the pod `<pod-name>`, execute the readiness probe command or HTTP request manually using Pod Exec tool to verify the endpoint responds correctly and test probe behavior.
+5. Retrieve logs from pod <pod-name> in namespace <namespace> to identify errors during initialization or dependency connection failures.
 
-6. Check the pod `<pod-name>` resource usage metrics to verify if resource constraints or throttling are affecting application startup or health check responsiveness.
+6. List endpoints for service <service-name> in namespace <namespace> to check if pod is registered - if pod is not listed, readiness probe is failing.
+
+7. Describe Deployment <deployment-name> in namespace <namespace> to check if initialDelaySeconds is sufficient for application startup time.
+
+8. Retrieve resource usage metrics for pod <pod-name> in namespace <namespace> to see if resource constraints are causing slow responses.
 
 ## Diagnosis
 
-1. Compare the readiness probe failure timestamps with pod startup timestamps, and check whether probe failures occur within the `initialDelaySeconds` window, indicating the application needs more startup time.
+1. Analyze pod events from Playbook steps 1-2 to identify readiness probe failures. Events showing "Unhealthy" with "Readiness probe failed" include the specific failure reason (HTTP status code, connection refused, timeout).
 
-2. Compare the readiness probe failure timestamps with application error log timestamps from the pod, and check whether application errors coincide with probe failures within 5 minutes.
+2. If events show "connection refused" for HTTP/TCP probes (from Playbook step 2):
+   - Application is not listening on the configured port
+   - Verify application logs (Playbook step 5) for startup errors
+   - Check if application binds to correct interface (0.0.0.0 vs 127.0.0.1)
+   - Verify the probe port matches application's listening port
 
-3. Compare the readiness probe failure timestamps with readiness probe configuration modification timestamps in the deployment, and check whether probe configuration changes occurred within 30 minutes before failures.
+3. If events show HTTP error codes (4xx, 5xx) for HTTP probes:
+   - 404: Probe path does not exist - verify httpGet.path is correct
+   - 401/403: Authentication required - probe endpoint should not require auth
+   - 500/503: Application error - check application logs for errors
 
-4. Compare the readiness probe failure timestamps with pod resource limit or request modification timestamps, and check whether resource constraints were introduced within 30 minutes before probe failures.
+4. If events show "timeout" for probes:
+   - Application is slow to respond - increase timeoutSeconds
+   - Application startup is slow - increase initialDelaySeconds
+   - Resource constraints causing slow responses - check CPU/memory usage (Playbook step 8)
 
-5. Compare the readiness probe failure timestamps with network policy or security policy modification timestamps that may affect probe endpoint access, and check whether policy changes occurred within 10 minutes before probe failures.
+5. If endpoint responds when tested manually (from Playbook step 4) but probe still fails:
+   - Probe configuration mismatch (wrong port, path, or scheme)
+   - Intermittent application issues under load
+   - Network policy blocking kubelet probe traffic
 
-6. Compare the readiness probe failure timestamps with deployment rollout or image update timestamps, and check whether application changes occurred within 1 hour before probe failures, indicating the new application version may have different startup or health check behavior.
+6. If pod is not registered in service endpoints (from Playbook step 6), readiness probe is failing. The pod will not receive traffic until it passes readiness checks.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review application logs for gradual performance degradation, check for intermittent network issues affecting probe execution, examine resource usage trends for gradual constraint development, verify if application dependencies became unavailable over time, and check for DNS or service discovery issues that may affect probe endpoint resolution. Readiness probe failures may result from gradual application or infrastructure degradation rather than immediate configuration changes.
+7. If initialDelaySeconds is too short (from Playbook step 7), probes fail before the application is ready. Set initialDelaySeconds to exceed typical application startup time.
+
+**To resolve readiness probe failures**: Fix application startup issues, adjust probe timing (initialDelaySeconds, timeoutSeconds, periodSeconds), verify probe endpoint configuration matches application, and ensure the endpoint returns HTTP 2xx or 3xx for success.
 

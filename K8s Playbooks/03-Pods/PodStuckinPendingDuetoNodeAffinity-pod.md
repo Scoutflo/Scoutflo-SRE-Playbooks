@@ -18,13 +18,13 @@ Pods cannot be scheduled; deployments fail to scale; applications remain unavail
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect `spec.affinity.nodeAffinity` to identify the required or preferred node affinity rules.
+1. Describe pod <pod-name> in namespace <namespace> to inspect spec.affinity.nodeAffinity to identify the required or preferred node affinity rules.
 
-2. List events in namespace `<namespace>` and filter for scheduler events associated with the pod, focusing on events with messages indicating affinity mismatches or "0/X nodes are available" with affinity reasons.
+2. Retrieve events in namespace <namespace> for pod <pod-name> sorted by timestamp to identify scheduler events, focusing on events with messages indicating affinity mismatches or "0/X nodes are available" with affinity reasons.
 
 3. List all nodes and retrieve their labels to compare with the pod's affinity requirements and identify which labels are missing or mismatched.
 
-4. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and review the pod template's affinity configuration to verify the affinity rules are correctly specified.
+4. Retrieve the Deployment <deployment-name> in namespace <namespace> and review the pod template's affinity configuration to verify the affinity rules are correctly specified.
 
 5. Check if anti-affinity rules are too restrictive by verifying if any nodes satisfy the requirements or if the rules conflict with each other.
 
@@ -32,17 +32,37 @@ Pods cannot be scheduled; deployments fail to scale; applications remain unavail
 
 ## Diagnosis
 
-1. Compare the pod Pending timestamps with node label modification timestamps, and check whether required node labels were removed or changed within 30 minutes before pods became Pending.
+1. Analyze pod events from Playbook steps 1-2 to identify the affinity constraint causing scheduling failure. Events showing "0/X nodes are available" with affinity-related reasons indicate which constraint cannot be satisfied.
 
-2. Compare the pod Pending timestamps with deployment affinity rule modification timestamps, and check whether affinity rules were added or made more restrictive within 30 minutes before pods became Pending.
+2. If events indicate nodeAffinity mismatch (from Playbook step 2):
+   - requiredDuringSchedulingIgnoredDuringExecution cannot be satisfied
+   - Check pod affinity rules (Playbook step 1) against node labels (Playbook step 3)
+   - Identify which label selector expression is not matched
 
-3. Compare the pod Pending timestamps with node removal or cordoning timestamps, and check whether nodes that previously satisfied affinity requirements were removed or made unschedulable within 30 minutes before scheduling failures.
+3. If events indicate podAntiAffinity conflict:
+   - Pod cannot be placed without violating anti-affinity with existing pods
+   - Check if topologyKey is too restrictive (e.g., kubernetes.io/hostname)
+   - Consider using preferredDuringSchedulingIgnoredDuringExecution for soft rules
 
-4. Compare the pod Pending timestamps with anti-affinity rule modification timestamps, and check whether anti-affinity rules were added or made more restrictive within 30 minutes before pods became Pending, preventing placement on available nodes.
+4. If events indicate podAffinity cannot be satisfied:
+   - No nodes have pods matching the affinity selector
+   - The required pod may be on an unschedulable node
+   - Check if affinity target pods exist and are running
 
-5. Compare the pod Pending timestamps with cluster scaling events or node provisioning timestamps, and check whether new nodes were added but lack required labels within 30 minutes before scheduling failures.
+5. If deployment affinity rules (from Playbook step 4) conflict with available nodes:
+   - requiredDuringScheduling rules are hard constraints
+   - preferredDuringScheduling rules should allow scheduling with lower score
+   - Convert hard constraints to soft preferences if flexibility is acceptable
 
-6. Compare the pod Pending timestamps with deployment rollout or pod template update timestamps, and check whether affinity configuration changes occurred within 1 hour before pods became Pending, indicating new affinity requirements may be incompatible with current cluster nodes.
+6. If anti-affinity rules are too restrictive (from Playbook step 5):
+   - Each replica needs a unique node but not enough nodes exist
+   - Relax topologyKey from hostname to zone or region
+   - Reduce replica count or add more nodes
 
-**If no correlation is found within the specified time windows**: Extend the search window (30 minutes → 1 hour, 1 hour → 2 hours), review scheduler logs for detailed affinity evaluation reasons, check for gradual node label drift over time, examine if affinity rules were always incompatible but only recently enforced, verify if node capacity changes affected affinity satisfaction, and check for cumulative scheduling constraints from multiple affinity rules. Affinity-related scheduling failures may result from gradual cluster state changes rather than immediate configuration modifications.
+7. If nodes with matching labels exist but are not schedulable (from Playbook step 6):
+   - Node is cordoned or tainted
+   - Node resources are exhausted
+   - Other scheduling constraints block placement
+
+**To resolve affinity scheduling issues**: Either add/update node labels to match affinity requirements, add nodes with required labels, relax affinity rules (convert required to preferred), or remove conflicting anti-affinity constraints. Use `kubectl describe pod` to see the exact scheduling failure reason.
 

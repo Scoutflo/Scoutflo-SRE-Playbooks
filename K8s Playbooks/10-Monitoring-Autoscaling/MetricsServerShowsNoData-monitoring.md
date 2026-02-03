@@ -18,31 +18,46 @@ Metrics are unavailable; HPA cannot scale based on CPU or memory metrics; `kubec
 
 ## Playbook
 
-1. List metrics-server pods in the kube-system namespace and check their status to verify if pods are running and ready.
+1. Describe the metrics-server deployment in namespace `kube-system` to inspect its status, configuration, and events.
 
-2. Retrieve logs from the metrics-server pod `<metrics-server-pod-name>` in namespace kube-system and filter for errors, collection failures, or API connectivity issues.
+2. Retrieve events in the `kube-system` namespace sorted by timestamp to identify metrics-server-related failures and collection issues.
 
-3. Test metrics collection by executing `kubectl top pod` or `kubectl top node` to verify if metrics are being returned.
+3. List metrics-server pods in the kube-system namespace and check their status to verify if pods are running and ready.
 
-4. Verify API server connectivity from metrics-server pods by checking if the metrics server can reach the API server endpoint.
+4. Retrieve logs from the metrics-server pod `<metrics-server-pod-name>` in namespace kube-system and filter for errors, collection failures, or API connectivity issues.
 
-5. Check node connectivity from metrics-server pods by verifying if metrics can be collected from kubelet on nodes.
+5. Test metrics collection by executing `kubectl top pod` or `kubectl top node` to verify if metrics are being returned.
 
-6. List events in namespace kube-system and filter for metrics-server-related events, focusing on events with reasons such as `Failed` or messages indicating collection failures.
+6. Verify API server connectivity from metrics-server pods by checking if the metrics server can reach the API server endpoint.
+
+7. Check node connectivity from metrics-server pods by verifying if metrics can be collected from kubelet on nodes.
 
 ## Diagnosis
 
-1. Compare the metrics server no data timestamps with metrics-server pod restart or crash timestamps, and check whether pod failures occurred within 5 minutes before metrics became unavailable.
+Begin by analyzing the metrics-server deployment status, pod logs, and `kubectl top` test results collected in the Playbook section. Pod readiness, API connectivity, and kubelet accessibility provide the primary diagnostic signals.
 
-2. Compare the metrics server no data timestamps with API server unavailability or connectivity failure timestamps, and check whether API server issues occurred within 5 minutes before metrics became unavailable.
+**If metrics-server pods are not Running or show CrashLoopBackOff:**
+- The metrics server itself is failing. Check pod logs for startup errors. Common causes include missing RBAC permissions, invalid command-line flags, or certificate issues.
 
-3. Compare the metrics server no data timestamps with metrics-server deployment configuration modification timestamps, and check whether configuration changes occurred within 30 minutes before metrics became unavailable.
+**If logs show "unable to fetch metrics from node" or kubelet connection errors:**
+- Metrics server cannot reach kubelet on nodes. Check if `--kubelet-insecure-tls` flag is needed (common in self-signed certificate environments). Verify kubelet is running and accessible on port 10250.
 
-4. Compare the metrics server no data timestamps with node kubelet unavailability timestamps, and check whether kubelet issues occurred within 5 minutes before metrics collection failures.
+**If logs show certificate verification failures:**
+- TLS certificate issues between metrics-server and kubelet. Add `--kubelet-insecure-tls` flag for testing, or properly configure kubelet serving certificates.
 
-5. Compare the metrics server no data timestamps with cluster network plugin restart or failure timestamps, and check whether network infrastructure issues occurred within 1 hour before metrics became unavailable.
+**If logs show API server connection failures:**
+- Metrics server cannot register with the API server. Check metrics-server service account RBAC permissions. Verify the APIService `v1beta1.metrics.k8s.io` is registered and healthy.
 
-6. Compare the metrics server no data timestamps with cluster upgrade or metrics-server image update timestamps, and check whether infrastructure changes occurred within 1 hour before metrics became unavailable.
+**If `kubectl top` returns "metrics API not available":**
+- The metrics API is not registered. Check if the APIService exists: `kubectl get apiservice v1beta1.metrics.k8s.io`. If missing, reinstall metrics-server.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review metrics-server logs for gradual performance degradation, check for intermittent API server or kubelet connectivity issues, examine if metrics-server configuration drifted over time, verify if node resource constraints developed gradually, and check for network path issues that may have accumulated. Metrics unavailability may result from gradual infrastructure degradation rather than immediate changes.
+**If metrics-server pod is Running but HPA shows "unknown" metrics:**
+- Metrics are delayed or the specific metric is not available. Check metrics-server logs for collection errors. Verify the target pods have resource requests set (required for percentage-based HPA).
+
+**If events are inconclusive, correlate timestamps:**
+1. Check if metrics became unavailable after metrics-server Deployment changes by examining revision history.
+2. Check if node kubelet issues occurred simultaneously across multiple nodes.
+3. Check if API server configuration changes affected the metrics aggregation layer.
+
+**If no clear cause is identified:** Test kubelet metrics endpoint directly from a debug pod: `curl -k https://<node-ip>:10250/stats/summary`. This isolates whether the issue is kubelet-side or metrics-server-side.
 

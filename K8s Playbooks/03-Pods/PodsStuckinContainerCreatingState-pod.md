@@ -18,31 +18,53 @@ Pods cannot start; containers never begin running; deployments remain at 0 ready
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect container waiting state reason and message fields to identify the specific container creation failure reason.
+1. Describe pod <pod-name> in namespace <namespace> to see the container waiting reason in the Status section and check Events for FailedMount, ErrImagePull, or CreateContainerConfigError with specific details.
 
-2. List events in namespace `<namespace>` and filter for container creation errors associated with the pod, focusing on events with reasons such as `Failed`, `ErrImagePull`, or volume mount failures.
+2. Retrieve events for pod <pod-name> in namespace <namespace> sorted by timestamp to see the sequence of failures (image pull, volume mount, config errors).
 
-3. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and verify container image references, volume mounts, and resource requests to ensure they are valid and available.
+3. Retrieve the container waiting state for pod <pod-name> in namespace <namespace> to see exactly why container creation is stuck.
 
-4. Check the pod `<pod-name>` for volume mount issues by inspecting pod volume configuration and verifying that referenced PersistentVolumeClaims, ConfigMaps, or Secrets exist and are accessible.
+4. If volume mount issue, list PersistentVolumeClaims in namespace <namespace> and describe PVC <pvc-name> to see if PVC is bound and volume is available.
 
-5. Verify container image pull status by checking if the image exists in the registry and if image pull secrets are configured correctly.
+5. If ConfigMap/Secret issue, verify they exist: check ConfigMap <name> and Secret <name> in namespace <namespace>.
 
-6. Check the node where the pod is scheduled for container runtime health, disk space availability, and resource availability that may prevent container creation.
+6. Describe Deployment <deployment-name> in namespace <namespace> to check image references, volume mounts, and imagePullSecrets configuration.
+
+7. Describe node <node-name> where pod is scheduled to look for disk pressure, container runtime issues, or resource constraints.
+
+8. Check container runtime on the node (SSH required) to see container creation attempts and runtime logs for errors.
 
 ## Diagnosis
 
-1. Compare the container creation failure timestamps with image pull failure event timestamps, and check whether image pull errors occurred within 5 minutes before container creation failures.
+1. Analyze pod events from Playbook steps 1-2 to identify why container creation is stuck. Events showing the container waiting reason provide the specific blocker. Order diagnosis by most common causes:
 
-2. Compare the container creation failure timestamps with volume mount failure event timestamps, and check whether volume mount errors occurred within 5 minutes before container creation failures.
+2. If events show "ImagePullBackOff" or "ErrImagePull" (from Playbook step 2):
+   - Image does not exist or tag is incorrect
+   - Private registry requires imagePullSecrets not configured
+   - Network connectivity to registry failed
+   - Registry rate limiting or authentication issues
+   - Check deployment image configuration (Playbook step 6)
 
-3. Compare the container creation failure timestamps with PersistentVolumeClaim binding or availability timestamps, and check whether PVC issues occurred within 5 minutes before container creation failures.
+3. If events show "FailedMount" for volumes (from Playbook step 2):
+   - PVC is not bound (Playbook step 4) - check storage class and provisioner
+   - PV cannot attach to node - check cloud provider volume limits
+   - Volume already attached to another node - multi-attach not supported
+   - NFS or network storage unreachable
 
-4. Compare the container creation failure timestamps with node disk space or resource availability timestamps, and check whether node resource constraints occurred within 5 minutes before container creation failures.
+4. If events show "CreateContainerConfigError" (from Playbook step 3):
+   - ConfigMap or Secret does not exist (Playbook step 5)
+   - Key referenced in envFrom or volumeMount missing
+   - Syntax error in container command or args
 
-5. Compare the container creation failure timestamps with container runtime restart or failure timestamps on the node, and check whether runtime issues occurred within 5 minutes before container creation failures.
+5. If node shows resource issues (from Playbook step 7):
+   - DiskPressure: Node disk full, cannot pull images
+   - Container runtime overloaded or unresponsive
+   - Too many containers on node
 
-6. Compare the container creation failure timestamps with deployment rollout or configuration change timestamps, and check whether changes occurred within 30 minutes before container creation failures, indicating new volume mounts, images, or resource requirements may be causing issues.
+6. If container runtime logs show errors (from Playbook step 8):
+   - Runtime cannot create container sandbox
+   - Image format incompatible with runtime
+   - Security policy blocking container creation
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review node-level container runtime logs for gradual performance degradation, check for intermittent image registry connectivity issues, examine volume provider problems that may have developed over time, verify if node disk space gradually exhausted, and check for container runtime resource constraints that accumulated over time. Container creation failures may result from gradual infrastructure degradation rather than immediate configuration changes.
+**To resolve ContainerCreating issues**: Fix image references for pull errors, create missing ConfigMaps/Secrets, ensure PVCs are bound and volumes can attach, free node disk space if needed, and verify container runtime is healthy.
 

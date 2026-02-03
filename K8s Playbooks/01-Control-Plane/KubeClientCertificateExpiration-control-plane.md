@@ -15,30 +15,36 @@ KubeClientCertificateExpiration alerts fire; clients will not be able to interac
 
 ## Playbook
 
-1. Retrieve certificate expiration information for client certificates used by service accounts, controllers, or API clients in the cluster and identify certificates expiring within 7 days (warning) or 24 hours (critical).
+1. List all CertificateSigningRequest resources to identify any pending, denied, or failed certificate requests.
 
-2. Retrieve ServiceAccount resources used by pods and controllers and check service account token expiration to verify if token expiration aligns with certificate expiration.
+2. List events in namespace kube-system sorted by last timestamp to retrieve recent control plane events, filtering for certificate expiration warnings, TLS handshake failures, or authentication errors.
 
-3. Verify certificate issuance and expiration timestamps for client certificates to determine remaining validity period and identify certificates approaching expiration.
+3. Retrieve certificate expiration information for client certificates used by service accounts, controllers, or API clients in the cluster and identify certificates expiring within 7 days (warning) or 24 hours (critical).
 
-4. Retrieve CertificateSigningRequest resources and check for certificate rotation or renewal processes that should have updated certificates to identify failed rotation attempts.
+4. Retrieve ServiceAccount resources used by pods and controllers and check service account token expiration to verify if token expiration aligns with certificate expiration.
 
-5. Retrieve events and logs from the Pod `<pod-name>` in namespace `<namespace>` using expiring certificates and filter for certificate-related error patterns including 'certificate expired', 'TLS handshake failure', 'authentication failed'.
+5. Verify certificate issuance and expiration timestamps for client certificates to determine remaining validity period and identify certificates approaching expiration.
 
-6. Retrieve Secret resources containing certificate authority (CA) configuration and verify certificate authority (CA) configuration and certificate signing request (CSR) processes to identify configuration issues.
+6. Retrieve CertificateSigningRequest resources and check for certificate rotation or renewal processes that should have updated certificates to identify failed rotation attempts.
+
+7. Retrieve events and logs from the Pod `<pod-name>` in namespace `<namespace>` using expiring certificates and filter for certificate-related error patterns including 'certificate expired', 'TLS handshake failure', 'authentication failed'.
+
+8. Retrieve Secret resources containing certificate authority (CA) configuration and verify certificate authority (CA) configuration and certificate signing request (CSR) processes to identify configuration issues.
 
 ## Diagnosis
 
-Compare certificate expiration detection timestamps with certificate issuance times and verify whether certificates are approaching expiration due to normal lifecycle, using certificate metadata and expiration calculations as supporting evidence.
+1. Analyze certificate-related events from Playbook to identify which certificates are approaching expiration and their current status. If events show certificate expiration warnings or TLS handshake preparation failures, use event timestamps to determine urgency.
 
-Correlate certificate expiration warnings with certificate rotation process failure timestamps within 24 hours and verify whether automatic rotation failed to renew certificates, using certificate rotation logs and certificate status as supporting evidence.
+2. If events indicate pending or failed CertificateSigningRequests, examine CSR status from Playbook step 1. If CSR events show denied, failed, or pending states, certificate rotation processes have failed and require investigation.
 
-Compare certificate expiration with service account token expiration times and verify whether token expiration aligns with certificate expiration, using service account metadata and token expiration data as supporting evidence.
+3. If events indicate certificate rotation process failures, verify certificate management system status. If rotation-related events show errors or failures at timestamps preceding expiration warnings, automatic renewal has failed.
 
-Analyze certificate expiration patterns across multiple clients to determine if expiration is isolated (single client issue) or widespread (certificate management system issue), using certificate expiration data and client configurations as supporting evidence.
+4. If events indicate service account token issues, verify service account token expiration from Playbook step 4. If token expiration aligns with certificate expiration timestamps, both need to be addressed together.
 
-Correlate certificate expiration with certificate authority (CA) rotation or update timestamps within 24 hours and verify whether CA changes affected certificate validity, using CA configuration and certificate chain validation as supporting evidence.
+5. If events show certificate expiration across multiple clients, analyze expiration patterns. If multiple certificates are expiring at similar timestamps, a certificate management system failure or batch issuance issue is likely.
 
-Compare current certificate expiration dates with historical certificate lifecycle patterns to verify whether certificates are expiring earlier than expected, using certificate history and lifecycle management logs as supporting evidence.
+6. If events indicate CA rotation or update activity, verify CA configuration impact. If CA events occurred before certificate expiration warnings, CA changes may have affected certificate validity or trust chain.
 
-If no correlation is found within the specified time windows: extend timeframes to certificate validity period, review certificate rotation configuration, check for certificate management system failures, verify CA configuration, examine historical certificate lifecycle patterns. Certificate expiration may result from misconfigured certificate lifetimes, failed rotation processes, or certificate management system issues rather than immediate operational changes.
+7. If events show certificates expiring earlier than expected based on issuance date, verify certificate lifetime configuration. If certificates have shorter-than-expected lifetimes, misconfigured certificate parameters need correction.
+
+**If no correlation is found**: Extend timeframes to certificate validity period, review certificate rotation configuration, check for certificate management system failures, verify CA configuration, examine historical certificate lifecycle patterns. Certificate expiration may result from misconfigured certificate lifetimes, failed rotation processes, or certificate management system issues rather than immediate operational changes.

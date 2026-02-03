@@ -15,32 +15,32 @@ KubeProxyDown alerts fire; network communication to pods fails; service endpoint
 
 ## Playbook
 
-1. Retrieve the DaemonSet `<daemonset-name>` in namespace `kube-system` with label `k8s-app=kube-proxy` and inspect its status to verify kube-proxy DaemonSet status.
+1. Describe the kube-proxy pod `<pod-name>` in namespace `kube-system` to retrieve detailed information including status, conditions, and events.
 
-2. Retrieve the Pod `<pod-name>` in namespace `kube-system` with label `k8s-app=kube-proxy` and check pod status to identify pods in failed or error states.
+2. Retrieve events for the kube-proxy pod `<pod-name>` in namespace `kube-system` sorted by timestamp to identify recent issues.
 
-3. Retrieve logs from the Pod `<pod-name>` in namespace `kube-system` and filter for error patterns including 'panic', 'fatal', 'connection refused', 'timeout', 'iptables', 'ipvs' to identify kube-proxy failures.
+3. Retrieve the kube-proxy DaemonSet in namespace `kube-system` and inspect its status to verify kube-proxy DaemonSet status.
 
-4. Retrieve events for the Pod `<pod-name>` in namespace `kube-system` and filter for error patterns including 'Failed', 'Error', 'CrashLoopBackOff' to identify pod lifecycle issues.
+4. Retrieve logs from the kube-proxy pod in namespace `kube-system` and filter for error patterns including 'panic', 'fatal', 'connection refused', 'timeout', 'iptables', 'ipvs' to identify kube-proxy failures.
 
 5. Verify network connectivity between monitoring system and kube-proxy pod endpoints to confirm connectivity issues.
 
-6. Retrieve the Node `<node-name>` where kube-proxy pods should be running and check node status and conditions to identify node issues.
+6. Describe the Node `<node-name>` where kube-proxy pods should be running and check node status and conditions to identify node issues.
 
-7. Retrieve the ConfigMap `<configmap-name>` in namespace `kube-system` for kube-proxy configuration and verify kube-proxy configuration ConfigMap for configuration issues.
+7. Retrieve the ConfigMap in namespace `kube-system` for kube-proxy configuration and verify kube-proxy configuration for issues.
 
 ## Diagnosis
 
-Compare kube-proxy unavailability timestamps with kube-proxy pod restart or failure timestamps within 5 minutes and verify whether unavailability coincides with pod failures, using pod events and kube-proxy status as supporting evidence.
+1. Analyze kube-proxy pod events from Playbook to identify failure reasons. If events show CrashLoopBackOff, Failed, or BackOff states, note the specific error messages indicating why kube-proxy is failing.
 
-Correlate kube-proxy failures with node condition transitions within 5 minutes and verify whether kube-proxy failures align with node NotReady conditions or resource pressure, using node conditions and kube-proxy pod status as supporting evidence.
+2. If events indicate pod failures, check kube-proxy logs from Playbook for panic, fatal, or connection errors. If logs show API server connection timeout or refused errors, kube-proxy cannot communicate with the control plane.
 
-Compare kube-proxy log error timestamps with configuration change times within 10 minutes and verify whether kube-proxy failures began after configuration updates, using kube-proxy logs and ConfigMap modification times as supporting evidence.
+3. If API server connectivity issues are present, verify API server endpoint reachability from affected nodes. If API server is unreachable, kube-proxy cannot sync endpoints and iptables/ipvs rules become stale.
 
-Analyze kube-proxy error patterns over the last 15 minutes to determine if failures are sudden (crash) or gradual (resource exhaustion), using kube-proxy logs and pod resource usage metrics as supporting evidence.
+4. If API server is reachable, check kube-proxy DaemonSet status from Playbook. If desired count does not match ready count, identify which nodes are missing kube-proxy pods and check node conditions.
 
-Correlate kube-proxy unavailability with network policy or firewall rule change timestamps within 10 minutes and verify whether connectivity issues began after network configuration changes, using network policy events and kube-proxy connection logs as supporting evidence.
+5. If DaemonSet scheduling is correct, review node conditions from Playbook for NotReady state, MemoryPressure, DiskPressure, or PIDPressure. If nodes show resource pressure, kube-proxy may be evicted or unable to start.
 
-Compare kube-proxy pod resource usage metrics with resource limits at failure times and verify whether resource constraints caused kube-proxy failures, using pod metrics and resource specifications as supporting evidence.
+6. If node resources are available, check kube-proxy ConfigMap from Playbook for configuration issues. If iptables/ipvs mode is misconfigured or clusterCIDR is incorrect, kube-proxy fails to program network rules.
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for infrastructure changes, review kube-proxy configuration, check for iptables or ipvs issues, verify node networking configuration, examine historical kube-proxy stability patterns. Kube-proxy failures may result from node networking issues, iptables/ipvs problems, or container runtime issues rather than immediate configuration changes.
+**If no configuration issue is found**: Review iptables/ipvs kernel module availability, check container runtime status on affected nodes, verify network connectivity between kube-proxy and API server, and examine if security contexts or Pod Security Policies prevent kube-proxy from running with required privileges.

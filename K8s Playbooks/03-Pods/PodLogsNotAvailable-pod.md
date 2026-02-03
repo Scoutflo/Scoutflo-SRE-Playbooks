@@ -18,31 +18,39 @@ Pod logs are unavailable; troubleshooting is blocked; application debugging is i
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect its status and container states to verify if containers are running and should be producing logs.
+1. Describe pod <pod-name> in namespace <namespace> to inspect its status and container states to verify if containers are running and should be producing logs.
 
-2. Attempt to retrieve logs from the pod `<pod-name>` in namespace `<namespace>` and check for errors indicating why logs are not available.
+2. Retrieve events in namespace <namespace> for pod <pod-name> sorted by timestamp to identify pod-related events, focusing on events with reasons such as Failed or messages indicating log collection failures.
 
-3. On the node where the pod is scheduled, check container runtime logging configuration using Pod Exec tool or SSH if node access is available to verify if logging is enabled.
+3. Attempt to retrieve logs from the pod <pod-name> in namespace <namespace> and check for errors indicating why logs are not available.
 
-4. Check container runtime status on the node to verify if the runtime is functioning and can collect logs.
+4. On the node where the pod is scheduled, check container runtime logging configuration using Pod Exec tool or SSH if node access is available to verify if logging is enabled.
 
-5. List events in namespace `<namespace>` and filter for logging-related events, focusing on events with reasons such as `Failed` or messages indicating log collection failures.
+5. Check container runtime status on the node to verify if the runtime is functioning and can collect logs.
 
 6. Verify if log files exist on the node filesystem and check file permissions that may prevent log access.
 
 ## Diagnosis
 
-1. Compare the pod logs unavailability timestamps with container runtime restart or failure timestamps on the node, and check whether runtime issues occurred within 5 minutes before logs became unavailable.
+1. Analyze pod events from Playbook steps 1-2 to identify any container or logging-related failures. Events showing container failures or runtime errors may explain why logs are unavailable.
 
-2. Compare the pod logs unavailability timestamps with container runtime logging driver configuration modification timestamps, and check whether logging configuration changes occurred within 30 minutes before logs became unavailable.
+2. If kubectl logs returns "container not found" or similar error (from Playbook step 3), the container may have terminated and logs were garbage collected. For terminated containers, use `kubectl logs --previous` to retrieve logs from the previous container instance.
 
-3. Compare the pod logs unavailability timestamps with node disk space exhaustion timestamps, and check whether disk space issues occurred within 5 minutes before logs became unavailable, preventing log file creation.
+3. If kubectl logs returns empty results but the container is running (from Playbook steps 1, 3), check:
+   - Application is writing to stdout/stderr (not to files)
+   - Container runtime is capturing stdout/stderr correctly
+   - Log files exist on the node filesystem (Playbook step 6)
 
-4. Compare the pod logs unavailability timestamps with pod restart or crash timestamps, and check whether pod failures occurred within 5 minutes before logs became unavailable.
+4. If container runtime status shows errors (from Playbook step 5), the logging subsystem may be broken. Restart the container runtime service on the affected node.
 
-5. Compare the pod logs unavailability timestamps with cluster logging system restart or failure timestamps, and check whether logging infrastructure issues occurred within 1 hour before logs became unavailable.
+5. If node disk is full or log directory has permission issues (from Playbook step 6), logs cannot be written:
+   - Check disk usage with `df -h` on the node
+   - Verify /var/log/containers and /var/log/pods directories are writable
+   - Check for SELinux or AppArmor policies blocking log writes
 
-6. Compare the pod logs unavailability timestamps with node filesystem or log directory permission modification timestamps, and check whether permission changes occurred within 30 minutes before logs became unavailable.
+6. If logging driver is misconfigured (from Playbook step 4), logs may be sent to an unsupported destination. Verify the container runtime is configured to use the json-file or journald logging driver.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review container runtime logs for gradual logging issues, check for intermittent log file creation problems, examine if logging configurations drifted over time, verify if node disk space gradually exhausted, and check for logging driver issues that may have accumulated. Pod logs unavailability may result from gradual infrastructure degradation rather than immediate changes.
+7. If the pod was recently restarted multiple times, older logs may have been rotated out. Kubernetes only keeps logs from the current and previous container instances.
+
+**To restore log availability**: Fix underlying storage or runtime issues, ensure the container writes to stdout/stderr, verify container runtime configuration, and consider implementing persistent logging to an external system for long-term retention.
 

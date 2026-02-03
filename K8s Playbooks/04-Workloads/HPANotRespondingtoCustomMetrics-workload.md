@@ -18,31 +18,38 @@ HPA cannot scale based on custom metrics; deployments maintain fixed replica cou
 
 ## Playbook
 
-1. Retrieve the HorizontalPodAutoscaler `<hpa-name>` in namespace `<namespace>` and inspect its status conditions and custom metrics configuration to identify which custom metrics are unavailable.
+1. Describe HPA <hpa-name> in namespace <namespace> to see:
+   - Current custom metrics versus target metrics
+   - Desired replicas versus current replicas
+   - Custom metrics configuration
+   - Conditions showing why custom metrics are unavailable
+   - Events showing FailedGetObjectMetric or custom metrics errors
 
-2. List CustomResourceDefinition objects and verify if the custom metrics API (metrics.k8s.io/v1beta1 or custom.metrics.k8s.io/v1beta1) is available and properly configured.
+2. Retrieve events for HPA <hpa-name> in namespace <namespace> sorted by timestamp to see the sequence of custom metrics failures.
 
-3. List pods in the kube-system namespace and check the custom metrics adapter pod status (e.g., prometheus-adapter, custom-metrics-apiserver) to verify it is running and healthy.
+3. List API services and check for metrics-related entries to verify if the custom metrics API (custom.metrics.k8s.io/v1beta1) is available and properly configured.
 
-4. List events in namespace `<namespace>` and filter for HPA-related events, focusing on events with reasons such as `FailedGetObjectMetric` or messages indicating custom metrics unavailable.
+4. Check the custom metrics adapter pod status in kube-system namespace by listing pods with label app=prometheus-adapter (or app=custom-metrics-apiserver) and retrieve adapter logs to verify it is running and healthy.
 
-5. Verify that the custom metrics adapter service and endpoints are accessible and that the custom metrics API server is responding to queries.
+5. Verify that the custom metrics adapter service and endpoints in kube-system namespace are accessible and test the custom metrics API availability.
 
-6. Check HPA configuration to verify that custom metric names referenced in the HPA spec match the metrics available from the custom metrics adapter.
+6. Retrieve HPA <hpa-name> configuration in namespace <namespace> and verify that custom metric names referenced in the HPA spec match the metrics available from the custom metrics adapter.
 
 ## Diagnosis
 
-1. Compare the HPA custom metrics unavailability timestamps with custom metrics adapter pod restart or failure timestamps, and check whether adapter failures occurred within 5 minutes before custom metrics became unavailable.
+1. Analyze HPA events from Playbook to identify custom metrics-related errors. If events show FailedGetObjectMetric, "unable to get custom metric", or "no such metric" errors, use event timestamps and error messages to identify the specific failure.
 
-2. Compare the HPA custom metrics unavailability timestamps with custom metrics API configuration or CRD modification timestamps, and check whether API configuration changes occurred within 30 minutes before custom metrics became unavailable.
+2. If events indicate custom metrics adapter issues, verify adapter pod status from Playbook step 4. If adapter events show CrashLoopBackOff, restarts, or failures at timestamps when HPA stopped responding, the adapter is the root cause.
 
-3. Compare the HPA custom metrics unavailability timestamps with HPA custom metric name modification timestamps, and check whether metric name changes occurred within 30 minutes before HPA stopped responding to custom metrics.
+3. If events indicate custom metrics API unavailability, verify API service status from Playbook step 3. If APIService events show unavailable or degraded status at failure timestamps, custom metrics API configuration needs attention.
 
-4. Compare the HPA custom metrics unavailability timestamps with custom metrics adapter service or endpoint modification timestamps, and check whether service configuration changes occurred within 10 minutes before custom metrics became unavailable.
+4. If events indicate invalid metric names, verify HPA metric configuration from Playbook step 6. If HPA references metric names that do not exist in the adapter, correct the metric name references to match available metrics.
 
-5. Compare the HPA custom metrics unavailability timestamps with Prometheus or external metrics source unavailability timestamps, and check whether metrics source failures occurred within 5 minutes before custom metrics became unavailable.
+5. If events indicate Prometheus or external metrics source issues, verify source availability. If Prometheus events show failures at timestamps when custom metrics became unavailable, the metrics source is the root cause.
 
-6. Compare the HPA custom metrics unavailability timestamps with cluster upgrade or custom metrics adapter deployment update timestamps, and check whether infrastructure changes occurred within 1 hour before custom metrics became unavailable.
+6. If events indicate service or endpoint changes, verify adapter service from Playbook step 5. If service events show modifications at timestamps when metrics became unavailable, service configuration changes affected metrics availability.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review custom metrics adapter logs for gradual performance degradation, check for intermittent connectivity issues with metrics sources, examine if custom metrics API authentication or authorization issues developed over time, verify if custom metrics adapter resource constraints accumulated gradually, and check for DNS or service discovery issues affecting custom metrics API accessibility. Custom metrics unavailability may result from gradual infrastructure degradation rather than immediate changes.
+7. If events indicate recent deployments or upgrades, correlate change timestamps with failure onset. If adapter deployment events or cluster upgrade events occurred before custom metrics failures, recent changes may have broken the metrics pipeline.
+
+**If no correlation is found**: Extend the search window (5 minutes to 10 minutes, 30 minutes to 1 hour, 1 hour to 2 hours), review custom metrics adapter logs for gradual performance degradation, check for intermittent connectivity issues with metrics sources, examine if custom metrics API authentication or authorization issues developed over time, verify if custom metrics adapter resource constraints accumulated gradually, and check for DNS or service discovery issues affecting custom metrics API accessibility. Custom metrics unavailability may result from gradual infrastructure degradation rather than immediate changes.
 

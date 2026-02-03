@@ -15,30 +15,45 @@ KubeCPUOvercommit alerts fire; cluster cannot tolerate node failure; in the even
 
 ## Playbook
 
-1. List Pod resources across the cluster and retrieve CPU request allocations to compare with total node CPU capacity.
+1. Describe all nodes to inspect allocatable CPU resources and current CPU request allocations.
 
-2. Retrieve the Node `<node-name>` resources and check node allocatable CPU resources and current CPU request allocations across all nodes.
+2. Retrieve events across all namespaces sorted by timestamp to identify CPU-related scheduling failures and resource constraint events.
 
-3. Verify cluster autoscaler status and logs for issues preventing node addition by checking cluster autoscaler configuration and logs.
+3. List Pod resources across the cluster and retrieve CPU request allocations to compare with total node CPU capacity.
 
-4. Retrieve the Node `<node-name>` resources and check for cordoned or unschedulable nodes that reduce available cluster capacity.
+4. Verify cluster autoscaler status and logs for issues preventing node addition by checking cluster autoscaler configuration and logs.
 
-5. Retrieve metrics for the Node `<node-name>` resources and compare CPU usage with CPU requests to identify overcommitment patterns.
+5. Retrieve the Node `<node-name>` resources and check for cordoned or unschedulable nodes that reduce available cluster capacity.
 
-6. Analyze CPU request distribution across namespaces to identify major consumers by aggregating CPU requests by namespace.
+6. Retrieve metrics for the Node `<node-name>` resources and compare CPU usage with CPU requests to identify overcommitment patterns.
+
+7. Analyze CPU request distribution across namespaces to identify major consumers by aggregating CPU requests by namespace.
 
 ## Diagnosis
 
-Compare CPU overcommit detection timestamps with node removal or cordoning event timestamps within 30 minutes and verify whether overcommit became critical after node capacity reduction, using node condition changes and CPU allocation metrics as supporting evidence.
+Begin by analyzing the node allocatable resources, pod CPU requests, and events collected in the Playbook section. Node capacity versus total requests, scheduling failure events, and autoscaler status provide the primary diagnostic signals.
 
-Correlate CPU overcommit with deployment or HPA scaling event timestamps within 30 minutes and verify whether recent scaling operations triggered overcommitment, using deployment replica changes and CPU request allocations as supporting evidence.
+**If events show FailedScheduling with Insufficient cpu:**
+- New pods cannot be scheduled due to CPU overcommit. The cluster needs more capacity. Either add nodes, reduce CPU requests on existing pods, or evict non-critical workloads.
 
-Analyze CPU request growth trends over the last 24 hours to identify which workloads or namespaces contributed most to overcommitment, using CPU allocation metrics and workload scaling history as supporting evidence.
+**If node describe shows high CPU request allocation percentage (over 100%):**
+- Total CPU requests exceed node capacity. Identify pods with largest CPU requests using the namespace aggregation from the Playbook. Target these for request optimization.
 
-Compare cluster autoscaler activity timestamps with CPU overcommit detection times within 30 minutes and verify whether autoscaler failed to add nodes when capacity was needed, using autoscaler logs and node creation events as supporting evidence.
+**If cluster autoscaler logs show "scale up needed but not possible":**
+- Autoscaler cannot add nodes. Check for node pool limits, quota restrictions, or cloud provider capacity issues. Increase max nodes in autoscaler configuration or request quota increases.
 
-Correlate CPU overcommit with pod resource request misconfiguration detection within 1 hour and verify whether pods with excessive CPU requests caused overcommitment, using pod resource specifications and CPU allocation data as supporting evidence.
+**If autoscaler logs show "node not needed" despite overcommit:**
+- Autoscaler configuration may have restrictive settings. Check `--scale-down-utilization-threshold` and ensure autoscaler considers CPU requests, not just usage.
 
-Compare current CPU requests with historical baseline requests over the last 7 days and verify whether overcommitment resulted from gradual request growth or sudden capacity reduction, using CPU allocation metrics and historical capacity data as supporting evidence.
+**If specific namespaces dominate CPU requests:**
+- Focus optimization on high-consuming namespaces. Review deployments in those namespaces for oversized CPU requests. Compare requests with actual usage to right-size.
 
-If no correlation is found within the specified time windows: extend timeframes to 7 days for capacity planning analysis, review pod resource request configurations, check for resource request misconfigurations, verify node pool capacity settings, examine cluster autoscaler configuration. CPU overcommit may result from inadequate capacity planning, misconfigured resource requests, or insufficient cluster scaling rather than immediate operational changes.
+**If overcommit occurred after node cordoning or removal:**
+- Capacity reduction caused overcommit. Either uncordon the nodes if they are healthy, add replacement capacity, or reschedule workloads to remaining nodes.
+
+**If events are inconclusive, correlate timestamps:**
+1. Check if overcommit began after HPA scaled up deployments by examining replica count changes.
+2. Check if nodes were removed or cordoned shortly before overcommit detection.
+3. Check if new deployments with large CPU requests were created.
+
+**If no clear cause is identified:** Compare CPU requests with actual CPU usage across pods. Pods with requests far exceeding usage are candidates for request reduction. Note that CPU requests primarily affect scheduling, while CPU limits affect throttling. Focus on right-sizing requests based on actual usage patterns.

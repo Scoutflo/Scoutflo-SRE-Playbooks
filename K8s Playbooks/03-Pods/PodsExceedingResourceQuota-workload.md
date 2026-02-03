@@ -18,31 +18,36 @@ New pods cannot be created; deployments fail to scale; pod creation requests are
 
 ## Playbook
 
-1. Retrieve ResourceQuota objects in namespace `<namespace>` and inspect their spec to identify which resource types have limits (CPU, memory, pods, persistent volume claims, etc.).
+1. Describe deployment <deployment-name> in namespace <namespace> to see:
+   - Resource requests and limits for all containers
+   - Conditions showing why pod creation is failing
+   - Events showing FailedCreate or quota exceeded errors
 
-2. Retrieve ResourceQuota status in namespace `<namespace>` and compare `status.used` with `spec.hard` to identify which quotas are exceeded.
+2. Retrieve events for deployment <deployment-name> in namespace <namespace> sorted by timestamp to see the sequence of quota-related errors.
 
-3. List all pods in namespace `<namespace>` and calculate total resource requests to verify current namespace resource usage.
+3. Describe ResourceQuota objects in namespace <namespace> to identify which resource types have limits and compare used resources with hard limits.
 
-4. Retrieve the pod `<pod-name>` in namespace `<namespace>` that is failing and inspect its resource requests to see which resources would exceed the quota.
+4. List all pods in namespace <namespace> and analyse total resource requests to verify current namespace resource usage.
 
-5. List events in namespace `<namespace>` and filter for quota-related errors, focusing on events with reasons such as `FailedCreate` and messages containing "exceeded quota" or "quota".
+5. Describe pod <pod-name> in namespace <namespace> and inspect its resource requests to see which resources would exceed the quota.
 
-6. Check if multiple deployments or workloads in the namespace are competing for the same quota limits.
+6. Check if multiple deployments or workloads in namespace <namespace> are competing for the same quota limits by listing deployments, statefulsets, and daemonsets.
 
 ## Diagnosis
 
-1. Compare the pod creation failure timestamps with ResourceQuota modification timestamps, and check whether quota limits were reduced within 30 minutes before pods started failing to create.
+1. Analyze deployment and pod events from Playbook to identify quota-related errors. If events show "exceeded quota", "Forbidden", or "FailedCreate" errors, use event timestamps to determine when quota limits were first exceeded.
 
-2. Compare the pod creation failure timestamps with deployment scaling or replica increase timestamps, and check whether workload increases occurred within 30 minutes before quota limits were exceeded.
+2. If events indicate quota exceeded errors, examine ResourceQuota status from Playbook step 3. If current usage equals or exceeds hard limits, identify which resource types (CPU, memory, pods, storage) are exhausted.
 
-3. Compare the pod creation failure timestamps with pod resource request modification timestamps in deployments, and check whether resource requests were increased within 30 minutes before quota limits were exceeded.
+3. If events indicate recent deployment scaling, correlate scaling timestamps with quota errors. If replica increase events occurred before quota errors, scaling requests pushed usage beyond quota limits.
 
-4. Compare the pod creation failure timestamps with new workload deployment timestamps in the namespace, and check whether additional workloads were added within 30 minutes before quota limits were exceeded.
+4. If events indicate resource request modifications, verify if per-pod requests were increased. If resource request events show increases before quota errors, higher per-pod allocation exceeded namespace quota.
 
-5. Compare the pod creation failure timestamps with PersistentVolumeClaim creation timestamps if quota includes storage limits, and check whether PVC creation occurred within 30 minutes before quota limits were exceeded.
+5. If events indicate new workload deployments, identify additional workloads consuming quota. If new deployment events occurred in the namespace before quota errors, competing workloads exhausted available quota.
 
-6. Compare the pod creation failure timestamps with namespace creation or ResourceQuota creation timestamps, and check whether quota constraints were introduced within 1 hour before pod creation failures, indicating newly enforced limits.
+6. If events indicate ResourceQuota modifications, verify if limits were reduced. If quota modification events show reduced limits before errors, quota reduction caused existing workloads to exceed new limits.
 
-**If no correlation is found within the specified time windows**: Extend the search window (30 minutes → 1 hour, 1 hour → 2 hours), review namespace resource usage trends for gradual quota exhaustion, check for cumulative resource requests from multiple deployments, examine if quota limits were always too restrictive but only recently enforced, verify if resource requests in existing pods were increased over time, and check for gradual workload growth that exceeded quota capacity. Resource quota issues may result from cumulative resource usage rather than immediate changes.
+7. If events indicate PVC creation (for storage quotas), verify storage quota consumption. If PVC events occurred before quota errors and storage limits are reached, storage quota is the constraint.
+
+**If no correlation is found**: Extend the search window (30 minutes to 1 hour, 1 hour to 2 hours), review namespace resource usage trends for gradual quota exhaustion, check for cumulative resource requests from multiple deployments, examine if quota limits were always too restrictive but only recently enforced, verify if resource requests in existing pods were increased over time, and check for gradual workload growth that exceeded quota capacity. Resource quota issues may result from cumulative resource usage rather than immediate changes.
 

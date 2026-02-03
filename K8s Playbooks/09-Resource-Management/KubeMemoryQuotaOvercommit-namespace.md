@@ -17,30 +17,32 @@ KubeMemoryQuotaOvercommit alerts fire; in the event of a node failure, pods will
 
 ## Playbook
 
-1. Retrieve the ResourceQuota `<quota-name>` in namespace `<namespace>` and inspect its status to check memory request usage versus quota limits.
+1. Describe the ResourceQuota `<quota-name>` in namespace `<namespace>` to inspect its status and check memory request usage versus quota limits.
 
-2. List Pod resources in namespace `<namespace>` and aggregate memory requests to compare with namespace quota.
+2. Retrieve events in namespace `<namespace>` sorted by timestamp to identify quota-related events and resource allocation issues.
 
-3. Retrieve the Node `<node-name>` resources and check node allocatable memory resources and current memory request allocations across all nodes.
+3. List Pod resources in namespace `<namespace>` and aggregate memory requests to compare with namespace quota.
 
-4. Verify cluster autoscaler status and logs for issues preventing node addition by checking cluster autoscaler configuration and logs.
+4. Retrieve the Node `<node-name>` resources and check node allocatable memory resources and current memory request allocations across all nodes.
 
-5. Retrieve the Node `<node-name>` resources and check for cordoned or unschedulable nodes that reduce available cluster capacity.
+5. Verify cluster autoscaler status and logs for issues preventing node addition by checking cluster autoscaler configuration and logs.
 
-6. Retrieve metrics for the Node `<node-name>` resources and compare memory usage with memory requests to identify overcommitment patterns.
+6. Retrieve the Node `<node-name>` resources and check for cordoned or unschedulable nodes that reduce available cluster capacity.
+
+7. Retrieve metrics for the Node `<node-name>` resources and compare memory usage with memory requests to identify overcommitment patterns.
 
 ## Diagnosis
 
-Compare namespace memory request growth trends with node capacity additions over the last 24 hours and verify whether request growth exceeded capacity expansion, using resource quota metrics and node addition timestamps as supporting evidence.
+1. Analyze events from Playbook to identify memory-related scheduling failures. Events showing "InsufficientMemory" or "FailedScheduling" indicate pods that could not be placed due to memory constraints. The timestamps indicate when overcommit became problematic.
 
-Correlate memory overcommit detection timestamps with node removal or cordoning events within 30 minutes and verify whether overcommit became critical after node capacity reduction, using node condition changes and resource quota status as supporting evidence.
+2. If events indicate pods pending due to insufficient memory, compare total memory requests across all pods with total node allocatable memory from Playbook. This shows the extent of overcommitment and how much additional capacity is needed.
 
-Analyze memory request allocation patterns across namespaces over the last 1 hour to identify which namespaces contribute most to overcommitment, using resource quota metrics and pod resource specifications as supporting evidence.
+3. If overcommit correlates with node removal or cordoning events, capacity reduction caused the overcommit condition. Check node events for recently removed, cordoned, or NotReady nodes that reduced available cluster memory.
 
-Compare cluster autoscaler activity timestamps with memory overcommit detection times within 30 minutes and verify whether autoscaler failed to add nodes when capacity was needed, using autoscaler logs and node creation events as supporting evidence.
+4. If overcommit correlates with recent scaling or deployment events, those operations increased memory requests beyond available capacity. Identify which deployments scaled up or which new workloads were deployed.
 
-Correlate memory overcommit with deployment or HPA scaling event timestamps within 30 minutes and verify whether recent scaling operations triggered overcommitment, using deployment replica changes and HPA scaling history as supporting evidence.
+5. If cluster autoscaler events show scaling failures or no scaling activity despite pending pods, verify autoscaler status from Playbook. Check for node group maximum limits, cloud provider quota limits, or autoscaler configuration issues preventing capacity expansion.
 
-Compare current memory requests with historical baseline requests over the last 7 days and verify whether overcommitment resulted from gradual request growth or sudden capacity reduction, using resource quota metrics and historical capacity data as supporting evidence.
+6. If overcommit exists but no pods are currently pending, the cluster may tolerate the condition until a node failure occurs. A node failure would cause pods to be evicted but unable to reschedule due to insufficient remaining capacity.
 
-If no correlation is found within the specified time windows: extend timeframes to 7 days for capacity planning analysis, review namespace resource quota configurations, check for resource request misconfigurations, verify node pool capacity settings, examine cluster autoscaler configuration. Memory overcommit may result from inadequate capacity planning, misconfigured resource requests, or insufficient cluster scaling rather than immediate operational changes.
+7. If memory requests across namespaces significantly exceed actual memory usage (high request-to-usage ratio), consider right-sizing pod memory requests. Over-provisioned requests cause artificial overcommit that could be resolved by reducing requests to match actual usage patterns.

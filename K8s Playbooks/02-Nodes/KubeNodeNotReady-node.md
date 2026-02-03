@@ -15,30 +15,47 @@ KubeNodeNotReady alerts fire; node cannot host new pods; existing pods may becom
 
 ## Playbook
 
-1. Retrieve the Node `<node-name>` and inspect its status to check Ready condition status, reason, and message to verify NotReady state.
+1. Describe node <node-name> to see:
+   - Conditions section showing Ready status and other pressure conditions
+   - Events section showing NodeNotReady, KubeletNotReady events with timestamps
+   - Allocated resources showing current usage
 
-2. Retrieve the Node `<node-name>` and check node conditions including MemoryPressure, DiskPressure, PIDPressure, and NetworkUnavailable to identify resource pressure.
+2. List events filtered by involved object name <node-name> and kind Node, sorted by last timestamp to see the sequence of node issues.
 
-3. Retrieve events for the Node `<node-name>` and filter for error patterns including 'NodeNotReady', 'KubeletNotReady', 'NodeHasInsufficientMemory', 'NodeHasDiskPressure' to identify node health issues.
+3. Retrieve node <node-name> conditions to see Ready, MemoryPressure, DiskPressure, PIDPressure, NetworkUnavailable status and lastTransitionTime.
 
-4. Check kubelet status and health on the Node `<node-name>` by accessing via Pod Exec tool or SSH if node access is available to verify kubelet operation.
+4. Retrieve resource usage metrics for node <node-name> to see current CPU and memory utilization.
 
-5. Verify network connectivity between the Node `<node-name>` and API server endpoints to identify connectivity issues.
+5. Access node via SSH and check kubelet status:
+   - Verify if kubelet service is running
+   - Retrieve recent kubelet logs from the last 10 minutes
+   - Check kubelet logs for error messages
 
-6. Retrieve metrics for the Node `<node-name>` and check node resource usage metrics for CPU, memory, and disk to identify resource pressure.
+6. Check disk and memory on node (SSH required):
+   - Verify disk space usage
+   - Check memory availability
+   - Analyse process resource usage
+
+7. Check container runtime health (SSH required):
+   - Verify containerd or docker service status
+   - Confirm runtime is responding
+
+8. Check API server connectivity from node (SSH required): Verify network path to control plane by testing API server health endpoint.
 
 ## Diagnosis
 
-Compare node NotReady condition transition timestamps with kubelet failure or restart timestamps within 5 minutes and verify whether node became NotReady when kubelet failed, using node conditions and kubelet status as supporting evidence.
+1. Analyze node events from Playbook steps 1-2 to identify the primary cause of NotReady. Events with reason "KubeletNotReady" or "KubeletStopped" indicate kubelet service issues. Events with reason "NodeHasDiskPressure", "NodeHasMemoryPressure", or "NodeHasPIDPressure" indicate resource exhaustion.
 
-Correlate node NotReady detection with node resource pressure condition transitions within 5 minutes and verify whether NotReady state aligns with MemoryPressure, DiskPressure, or PIDPressure conditions, using node conditions and resource metrics as supporting evidence.
+2. If node events indicate kubelet issues (KubeletNotReady), verify kubelet service status from Playbook step 5. Check if kubelet is running, stopped, or in a crash loop. Review kubelet logs for error messages explaining the failure.
 
-Compare node NotReady timestamps with API server connectivity failure times within 5 minutes and verify whether node lost connectivity to control plane, using kubelet logs and API server connection metrics as supporting evidence.
+3. If node events indicate resource pressure conditions, correlate with node conditions from Playbook step 3 to identify which resource is exhausted. Verify using disk and memory checks from Playbook step 6 to confirm the specific resource constraint.
 
-Analyze node condition transition patterns over the last 15 minutes to determine if NotReady is persistent (node failure) or intermittent (network issues), using node condition history and kubelet status as supporting evidence.
+4. If node events show no kubelet or resource issues, check API server connectivity results from Playbook step 8. Network connectivity failures prevent kubelet from reporting node status, causing NotReady state.
 
-Correlate node NotReady with network policy or firewall rule change timestamps within 10 minutes and verify whether connectivity issues began after network configuration changes, using network policy events and node network metrics as supporting evidence.
+5. If node events indicate container runtime issues (ContainerRuntimeDown), verify container runtime health from Playbook step 7. Kubelet depends on the container runtime and cannot function if runtime is unhealthy.
 
-Compare node resource usage metrics with resource capacity at NotReady times and verify whether resource exhaustion caused node health check failures, using node metrics and resource thresholds as supporting evidence.
+6. If node events are inconclusive, compare resource usage metrics from Playbook step 4 with node capacity to identify if CPU or memory exhaustion is affecting kubelet health checks.
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for infrastructure changes, review node system logs, check for hardware failures, verify container runtime health, examine historical node stability patterns. Node NotReady may result from node hardware issues, operating system problems, or persistent network partitions rather than immediate configuration changes.
+7. Analyze node condition lastTransitionTime from Playbook step 3 to determine if NotReady is persistent (consistent timestamps) or intermittent (recent transitions), which helps distinguish between node failure and network instability.
+
+**If no root cause is identified from events**: Extend analysis to node system logs, check for hardware failures or kernel issues, verify if multiple nodes are affected (indicating cluster-wide problems), and review infrastructure change records for recent modifications that may have affected node health.

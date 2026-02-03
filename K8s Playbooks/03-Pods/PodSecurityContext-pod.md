@@ -18,31 +18,43 @@ Pods cannot start; deployments fail to create pods; pods remain in Pending state
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect pod security context and container security context to verify security context configuration.
+1. Describe pod <pod-name> in namespace <namespace> to inspect pod security context and container security context to verify security context configuration.
 
-2. List events in namespace `<namespace>` and filter for pod-related events, focusing on events with reasons such as `FailedCreate` or messages indicating security context validation failures.
+2. Retrieve events in namespace <namespace> for pod <pod-name> sorted by timestamp to identify pod-related events, focusing on events with reasons such as FailedCreate or messages indicating security context validation failures.
 
-3. Check the pod `<pod-name>` status and inspect container waiting state reason and message fields to identify security context errors.
+3. Check the pod <pod-name> status and inspect container waiting state reason and message fields to identify security context errors.
 
 4. Retrieve PodSecurityPolicy or verify PodSecurityStandards enforcement in the cluster to understand security requirements.
 
-5. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and review security context configuration in the pod template.
+5. Retrieve the Deployment <deployment-name> in namespace <namespace> and review security context configuration in the pod template.
 
 6. Check if security context settings conflict with cluster security policies or if required settings are missing.
 
 ## Diagnosis
 
-1. Compare the pod security context failure timestamps with pod security context modification timestamps in the deployment, and check whether security context changes occurred within 30 minutes before pod failures.
+1. Analyze pod events from Playbook steps 1-2 to identify the security context violation. Events showing "FailedCreate" with security-related messages indicate which security setting is causing the failure.
 
-2. Compare the pod security context failure timestamps with PodSecurityPolicy creation or modification timestamps, and check whether security policy changes occurred within 30 minutes before pod failures.
+2. If events indicate "forbidden: unable to validate against any pod security policy" (legacy PSP), check PodSecurityPolicy configuration (Playbook step 4) and verify the pod's service account has access to a suitable PSP.
 
-3. Compare the pod security context failure timestamps with PodSecurityStandards enforcement modification timestamps, and check whether security standard changes occurred within 30 minutes before pod failures.
+3. If events indicate Pod Security Standards violations (Kubernetes 1.23+), check the namespace labels for enforcement level:
+   - "pod-security.kubernetes.io/enforce: restricted" requires strict security settings
+   - "pod-security.kubernetes.io/enforce: baseline" allows common workloads
+   - "pod-security.kubernetes.io/enforce: privileged" allows all pods
 
-4. Compare the pod security context failure timestamps with deployment rollout or pod template update timestamps, and check whether security context changes occurred within 1 hour before pod failures.
+4. If container waiting state shows security context errors (from Playbook step 3), common violations include:
+   - Running as root when runAsNonRoot is required
+   - Requesting privileged containers in restricted namespaces
+   - Using hostPath volumes when forbidden
+   - Requesting capabilities that are not allowed
+   - Using hostNetwork, hostPID, or hostIPC when forbidden
 
-5. Compare the pod security context failure timestamps with cluster upgrade or security policy update timestamps, and check whether infrastructure changes occurred within 1 hour before pod failures, affecting security enforcement.
+5. If deployment security context (from Playbook step 5) conflicts with namespace security policies, update the pod template to comply:
+   - Set runAsNonRoot: true and specify a non-root runAsUser
+   - Remove privileged: true from container security context
+   - Use allowPrivilegeEscalation: false
+   - Drop all capabilities and add only required ones
 
-6. Compare the pod security context failure timestamps with namespace security label modification timestamps, and check whether namespace security settings changed within 30 minutes before pod failures.
+6. If security context settings appear correct but pod still fails, check if admission controllers or OPA/Gatekeeper policies are blocking pod creation with additional constraints.
 
-**If no correlation is found within the specified time windows**: Extend the search window (30 minutes → 1 hour, 1 hour → 2 hours), review pod creation logs for gradual security validation issues, check for intermittent security policy enforcement problems, examine if security context configurations drifted over time, verify if security policies were gradually tightened, and check for cluster security policy updates that may have accumulated. Security context failures may result from gradual security policy changes rather than immediate modifications.
+**To resolve security context issues**: Align pod security context with the most restrictive policy in the namespace. For legitimate privileged workloads, consider using a dedicated namespace with relaxed security policies or explicit policy exceptions.
 

@@ -18,31 +18,56 @@ Pods enter CrashLoopBackOff state; applications cannot maintain stable state; se
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect pod restart count and container termination reason to identify restart patterns and causes.
+1. Describe pod <pod-name> in namespace <namespace> to see restart count, last termination reason (OOMKilled, Error, Completed), exit code, and recent events showing why the pod is restarting.
 
-2. Retrieve logs from the pod `<pod-name>` in namespace `<namespace>` and filter for error patterns, crash messages, stack traces, or out-of-memory indicators that explain restarts.
+2. Retrieve the last termination state for pod <pod-name> in namespace <namespace> - if reason is OOMKilled, this is the root cause.
 
-3. List events in namespace `<namespace>` and filter for events related to the pod, focusing on OOM kill events, liveness probe failures, or container runtime errors.
+3. Retrieve events for pod <pod-name> in namespace <namespace> sorted by timestamp to see OOMKill events, liveness probe failures, or container runtime errors.
 
-4. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and review resource requests and limits to verify if memory or CPU constraints may be causing issues.
+4. Retrieve logs from the previous container instance for pod <pod-name> in namespace <namespace> to see error messages and stack traces from before the crash.
 
-5. Check the pod `<pod-name>` resource usage metrics to verify if CPU throttling, memory pressure, or other resource constraints are affecting the application.
+5. Describe Deployment <deployment-name> in namespace <namespace> to check resource requests/limits, liveness probe settings (timeoutSeconds, failureThreshold), and readiness probe configuration.
 
-6. Retrieve the pod `<pod-name>` and inspect container waiting state reason or container termination reason to identify specific restart causes.
+6. Retrieve resource usage metrics for pod <pod-name> in namespace <namespace> to see if memory or CPU is approaching limits.
+
+7. If OOMKilled, describe node <node-name> and check Conditions section to see if node-level memory pressure is contributing.
 
 ## Diagnosis
 
-1. Compare the pod restart timestamps with out-of-memory kill event timestamps, and check whether OOM kills occur within 5 minutes before each restart, indicating memory limit issues.
+1. Analyze pod events from Playbook steps 1-3 to identify the primary restart reason. Order diagnosis by most common causes:
 
-2. Compare the pod restart timestamps with application error or crash log timestamps, and check whether application errors consistently occur within 5 minutes before restarts.
+2. If termination reason shows "OOMKilled" (from Playbook steps 1-2):
+   - Container exceeded memory limits
+   - Check memory usage metrics (Playbook step 6) vs limits
+   - Increase memory limits or fix memory leaks
+   - Exit code 137 confirms OOM kill
 
-3. Compare the pod restart timestamps with resource limit or request modification timestamps in the deployment, and check whether resource constraints were changed within 30 minutes before frequent restarts began.
+3. If termination reason shows "Error" with non-zero exit code (from Playbook step 1):
+   - Application crashed with error
+   - Check previous container logs (Playbook step 4) for stack traces
+   - Common exit codes: 1 (general error), 139 (segfault), 143 (SIGTERM not handled)
 
-4. Compare the pod restart timestamps with liveness probe failure timestamps, and check whether probe failures occur within the `failureThreshold` period before each restart.
+4. If events show liveness probe failures before restarts (from Playbook step 3):
+   - Application became unresponsive
+   - Check probe configuration (Playbook step 5)
+   - Verify probe timeouts are appropriate for application
+   - Review if resource limits are causing slow responses
 
-5. Compare the pod restart timestamps with deployment rollout or image update timestamps, and check whether application changes occurred within 1 hour before frequent restarts began, indicating the new version may have bugs.
+5. If events show "BackOff" indicating CrashLoopBackOff:
+   - Container is crashing immediately after start
+   - Check container command/args configuration
+   - Verify required dependencies (ConfigMap, Secret, volumes) exist
+   - Review application startup logs
 
-6. Compare the pod restart timestamps with node resource pressure condition timestamps (MemoryPressure, DiskPressure), and check whether node-level resource issues coincide with pod restarts within 5 minutes.
+6. If node shows resource pressure (from Playbook step 7):
+   - Node-level issues affecting pod stability
+   - Consider moving pod to a healthier node
+   - Check if eviction is causing restarts
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review application logs for gradual memory leaks or performance degradation patterns, check for intermittent external dependency failures causing crashes, examine resource usage trends for gradual constraint development, verify if application configuration changes introduced instability over time, and check for container runtime or node-level issues that may cause restarts. Frequent restarts may result from cumulative application or infrastructure problems rather than immediate failures.
+7. If restarts correlate with deployment changes (from Playbook step 5):
+   - New application version has bugs
+   - Configuration changes broke the application
+   - Consider rolling back to previous version
+
+**To reduce restart frequency**: Fix the underlying cause identified in termination reason and logs. For OOMKilled, increase memory or fix leaks. For application errors, fix bugs or configuration. For probe failures, adjust probe timing or fix application responsiveness.
 

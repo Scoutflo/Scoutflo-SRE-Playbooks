@@ -15,11 +15,11 @@ KubeVersionMismatch alerts fire; incompatible API versions between Kubernetes co
 
 ## Playbook
 
-1. Retrieve the Node `<node-name>` for all nodes in the cluster and retrieve Kubernetes version information to compare versions and identify mismatches.
+1. List all nodes with wide output to retrieve all nodes with their Kubernetes versions and identify version mismatches across the cluster.
 
-2. Retrieve the Pod `<pod-name>` in namespace `kube-system` with labels `component=kube-apiserver`, `component=kube-controller-manager`, and `component=kube-scheduler` and check control plane component versions including API server, controller manager, and scheduler to identify version differences.
+2. List events in namespace kube-system sorted by last timestamp to retrieve recent control plane events, filtering for version-related errors, API compatibility issues, or upgrade failures.
 
-3. Retrieve the Node `<node-name>` for worker nodes and check worker node versions and compare with control plane versions to identify version gaps.
+3. Describe pods in namespace kube-system with label tier=control-plane to retrieve detailed control plane component information and check component versions including API server, controller manager, and scheduler.
 
 4. Retrieve cluster upgrade status and verify if there is an ongoing Kubernetes upgrade process, especially in managed services, to determine if mismatches are expected during upgrades.
 
@@ -29,16 +29,18 @@ KubeVersionMismatch alerts fire; incompatible API versions between Kubernetes co
 
 ## Diagnosis
 
-Compare version mismatch detection timestamps with cluster upgrade initiation times within 1 hour and verify whether version mismatches began when upgrade process started, using upgrade logs and node version changes as supporting evidence.
+1. Analyze cluster and node events from Playbook to identify if an upgrade is in progress or has recently occurred. If events show upgrade-related activity, version mismatches may be expected during the upgrade window.
 
-Correlate version mismatches with node upgrade or replacement event timestamps within 1 hour and verify whether node upgrades created version inconsistencies, using node version history and upgrade events as supporting evidence.
+2. If events indicate an active upgrade process, verify upgrade status from Playbook step 4. If upgrade is still in progress at event timestamps, version mismatches are expected and will resolve upon completion.
 
-Compare version mismatch patterns across nodes to determine if mismatches are systematic (upgrade in progress) or isolated (failed upgrade), using node versions and upgrade status as supporting evidence.
+3. If events indicate upgrade failures or rollback activity, examine upgrade logs for errors. If events show failed upgrade attempts or incomplete node upgrades, the upgrade process needs remediation.
 
-Analyze component version compatibility to identify which version differences may cause issues, using Kubernetes version compatibility matrices and component versions as supporting evidence.
+4. If events show node upgrade or replacement activity, correlate node version changes with event timestamps from Playbook step 1. If specific nodes show different versions after upgrade events, those nodes may have failed to upgrade.
 
-Correlate version mismatches with API error or compatibility error timestamps within 1 hour and verify whether version mismatches caused API or component communication failures, using API error logs and component communication logs as supporting evidence.
+5. If events indicate API compatibility errors, identify which component versions are incompatible. If events show API version errors between components at specific timestamps, version skew is causing operational issues requiring immediate attention.
 
-Compare current version distribution with historical version patterns to verify whether version mismatches represent normal upgrade process or failed upgrade state, using version history and upgrade plans as supporting evidence.
+6. If events show systematic version patterns across nodes (control plane vs workers), the version skew follows expected upgrade order. If version mismatches are isolated to specific nodes, those nodes require individual investigation.
 
-If no correlation is found within the specified time windows: extend timeframes to 24 hours for upgrade processes, review cluster upgrade procedures, check for failed upgrade operations, verify node pool version configurations, examine historical version consistency patterns. Version mismatches may result from incomplete upgrades, manual version changes, or upgrade process failures rather than immediate operational changes.
+7. If no upgrade activity is indicated in events, verify if version mismatches are due to manual interventions or configuration drift. If versions differ without upgrade events, manual changes or misconfigurations are the cause.
+
+**If no correlation is found**: Extend timeframes to 24 hours for upgrade processes, review cluster upgrade procedures, check for failed upgrade operations, verify node pool version configurations, examine historical version consistency patterns. Version mismatches may result from incomplete upgrades, manual version changes, or upgrade process failures rather than immediate operational changes.

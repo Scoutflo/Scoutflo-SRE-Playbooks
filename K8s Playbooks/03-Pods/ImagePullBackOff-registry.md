@@ -18,31 +18,33 @@ Pods cannot start; deployments remain at 0 replicas; rolling updates fail; appli
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect `status.containerStatuses[].state.waiting.reason` and `message` fields to confirm `ImagePullBackOff` or `ErrImagePull` and capture the exact error.
+1. Describe pod <pod-name> in namespace <namespace> to see the exact error message for image pull failure - look in Events section for "Failed to pull image" with the specific reason (auth error, not found, timeout).
 
-2. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and verify that each container’s `image` field (registry, repository, tag, or digest) is correct and exists in the target registry.
+2. Retrieve events for pod <pod-name> in namespace <namespace> filtered by reason Failed and sorted by timestamp to see the sequence of image pull failures.
 
-3. List events in namespace `<namespace>` and filter for image pull errors associated with the pod, focusing on events with reasons such as `Failed` and messages containing "pull" or `ErrImagePull`.
+3. Verify the image exists and is accessible: retrieve the image name for pod <pod-name> in namespace <namespace> and test image pull manually on the node.
 
-4. From a test pod, execute `curl <registry-url>` or an equivalent HTTP request to verify network connectivity and basic reachability to the container registry endpoint.
+4. Check imagePullSecrets configuration: retrieve the imagePullSecrets for pod <pod-name> in namespace <namespace>, verify the secret exists, and decode and verify the credentials.
 
-5. Check the pod spec for `imagePullSecrets`, then retrieve and validate those Secret objects in namespace `<namespace>` to confirm they exist and contain valid credentials for the registry.
+5. Describe Deployment <deployment-name> in namespace <namespace> to verify the image reference is correct (registry, repository, tag) and check if imagePullSecrets are properly configured in the pod template.
 
-6. On the node where the pod is scheduled, verify disk space availability (for example, using `df -h`) in the image storage directories to ensure there is enough space to pull the image.
+6. Test registry connectivity from a pod in the same namespace by executing a request to the registry URL.
+
+7. Check node disk space where pod is scheduled by SSH to the node - insufficient disk prevents image pulls.
 
 ## Diagnosis
 
-1. Compare the image pull failure event timestamps (events where `reason="Failed"` and messages contain "pull" or `ErrImagePull`) with image pull secret modification timestamps, and check whether failures began within 10 minutes of a secret update.
+1. Analyze pod events from Playbook to identify the specific image pull error. Events showing "unauthorized" or "authentication required" indicate credential issues. Events showing "not found" or "manifest unknown" indicate the image or tag does not exist. Events showing "timeout" or "connection refused" indicate network or registry availability issues.
 
-2. Compare the image pull failure event timestamps with the results and timestamps of registry connectivity tests (for example, `curl <registry-url>` from a test pod), and check whether network failures or timeouts coincide with the start of image pull errors.
+2. If events indicate authentication failure, verify imagePullSecrets configuration from Playbook output. Check if the Secret exists, contains valid credentials, and is of type kubernetes.io/dockerconfigjson. Decode and verify the registry URL in the Secret matches the image registry.
 
-3. Compare the image pull failure event timestamps with Deployment image change times, and check whether failures began within 1 hour after the image reference was changed.
+3. If events indicate image not found, verify the image name and tag exist in the registry. Check if the image was recently deleted, the tag was overwritten, or if the repository name is incorrect. Verify the full image path including registry hostname.
 
-4. Compare the image pull failure event timestamps with Deployment modification timestamps, and check whether a new deployment or rollout occurred within 1 hour before failures started.
+4. If events indicate network or connectivity issues, use the Playbook registry connectivity test results. Check if the node can reach the registry, if DNS resolution works, and if any NetworkPolicies are blocking egress to the registry.
 
-5. Compare the image pull failure event timestamps with container registry maintenance windows and node disk space checks, and check whether registry outages or low disk conditions on the pulling node occurred at the same time as failures.
+5. If events indicate rate limiting (e.g., "too many requests"), check if the registry has pull quotas. For Docker Hub, anonymous pulls are limited - verify imagePullSecrets are configured for authenticated pulls.
 
-6. Compare the image pull failure event timestamps with NetworkPolicy modification timestamps in namespaces that control egress to the registry, and check whether new or updated policies were applied within 10 minutes before pull errors began.
+6. If events indicate disk space issues or "no space left on device", verify node disk space from Playbook checks. The kubelet requires sufficient disk space in the image storage directory to pull and extract images.
 
-**If no correlation is found within the specified time windows**: Extend the search window (10 minutes → 30 minutes, 1 hour → 2 hours), review registry connectivity from multiple nodes to identify network path issues, check for gradual registry performance degradation, examine image pull secret expiration that may have occurred earlier, verify if registry maintenance or rate limiting was introduced, and check node disk space trends for gradual exhaustion. Image pull failures may result from network or registry issues that developed over time.
+**If no clear cause is identified from events**: Check if the image uses a digest that no longer exists, verify if a private registry requires VPN or specific network access, examine if the registry certificate is expired or untrusted by the node, and review if a recent cluster or node upgrade changed container runtime behavior.
 

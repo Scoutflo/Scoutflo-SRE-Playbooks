@@ -15,30 +15,34 @@ DaemonSet rollout alerts fire; DaemonSet cannot complete rolling updates; old po
 
 ## Playbook
 
-1. Retrieve the DaemonSet `<daemonset-name>` in namespace `<namespace>` and inspect its status to check rollout status, desired number scheduled, and number ready to verify rollout progress.
+1. Describe DaemonSet <daemonset-name> in namespace <namespace> to see:
+   - Rollout status, desired number scheduled, and number ready
+   - Update strategy configuration
+   - Conditions showing why rollout is stuck
+   - Events showing FailedCreate, FailedScheduling, or FailedDelete errors
 
-2. Retrieve the Pod `<pod-name>` in namespace `<namespace>` belonging to the DaemonSet `<daemonset-name>` and check pod status to identify pods in Pending or Terminating states.
+2. Retrieve events for DaemonSet <daemonset-name> in namespace <namespace> sorted by timestamp to see the sequence of rollout issues.
 
-3. Retrieve events for the DaemonSet `<daemonset-name>` in namespace `<namespace>` and filter for error patterns including 'FailedCreate', 'FailedScheduling', 'FailedDelete' to identify rollout blockers.
+3. List pods belonging to DaemonSet in namespace <namespace> with label app=<daemonset-label> and describe pods to identify pods in Pending or Terminating states.
 
-4. Retrieve the DaemonSet `<daemonset-name>` in namespace `<namespace>` and check pod template parameters including resource requests, node selectors, tolerations, affinity rules, and pod priority class to verify configuration issues.
+4. Check rollout status for DaemonSet <daemonset-name> in namespace <namespace> to see if rollout is progressing or stuck.
 
-5. Retrieve the Node `<node-name>` resources and verify node availability and conditions for nodes where DaemonSet pods should be scheduled.
+5. Describe node <node-name> to verify node availability and conditions for nodes where DaemonSet pods should be scheduled.
 
-6. Retrieve PodDisruptionBudget resources and check for pod disruption budget constraints that may prevent pod termination.
+6. Describe PodDisruptionBudget resources in namespace <namespace> to check for constraints that may prevent pod termination.
 
 ## Diagnosis
 
-Compare DaemonSet update initiation timestamps with pod scheduling failure timestamps within 30 minutes and verify whether rollout became stuck immediately after update started, using DaemonSet events and pod scheduling events as supporting evidence.
+1. Analyze DaemonSet events from Playbook to identify the rollout blocker. Events showing "FailedCreate" indicate pod creation issues. Events showing "FailedScheduling" indicate resource or placement constraints. Events showing "FailedDelete" indicate pods cannot be terminated to make room for new ones.
 
-Correlate stuck pod timestamps with node condition transitions within 5 minutes and verify whether pods cannot be scheduled due to node resource pressure or NotReady conditions, using node conditions and pod scheduling events as supporting evidence.
+2. If events indicate pod creation failures on specific nodes, check those nodes' available resources and conditions. DaemonSets using RollingUpdate strategy must terminate old pods before creating new ones on the same node. If the new pod has higher resource requests, it may not fit alongside other workloads.
 
-Analyze pod termination duration for old DaemonSet pods over the last 15 minutes to determine if termination grace period is too long or pods are stuck terminating, using pod status and termination timestamps as supporting evidence.
+3. If events indicate scheduling failures (InsufficientCPU, InsufficientMemory), the new DaemonSet pod template requires more resources than available on target nodes. Compare new pod resource requests with node allocatable resources minus existing pod requests.
 
-Compare new pod resource requests with node available resources at scheduling failure times and verify whether resource constraints prevent new pod scheduling, using node metrics and pod resource specifications as supporting evidence.
+4. If events indicate pods stuck in Terminating state, check for finalizers on the old pods or PodDisruptionBudget constraints preventing eviction. DaemonSets with maxUnavailable=1 cannot proceed if even one pod termination is blocked.
 
-Correlate DaemonSet rollout stuck detection with node taint or label change timestamps within 10 minutes and verify whether node configuration changes prevented pod scheduling, using node taints, labels, and pod toleration/selector configurations as supporting evidence.
+5. If pods are created but not becoming Ready, analyze pod logs and container status from Playbook. The rollout waits for new pods to become Ready before terminating the next old pod. Readiness probe failures or application startup issues block the rollout.
 
-Compare DaemonSet pod priority with other pod priorities on affected nodes and verify whether higher priority pods preempted DaemonSet pods, using pod priority classes and node pod distributions as supporting evidence.
+6. If events show node-related issues (NodeNotReady, node taints), verify node conditions and taints match DaemonSet tolerations. New taints added during rollout may prevent new pods from scheduling even though old pods were running.
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for infrastructure changes, review DaemonSet update strategy configuration, check for cluster autoscaler issues, verify pod disruption budget settings, examine historical DaemonSet rollout patterns. DaemonSet rollout may be stuck due to persistent resource constraints, misconfigured affinity rules, or cluster capacity limitations rather than immediate changes.
+7. If no clear event pattern exists, check the DaemonSet's updateStrategy configuration. Verify maxUnavailable and maxSurge settings allow pods to be replaced. Also verify if any PodDisruptionBudget in the namespace is blocking pod evictions required for the update.

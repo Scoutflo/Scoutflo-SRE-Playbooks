@@ -15,13 +15,13 @@ KubeQuotaFullyUsed alerts fire; new app installations may not be possible; resou
 
 ## Playbook
 
-1. Retrieve the ResourceQuota `<quota-name>` in namespace `<namespace>` and inspect its status to check current usage versus hard limits for all resource types to identify which quotas are fully used.
+1. Describe the ResourceQuota `<quota-name>` in namespace `<namespace>` to inspect its status and check current usage versus hard limits for all resource types to identify which quotas are fully used.
 
-2. List Pod resources in namespace `<namespace>` and aggregate resource requests to identify major resource consumers.
+2. Retrieve events in namespace `<namespace>` sorted by timestamp to identify quota-related errors including 'exceeded quota', 'Forbidden', 'ResourceQuota'.
 
-3. Retrieve the ResourceQuota `<quota-name>` in namespace `<namespace>` and check resource quota configuration to verify quota limits and scope.
+3. List Pod resources in namespace `<namespace>` and aggregate resource requests to identify major resource consumers.
 
-4. Retrieve events for namespace `<namespace>` and filter for quota-related error patterns including 'exceeded quota', 'Forbidden', 'ResourceQuota' to identify quota-related errors.
+4. Retrieve the ResourceQuota `<quota-name>` in namespace `<namespace>` and check resource quota configuration to verify quota limits and scope.
 
 5. Verify recent resource creation or scaling operations that may have caused quota to reach limits by checking deployment and HPA scaling history.
 
@@ -29,16 +29,16 @@ KubeQuotaFullyUsed alerts fire; new app installations may not be possible; resou
 
 ## Diagnosis
 
-Compare quota reaching limits timestamps with deployment or scaling event timestamps within 30 minutes and verify whether quota reached limits immediately after scaling operations, using resource quota metrics and deployment history as supporting evidence.
+1. Analyze namespace events from Playbook to identify quota-related failures. Events showing "exceeded quota" or "Forbidden" indicate which operations failed due to quota limits. The event messages specify which resource type (cpu, memory, pods, etc.) is at capacity.
 
-Correlate quota fully used detection with resource request misconfiguration within 1 hour and verify whether pods with excessive resource requests caused quota to reach limits, using pod resource specifications and quota usage as supporting evidence.
+2. If events indicate pod quota reached (pods count at limit), identify the number of running pods from Playbook. Determine if this represents expected workload size or if orphaned pods, failed jobs, or completed pods are consuming quota unnecessarily.
 
-Analyze resource quota usage growth trends over the last 24 hours to identify which resource types reached limits, using resource quota metrics and historical usage data as supporting evidence.
+3. If events indicate CPU or memory request quota reached, analyze pod resource requests from Playbook. Identify pods with disproportionately large resource requests. A few pods with excessive requests can consume quota that could otherwise support many smaller pods.
 
-Compare quota fully used with HPA scaling event timestamps within 30 minutes and verify whether HPA scaling caused quota to reach limits, using HPA events and resource quota status as supporting evidence.
+4. If events correlate with HPA scaling activity, the autoscaler attempted to add replicas but hit quota limits. Check HPA status from Playbook to see current versus desired replicas. The HPA will continue attempting to scale but cannot proceed until quota is available.
 
-Correlate quota fully used with namespace resource creation event timestamps within 1 hour and verify whether recent resource creation caused quota to reach limits, using resource creation events and quota usage changes as supporting evidence.
+5. If events correlate with recent deployments or job launches, those new workloads pushed quota usage to the limit. Identify recently created resources and verify their resource requests are appropriate.
 
-Compare current quota limits with historical peak usage over the last 30 days and verify whether quota limits are set appropriately for actual workload requirements, using resource quota metrics and workload growth trends as supporting evidence.
+6. If no clear triggering event exists, the quota reached limits through gradual growth. Compare current usage breakdown from Playbook (used vs hard limits for each resource type) to identify which resources are constrained. Multiple resource types may be at or near limits.
 
-If no correlation is found within the specified time windows: extend timeframes to 30 days for capacity planning analysis, review namespace resource quota configurations, check for gradual workload growth reaching quotas, verify resource request accuracy, examine historical quota usage patterns. Quota may be fully used due to normal workload growth, inadequate quota sizing, or resource request misconfigurations rather than immediate operational changes.
+7. If quota appears correctly sized but is fully used, evaluate whether the namespace genuinely needs more capacity or if workload resource requests are over-provisioned. Consider whether completed jobs or failed pods can be cleaned up to reclaim quota.

@@ -18,31 +18,31 @@ Pods cannot communicate with each other; pod IP addresses are unreachable; netwo
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect its IP address and network configuration to verify pod networking setup.
+1. Describe the pod `<pod-name>` in namespace `<namespace>` to retrieve detailed information including IP address, network configuration, and conditions.
 
-2. List pods in the kube-system namespace and check network plugin pod status (e.g., Calico, Flannel, Cilium) to verify if the network plugin is running and healthy.
+2. Retrieve events for the pod `<pod-name>` in namespace `<namespace>` sorted by timestamp to identify network-related issues and sandbox creation failures.
 
-3. From another pod, execute `ping` or `curl` to the pod `<pod-name>` IP address using Pod Exec tool to test connectivity and verify if the pod IP is reachable.
+3. List pods in the `kube-system` namespace and check network plugin pod status (e.g., Calico, Flannel, Cilium) to verify if the network plugin is running and healthy.
 
-4. Retrieve logs from network plugin pods in the kube-system namespace and filter for networking errors, route configuration issues, or connectivity problems.
+4. From another pod, execute ping or curl to the pod `<pod-name>` IP address to test connectivity and verify if the pod IP is reachable.
 
-5. Check node network interfaces and routes to verify if node networking is correctly configured for pod communication.
+5. Retrieve logs from network plugin pods in the `kube-system` namespace and filter for networking errors, route configuration issues, or connectivity problems.
 
-6. List events in namespace `<namespace>` and filter for network-related events, focusing on events with reasons such as `FailedCreatePodSandbox` or messages indicating network configuration failures.
+6. Check node network interfaces and routes to verify if node networking is correctly configured for pod communication.
 
 ## Diagnosis
 
-1. Compare the pod IP unreachable timestamps with network plugin pod restart or failure timestamps, and check whether network plugin failures occurred within 5 minutes before pod IP became unreachable.
+1. Analyze pod events from Playbook to identify FailedCreatePodSandbox or network configuration errors. If events show sandbox creation failures, the CNI plugin failed to configure networking for the pod.
 
-2. Compare the pod IP unreachable timestamps with pod network configuration modification timestamps, and check whether pod networking changes occurred within 30 minutes before IP unreachability.
+2. If events indicate CNI failures, check network plugin pod status in kube-system from Playbook data. If CNI pods (Calico, Flannel, Cilium) show CrashLoopBackOff, NotReady, or recent restarts, the network plugin is not functioning correctly.
 
-3. Compare the pod IP unreachable timestamps with cluster network plugin deployment update timestamps, and check whether network plugin updates occurred within 1 hour before pod IP unreachability.
+3. If CNI pods are healthy, verify pod IP assignment and Ready condition from Playbook data. If pod has IP but is not Ready, the issue may be application-level rather than network-level.
 
-4. Compare the pod IP unreachable timestamps with node network interface or route modification timestamps, and check whether node networking changes occurred within 10 minutes before pod IP became unreachable.
+4. If pod is Ready with IP assigned, check NetworkPolicy rules from Playbook for policies blocking ingress traffic to the pod. If restrictive policies exist without proper allow rules, traffic is blocked at the policy level.
 
-5. Compare the pod IP unreachable timestamps with NetworkPolicy creation or modification timestamps, and check whether network policies were added or modified within 10 minutes before pod IP unreachability.
+5. If NetworkPolicy is not blocking, review connectivity test results from Playbook. If ping fails but pod is running, check node routing tables and network interface configuration for route misconfiguration.
 
-6. Compare the pod IP unreachable timestamps with cluster network plugin configuration modification timestamps, and check whether network plugin settings were changed within 30 minutes before pod IP unreachability.
+6. If routing appears correct, check CNI plugin logs from Playbook for IP allocation errors, IPAM failures, or route programming issues that may indicate underlying network infrastructure problems.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review network plugin logs for gradual performance degradation, check for intermittent network routing issues, examine if network configurations drifted over time, verify if node networking gradually degraded, and check for network plugin resource constraints that may have accumulated. Pod IP unreachability may result from gradual network infrastructure degradation rather than immediate changes.
+**If no network configuration issue is found**: Review node network interface status, check for MTU mismatches between nodes, verify if cloud provider networking (VPC routes, security groups) is correctly configured, and examine if recent cluster or node updates affected network configuration.
 

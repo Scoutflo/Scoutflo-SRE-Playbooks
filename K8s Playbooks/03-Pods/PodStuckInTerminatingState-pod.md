@@ -18,30 +18,33 @@ Pods cannot be deleted; deployments cannot update; rolling updates hang; resourc
 
 ## Playbook
 
-1. Retrieve pod `<pod-name>` in namespace `<namespace>` and check pod details and reason for termination delay.
+1. Describe pod <pod-name> in namespace <namespace> to check pod details and reason for termination delay.
 
-2. List events in namespace `<namespace>` and filter for deletion-related events.
+2. Retrieve events in namespace <namespace> for pod <pod-name> sorted by timestamp to identify deletion-related events.
 
-3. Retrieve pod `<pod-name>` in namespace `<namespace>` and check finalizers preventing deletion.
+3. Retrieve pod <pod-name> in namespace <namespace> and check finalizers preventing deletion.
 
 4. Check dependent resources like persistent volume claims, services, or other pods.
 
-5. Retrieve deployment `<deployment-name>` in namespace `<namespace>` and verify terminationGracePeriodSeconds setting.
+5. Retrieve deployment <deployment-name> in namespace <namespace> and verify terminationGracePeriodSeconds setting.
 
-6. Retrieve pod `<pod-name>` in namespace `<namespace>` and check for volume mount issues.
+6. Retrieve pod <pod-name> in namespace <namespace> and check for volume mount issues.
 
 ## Diagnosis
 
-1. Compare the timestamps when pod deletion delays occurred (from pod deletion timestamps) with finalizer change timestamps, and check whether deletion delays begin within 30 minutes of finalizer modifications.
+1. Analyze pod events from Playbook steps 1-2 to identify why the pod is stuck in Terminating state. Events showing deletion-related errors, volume detachment failures, or finalizer issues indicate the specific blocker.
 
-2. Compare the pod deletion delay timestamps with dependent resource change timestamps from PVC, service, or pod modifications, and verify whether deletion delays correlate with dependent resource changes at the same time.
+2. If pod metadata shows finalizers (from Playbook step 3), identify which finalizer is preventing deletion:
+   - "kubernetes.io/pvc-protection": PersistentVolumeClaim is still bound
+   - "foregroundDeletion": Child resources still exist
+   - Custom finalizers: Check the owning controller/operator status
 
-3. Compare the pod deletion delay timestamps with terminationGracePeriodSeconds change timestamps from deployment modifications, and check whether deletion delays begin within 1 hour of termination period changes.
+3. If events indicate volume mount issues (from Playbook step 6), PersistentVolumeClaims cannot be detached. Check dependent resources (Playbook step 4) to verify PVC status and storage provider health.
 
-4. Compare the pod deletion delay timestamps with deployment modification timestamps, and verify whether deletion delays correlate with deployment changes within 1 hour.
+4. If no events indicate the blocker, check if the node where the pod was running is healthy. A NotReady node cannot complete pod termination cleanup.
 
-5. Compare the pod deletion delay timestamps with volume mount issue timestamps, and check whether deletion delays correlate with volume detachment problems at the same time.
+5. If terminationGracePeriodSeconds (from Playbook step 5) is very long, the pod may still be in its grace period. Kubernetes waits for containers to terminate gracefully before force-killing them.
 
-6. Compare the pod deletion delay timestamps with node status or network connectivity issue timestamps, and verify whether deletion delays correlate with node problems.
+6. If events show no errors but pod remains Terminating, check for hanging processes in the container that are not responding to SIGTERM. The container may need to handle shutdown signals properly.
 
-**If no correlation is found within the specified time windows**: Extend the search window (30 minutes → 1 hour, 1 hour → 2 hours), review pod logs for hanging processes, check for finalizer controller failures, examine volume attachment status, verify if service endpoints are blocking deletion, check for network policy constraints, and review pod preStop hook execution. Terminating pods may result from application-level shutdown issues or finalizer controller problems not immediately visible in Kubernetes resource changes.
+**If pod remains stuck after investigation**: Consider force-deleting with `kubectl delete pod --force --grace-period=0` if the underlying resources are confirmed cleaned up. For stuck finalizers, manually patch the pod to remove finalizers only after verifying dependent resources are properly cleaned.

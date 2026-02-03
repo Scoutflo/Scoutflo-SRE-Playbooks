@@ -18,31 +18,31 @@ Services are intermittently unavailable; connections fail randomly; applications
 
 ## Playbook
 
-1. Retrieve the Service `<service-name>` in namespace `<namespace>` and inspect its status and endpoint configuration to verify service stability.
+1. Describe the Service `<service-name>` in namespace `<namespace>` to inspect its status and endpoint configuration.
 
-2. List Endpoints for the Service `<service-name>` in namespace `<namespace>` over time to identify if endpoints are fluctuating or changing frequently.
+2. Retrieve events for the Service `<service-name>` in namespace `<namespace>` sorted by timestamp to identify patterns in service issues.
 
-3. Retrieve pods associated with the service and monitor their Ready condition transitions to verify if pods are frequently becoming NotReady and back.
+3. List Endpoints for the Service `<service-name>` in namespace `<namespace>` over time to identify if endpoints are fluctuating or changing frequently.
 
-4. Check kube-proxy pod status and logs in the kube-system namespace to verify if proxy issues are causing intermittent failures.
+4. Retrieve pods associated with the service and monitor their Ready condition transitions to verify if pods are frequently becoming NotReady and back.
 
-5. List events in namespace `<namespace>` and filter for service-related events over time to identify patterns in endpoint changes or service issues.
+5. Check kube-proxy pod status and logs in the kube-system namespace to verify if proxy issues are causing intermittent failures.
 
-6. From a test pod, execute repeated `curl` or connectivity tests to the service endpoint using Pod Exec tool to verify intermittent connectivity patterns.
+6. From a test pod, execute repeated curl or connectivity tests to the service endpoint to verify intermittent connectivity patterns.
 
 ## Diagnosis
 
-1. Compare the service unreachable event timestamps with pod Ready condition transition times for backend pods, and check whether pods are frequently transitioning between Ready and NotReady within 5 minutes of unreachable events.
+1. Analyze service events and endpoint changes from Playbook to identify patterns in endpoint availability. If endpoints show frequent additions and removals, backend pods are unstable and transitioning between Ready and NotReady states.
 
-2. Compare the service unreachable event timestamps with endpoint change timestamps, and check whether endpoints are being added or removed frequently within 5 minutes of unreachable events.
+2. If endpoints are fluctuating, check pod Ready condition transitions from Playbook data. If pods frequently transition between Ready and NotReady, investigate pod health check failures (liveness/readiness probe issues).
 
-3. Compare the service unreachable event timestamps with kube-proxy restart or error timestamps, and check whether proxy issues occur intermittently within 5 minutes of unreachable events.
+3. If pods are stable, check service selector against pod labels from Playbook. If selector does not consistently match pods due to label changes or deployment updates, endpoints become intermittently available.
 
-4. Compare the service unreachable event timestamps with NetworkPolicy modification or enforcement timestamps, and check whether policy changes occur intermittently within 10 minutes of unreachable events.
+4. If selector matching is correct, check kube-proxy pod status and logs from Playbook. If kube-proxy shows intermittent failures or restarts, iptables/ipvs rules are not consistently programmed.
 
-5. Compare the service unreachable event timestamps with pod restart or crash timestamps, and check whether frequent pod restarts occur within 5 minutes of unreachable events.
+5. If kube-proxy is stable, check NetworkPolicy rules from Playbook for policies affecting service traffic. If policies intermittently block traffic based on dynamic selectors or namespace conditions, connectivity becomes unreliable.
 
-6. Compare the service unreachable event timestamps with node network interface or connectivity issue timestamps, and check whether network problems occur intermittently within 10 minutes of unreachable events.
+6. If NetworkPolicy is not affecting traffic, verify DNS resolution for service name from Playbook connectivity tests. If DNS resolution is slow or intermittently fails, service discovery becomes unreliable.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 10 minutes → 30 minutes), review service endpoint controller logs for gradual processing issues, check for intermittent network path problems, examine if pod health checks are flapping, verify if kube-proxy is experiencing gradual performance degradation, and check for DNS resolution issues that may occur intermittently. Intermittent service unreachability may result from cumulative instability rather than immediate failures.
+**If no configuration issue is found**: Review pod resource utilization for OOMKilled or CPU throttling events, check node health for intermittent network issues, verify if load balancer health checks are too aggressive causing endpoint flapping, and examine if application startup time exceeds readiness probe initial delay.
 

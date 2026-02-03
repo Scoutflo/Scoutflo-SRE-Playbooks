@@ -15,30 +15,37 @@ Job completion alerts fire; long processing of batch jobs; possible issues with 
 
 ## Playbook
 
-1. Retrieve the Job `<job-name>` in namespace `<namespace>` and inspect its status to check start time, duration, and completion status to verify execution duration.
+1. Describe job <job-name> in namespace <namespace> to see:
+   - Start time, duration, and completion status
+   - Active deadline seconds and backoff limit configuration
+   - Parallelism and completions settings
+   - Conditions showing why job is taking long
+   - Events showing any issues during execution
 
-2. Retrieve the Pod `<pod-name>` in namespace `<namespace>` belonging to the Job `<job-name>` and check pod status to verify if pods are running or stuck.
+2. Retrieve events for job <job-name> in namespace <namespace> sorted by timestamp to see the sequence of job execution events.
 
-3. Retrieve logs from the Pod `<pod-name>` in namespace `<namespace>` for container `<container-name>` to identify processing progress or bottlenecks.
+3. List pods belonging to job <job-name> in namespace <namespace> and describe pods to verify if they are running or stuck.
 
-4. Retrieve the Job `<job-name>` in namespace `<namespace>` and check job configuration including active deadline seconds and backoff limit to verify configuration issues.
+4. Retrieve logs from job pod <pod-name> in namespace <namespace> to identify processing progress or bottlenecks.
 
-5. Retrieve the Node `<node-name>` for nodes where job pods are running and verify node resource availability and conditions to identify resource constraints.
+5. Describe node <node-name> where job pods are running to verify resource availability and conditions.
 
-6. Retrieve metrics for the Pod `<pod-name>` in namespace `<namespace>` and check job resource requests and compare with actual resource usage to identify resource constraints.
+6. Retrieve resource usage metrics for job pod <pod-name> in namespace <namespace> and compare with resource requests to identify resource constraints.
 
 ## Diagnosis
 
-Compare job execution duration with historical job completion times for similar jobs and verify whether current job is taking longer than normal, using job execution history and completion time baselines as supporting evidence.
+1. Analyze job and pod events from Playbook to identify execution status and any warning events. If events show the job is still running but progressing slowly, use event timestamps to understand when the job started and current progress.
 
-Correlate job slow execution with node resource pressure timestamps within the job execution window and verify whether resource constraints slowed job execution, using node metrics and job execution times as supporting evidence.
+2. If events indicate resource throttling or contention, verify pod resource usage from Playbook step 6. If CPU or memory usage is consistently at limits, resource constraints are slowing job execution.
 
-Compare job execution progress with job resource request and actual usage to determine if resource constraints are limiting performance, using job resource specifications and actual resource usage as supporting evidence.
+3. If events indicate node resource pressure, analyze node conditions from Playbook step 5. If node events show MemoryPressure, DiskPressure, or high utilization at job execution timestamps, node-level constraints are affecting performance.
 
-Analyze job execution patterns over the job duration to identify if slowdown is gradual (resource exhaustion) or sudden (application issue), using job logs and execution metrics as supporting evidence.
+4. If events indicate the job is approaching its deadline, verify active deadline configuration from Playbook step 1. If job execution time is approaching activeDeadlineSeconds, the job may timeout before completion.
 
-Correlate job slow execution with data volume or processing complexity changes and verify whether increased workload caused longer execution times, using job input data metrics and execution history as supporting evidence.
+5. If events show no resource issues, examine job logs for processing progress from Playbook step 4. If logs show slow processing, waiting for external resources, or I/O bottlenecks, application-level performance issues are the cause.
 
-Compare job execution time with job active deadline seconds configuration to verify whether job is approaching timeout, using job configuration and execution duration as supporting evidence.
+6. If events indicate this is a recurring pattern, compare current execution with historical job completion times. If the job consistently takes longer than similar past jobs, investigate data volume increases or algorithm efficiency.
 
-If no correlation is found within the specified time windows: extend timeframes to job execution duration, review job application logic and algorithms, check for data processing inefficiencies, verify job resource allocations, examine historical job performance patterns. Job completion delays may result from application performance issues, data volume increases, or resource allocation problems rather than immediate infrastructure changes.
+7. If events indicate parallelism or completions configuration, verify if job parallelism is appropriate. If parallelism is set too low for the workload, increasing parallel pod count may improve completion time.
+
+**If no correlation is found**: Extend timeframes to job execution duration, review job application logic and algorithms, check for data processing inefficiencies, verify job resource allocations, examine historical job performance patterns. Job completion delays may result from application performance issues, data volume increases, or resource allocation problems rather than immediate infrastructure changes.

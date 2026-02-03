@@ -18,31 +18,31 @@ ConfigMap creation fails with validation errors; ConfigMap updates are rejected 
 
 ## Playbook
 
-1. Retrieve the ConfigMap `<configmap-name>` in namespace `<namespace>` and inspect its data size and content to verify if it exceeds the 1MB limit.
+1. Describe ConfigMap <configmap-name> in namespace <namespace> to inspect its data size and content to verify if it exceeds the 1MB limit - look for the data keys and their sizes.
 
-2. List events in namespace `<namespace>` and filter for ConfigMap-related events, focusing on events with reasons such as `Failed` or messages indicating size limit exceeded.
+2. Retrieve events in namespace <namespace> for ConfigMap <configmap-name> sorted by timestamp to see the sequence of ConfigMap-related events, focusing on events with reasons such as Failed or messages indicating size limit exceeded.
 
-3. Calculate the total size of all keys and values in the ConfigMap to identify which data is causing the size limit to be exceeded.
+3. Retrieve the ConfigMap <configmap-name> in namespace <namespace> and calculate its total size to identify if it is approaching or exceeding the 1MB limit.
 
-4. Check if the ConfigMap contains large binary data, files, or configuration that should be stored elsewhere.
+4. Check if the ConfigMap <configmap-name> in namespace <namespace> contains large binary data, files, or configuration that should be stored elsewhere.
 
-5. Review ConfigMap usage in pods and deployments to understand how the ConfigMap is being used and if it can be split.
+5. List pods in namespace <namespace> and analyse their ConfigMap references to understand how the ConfigMap is being used and if it can be split.
 
-6. Verify if the ConfigMap size has grown over time by checking ConfigMap modification history or metrics.
+6. Verify if the ConfigMap size has grown over time by checking ConfigMap <configmap-name> modification history and resourceVersion in namespace <namespace>.
 
 ## Diagnosis
 
-1. Compare the ConfigMap size limit error timestamps with ConfigMap data modification timestamps, and check whether large data was added within 30 minutes before size limit errors.
+1. Analyze events from Playbook to identify the ConfigMap size limit error. Events showing "exceeds maximum size" or "too large" indicate the ConfigMap has exceeded the 1MB etcd object size limit. Note the exact error message and timestamp for correlation.
 
-2. Compare the ConfigMap size limit error timestamps with ConfigMap key addition timestamps, and check whether new keys were added within 30 minutes before size limit errors.
+2. If events indicate size limit exceeded during creation, calculate the current ConfigMap size from Playbook inspection. Identify which keys contain the largest data values and determine if they can be split or stored externally.
 
-3. Compare the ConfigMap size limit error timestamps with application configuration update timestamps, and check whether configuration changes increased size within 30 minutes before errors.
+3. If events indicate size limit exceeded during update, compare the current ConfigMap data with recent changes. Identify if new keys were added or existing keys were expanded that pushed the total size over 1MB.
 
-4. Compare the ConfigMap size limit error timestamps with ConfigMap merge or update operation timestamps, and check whether updates combined multiple ConfigMaps within 30 minutes before size limit errors.
+4. If the ConfigMap contains binary data (binaryData field), evaluate if this data should be stored in a different resource type such as a Secret (for sensitive data) or external storage (for large files).
 
-5. Compare the ConfigMap size limit error timestamps with deployment rollout or configuration change timestamps, and check whether application updates introduced larger configurations within 1 hour before size limit errors.
+5. If the ConfigMap has grown over time, review the ConfigMap's resourceVersion and modification history from Playbook output. Identify patterns of incremental growth and determine if old or unused keys can be removed.
 
-6. Compare the ConfigMap size limit error timestamps with cluster upgrade or Kubernetes version update timestamps, and check whether size limit enforcement changed within 1 hour before errors, though the limit is typically constant.
+6. If events indicate pod mount failures due to ConfigMap size, verify if the ConfigMap can be split into multiple smaller ConfigMaps. Consider using subPath mounts to mount only specific keys rather than the entire ConfigMap.
 
-**If no correlation is found within the specified time windows**: Extend the search window (30 minutes → 1 hour, 1 hour → 2 hours), review ConfigMap modification history for gradual size growth, check for cumulative configuration additions over time, examine if binary data or large files were gradually added, verify if ConfigMap data accumulated without cleanup, and check for configuration management tools that may have increased ConfigMap size gradually. ConfigMap size limit errors may result from gradual configuration growth rather than immediate large additions.
+**If no clear cause is identified from events**: Examine if configuration management tools (Helm, Kustomize, operators) are generating large ConfigMaps, check if the ConfigMap is being used as a general data store rather than for configuration, and evaluate alternative storage solutions for large data such as PersistentVolumes or external configuration services.
 

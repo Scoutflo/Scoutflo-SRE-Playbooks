@@ -15,32 +15,37 @@ KubeNodeUnreachable alerts fire; node becomes unreachable; pods on node may be r
 
 ## Playbook
 
-1. Retrieve the Node `<node-name>` and inspect its status to check Ready condition status and node reachability to verify unreachability.
+1. Describe node <node-name> to see:
+   - Conditions section showing Ready status (expected to be Unknown or False)
+   - Events section showing NodeUnreachable, NodeNotReady, or NodeLost events
+   - Last heartbeat times and condition transitions
 
-2. Retrieve the Node `<node-name>` and check node conditions to verify if node is in Unknown state indicating unreachability.
+2. Retrieve events for node <node-name> sorted by timestamp to see the sequence of unreachability events including 'NodeUnreachable', 'NodeNotReady', 'NodeLost'.
 
-3. Retrieve events for the Node `<node-name>` and filter for error patterns including 'NodeUnreachable', 'NodeNotReady', 'NodeLost' to identify unreachability causes.
+3. Check node conditions for node <node-name> to verify if node is in Unknown state indicating unreachability.
 
-4. Verify network connectivity between monitoring system and the Node `<node-name>` to confirm connectivity issues.
+4. Verify network connectivity between monitoring system and the Node <node-name> to confirm connectivity issues.
 
-5. Check kubelet status on the Node `<node-name>` by accessing via Pod Exec tool or SSH if node access is available to verify kubelet operation.
+5. Check kubelet status on the Node <node-name> by accessing via Pod Exec tool or SSH if node access is available to verify kubelet operation.
 
-6. Verify API server connectivity from the Node `<node-name>` perspective to identify control plane communication issues.
+6. Verify API server connectivity from the Node <node-name> perspective to identify control plane communication issues.
 
 7. Check for recent node maintenance, upgrades, or infrastructure changes that may affect node reachability by reviewing node events and maintenance logs.
 
 ## Diagnosis
 
-Compare node unreachability detection timestamps with network policy or firewall rule change timestamps within 10 minutes and verify whether unreachability began after network configuration changes, using network policy events and connectivity logs as supporting evidence.
+1. Analyze node events from Playbook steps 1-2 to identify the primary cause of unreachability. Events with reason "NodeUnreachable" or "NodeLost" indicate complete loss of communication. Events with reason "NodeNotReady" with Unknown status indicate heartbeat timeout. Note the event timestamps to establish when unreachability began.
 
-Correlate node unreachability with control plane node failures or API server unavailability within 5 minutes and verify whether node lost connectivity due to control plane issues, using API server status and node connection attempts as supporting evidence.
+2. If node events indicate kubelet communication failure (no recent heartbeats), verify network connectivity from Playbook step 4 to confirm whether the node is network-reachable from the monitoring system or other cluster nodes.
 
-Compare node unreachability timestamps with node maintenance or upgrade event times within 1 hour and verify whether unreachability coincides with planned maintenance, using maintenance logs and node status changes as supporting evidence.
+3. If node events indicate kubelet issues, check kubelet status from Playbook step 5 (if node is accessible). Kubelet service failure or crash will cause the node to appear unreachable even if network is functional.
 
-Analyze node reachability patterns over the last 15 minutes to determine if unreachability is complete (node failure) or intermittent (network issues), using node condition history and connectivity metrics as supporting evidence.
+4. If network connectivity tests fail, check API server connectivity from Playbook step 6. This distinguishes between node-side network issues and control plane accessibility problems.
 
-Correlate node unreachability with storage area network or infrastructure change timestamps within 1 hour and verify whether infrastructure changes caused node suspension or failure, using infrastructure logs and node status as supporting evidence.
+5. If node events show unreachability affecting multiple nodes simultaneously, this indicates cluster-wide issues such as control plane problems, network infrastructure failures, or API server unavailability rather than individual node failures.
 
-Compare node unreachability with other node failures within the same timeframe and verify whether multiple nodes are affected (cluster-wide issue) or isolated to single node, using node status across cluster and failure patterns as supporting evidence.
+6. If node events show isolated unreachability for a single node, check for node-specific issues: hardware failures, operating system crashes, or local network problems.
 
-If no correlation is found within the specified time windows: extend timeframes to 24 hours for infrastructure changes, review node hardware logs, check for storage area network issues, verify cloud provider infrastructure status, examine historical node failure patterns. Node unreachability may result from hardware failures, network infrastructure problems, or cloud provider issues rather than immediate configuration changes.
+7. If node events indicate planned maintenance, verify against maintenance logs from Playbook step 7 to confirm whether unreachability is expected behavior during maintenance windows.
+
+**If no root cause is identified from events**: Review cloud provider infrastructure status for node or availability zone issues, check for network infrastructure problems affecting node connectivity, verify node hardware health through out-of-band management, and examine if node was terminated or stopped at the infrastructure level.

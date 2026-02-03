@@ -18,31 +18,38 @@ Pods are not scaled up during high load when CPU or memory exceeds target utiliz
 
 ## Playbook
 
-1. Retrieve the HorizontalPodAutoscaler `<hpa-name>` in namespace `<namespace>` and inspect its status, current metrics, desired replicas, and conditions to identify scaling issues.
+1. Describe HPA <hpa-name> in namespace <namespace> to see:
+   - Current metrics versus target metrics
+   - Desired replicas versus current replicas
+   - Min/max replicas configuration
+   - Conditions showing why scaling is not working
+   - Events showing FailedGetObjectMetric, FailedComputeMetricsReplicas, or other errors
 
-2. List events in namespace `<namespace>` and filter for HPA-related events, focusing on events with reasons such as `FailedGetObjectMetric` or `FailedComputeMetricsReplicas` that indicate metrics retrieval failures.
+2. Retrieve events for HPA <hpa-name> in namespace <namespace> sorted by timestamp to see the sequence of scaling failures.
 
-3. Verify that the Deployment `<deployment-name>` referenced by the HPA has resource requests defined for CPU and memory, as HPA requires resource metrics to function.
+3. Describe deployment <deployment-name> in namespace <namespace> to verify that resource requests are defined, as HPA requires resource metrics to function.
 
-4. List pods in the kube-system namespace and check the metrics-server pod status to verify it is running and healthy, as HPA depends on metrics-server for resource metrics.
+4. Check the metrics-server pod status in kube-system namespace by listing pods with label k8s-app=metrics-server and retrieve metrics-server logs to verify it is running and healthy.
 
-5. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and review resource requests and limits to ensure they are properly configured for HPA scaling.
+5. Retrieve deployment <deployment-name> configuration in namespace <namespace> and review resource requests and limits to ensure they are properly configured for HPA scaling.
 
-6. Check HPA status conditions and metrics to verify if metrics are being collected and if scaling decisions are being made.
+6. Retrieve HPA <hpa-name> status and configuration in namespace <namespace> to verify if metrics are being collected and if scaling decisions are being made.
 
 ## Diagnosis
 
-1. Compare the HPA scaling failure timestamps with metrics-server pod restart or failure timestamps, and check whether metrics-server issues occurred within 5 minutes before HPA stopped scaling.
+1. Analyze HPA events from Playbook to identify scaling failure reasons. If events show FailedGetObjectMetric, FailedComputeMetricsReplicas, "ScalingDisabled", or metrics unavailable conditions, use event timestamps and error messages to identify the specific issue.
 
-2. Compare the HPA scaling failure timestamps with deployment resource request modification timestamps, and check whether resource requests were removed or modified within 30 minutes before HPA scaling failures.
+2. If events indicate metrics unavailability, verify metrics-server status from Playbook step 4. If metrics-server events show failures, restarts, or unavailability at timestamps when scaling stopped, metrics-server is the root cause.
 
-3. Compare the HPA scaling failure timestamps with HPA configuration modification timestamps, and check whether HPA min/max replicas or target metrics were changed within 30 minutes before scaling issues.
+3. If events indicate missing resource requests, examine deployment configuration from Playbook step 3. If the deployment lacks CPU or memory resource requests, add resource requests to enable HPA metrics calculation.
 
-4. Compare the HPA scaling failure timestamps with metrics-server unavailability or error timestamps, and check whether metrics collection stopped within 5 minutes before HPA scaling failures.
+4. If events indicate HPA configuration issues, verify HPA settings from Playbook step 6. If min/max replicas are equal, or target metrics are misconfigured, adjust HPA configuration to enable scaling.
 
-5. Compare the HPA scaling failure timestamps with cluster resource pressure timestamps (node capacity, resource quotas), and check whether resource constraints prevented scaling within 30 minutes before failures.
+5. If events indicate resource constraints preventing scale-up, verify cluster capacity and quotas. If scaling events show scheduling failures or quota exhaustion, capacity constraints are blocking scaling rather than HPA misconfiguration.
 
-6. Compare the HPA scaling failure timestamps with deployment rollout or update timestamps, and check whether deployment changes occurred within 1 hour before HPA scaling issues, indicating the new deployment may have different resource requirements affecting HPA calculations.
+6. If events indicate recent deployment changes, correlate deployment rollout timestamps with scaling failures. If deployment events occurred before scaling stopped working, new deployment configuration may have affected HPA behavior.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review metrics-server logs for gradual performance degradation, check for intermittent metrics collection failures, examine if HPA was always misconfigured but only recently enforced, verify if resource quota constraints developed over time, and check for cumulative resource pressure that may have prevented scaling. HPA scaling failures may result from gradual metrics or infrastructure issues rather than immediate configuration changes.
+7. If events indicate scale-down being blocked, verify pod disruption budgets and deployment strategy. If PDB or minimum availability constraints prevent pod termination, scale-down cannot proceed.
+
+**If no correlation is found**: Extend the search window (5 minutes to 10 minutes, 30 minutes to 1 hour, 1 hour to 2 hours), review metrics-server logs for gradual performance degradation, check for intermittent metrics collection failures, examine if HPA was always misconfigured but only recently enforced, verify if resource quota constraints developed over time, and check for cumulative resource pressure that may have prevented scaling. HPA scaling failures may result from gradual metrics or infrastructure issues rather than immediate configuration changes.
 

@@ -15,30 +15,35 @@ KubeletDown alerts fire; nodes cannot manage pods; kubectl exec and kubectl logs
 
 ## Playbook
 
-1. Retrieve the Node `<node-name>` and inspect its status to verify Ready condition status and kubelet communication to identify kubelet issues.
+1. Describe node <node-name> to see:
+   - Conditions section showing Ready status and kubelet communication status
+   - Events section showing NodeNotReady, KubeletNotReady events with timestamps
+   - Allocated resources and system information
 
-2. Retrieve events for the Node `<node-name>` and filter for error patterns including 'NodeNotReady', 'KubeletNotReady', 'NodeUnreachable' to identify kubelet-related errors.
+2. Retrieve events for node <node-name> sorted by timestamp to see the sequence of kubelet-related issues including 'NodeNotReady', 'KubeletNotReady', 'NodeUnreachable'.
 
-3. Check kubelet pod status if kubelet runs as a static pod, or check kubelet service status on the Node `<node-name>` by accessing via Pod Exec tool or SSH if node access is available to verify kubelet process status.
+3. Check kubelet pod status if kubelet runs as a static pod, or check kubelet service status on the Node <node-name> by accessing via Pod Exec tool or SSH if node access is available to verify kubelet process status.
 
-4. Retrieve kubelet logs from the Node `<node-name>` by accessing via Pod Exec tool or SSH if node access is available, and filter for error patterns including 'panic', 'fatal', 'connection refused', 'certificate', 'timeout' to identify kubelet failures.
+4. Retrieve kubelet logs from the Node <node-name> by accessing via Pod Exec tool or SSH if node access is available, and filter for error patterns including 'panic', 'fatal', 'connection refused', 'certificate', 'timeout' to identify kubelet failures.
 
-5. Verify network connectivity between the Node `<node-name>` and API server endpoints to identify connectivity issues.
+5. Verify network connectivity between the Node <node-name> and API server endpoints to identify connectivity issues.
 
-6. Retrieve the Node `<node-name>` and check node resource conditions including MemoryPressure, DiskPressure, and PIDPressure that may affect kubelet operation.
+6. Check node resource conditions for node <node-name> to see MemoryPressure, DiskPressure, and PIDPressure that may affect kubelet operation.
 
 ## Diagnosis
 
-Compare kubelet unavailability timestamps with node condition transition times within 5 minutes and verify whether kubelet failures coincide with node NotReady condition changes, using node conditions and kubelet status as supporting evidence.
+1. Analyze node events from Playbook steps 1-2 to identify when kubelet became unavailable. Events with reason "NodeNotReady", "KubeletNotReady", or "NodeUnreachable" show the timeline of kubelet failure. Note event timestamps and messages to understand the failure pattern.
 
-Correlate kubelet failure timestamps with node resource pressure condition transitions within 5 minutes and verify whether kubelet failures align with MemoryPressure, DiskPressure, or PIDPressure conditions, using node conditions and resource metrics as supporting evidence.
+2. If node events indicate kubelet stopped posting status, check kubelet service status from Playbook step 3. Determine if kubelet process is running, crashed, or stopped to distinguish between process failure and communication issues.
 
-Compare kubelet log error timestamps with certificate expiration times within 2 minutes and verify whether kubelet failures began after certificate expiration, using kubelet logs and certificate metadata as supporting evidence.
+3. If kubelet is not running, check kubelet logs from Playbook step 4 for error patterns. Look for "panic", "fatal", "OOM", "connection refused", or "certificate" errors that explain why kubelet crashed or failed to start.
 
-Analyze kubelet error patterns over the last 15 minutes to determine if failures are sudden (crash) or gradual (resource exhaustion), using kubelet logs and node resource metrics as supporting evidence.
+4. If kubelet logs show certificate errors, this indicates certificate expiration or rotation failure. Verify certificate validity and compare expiration timestamps with when kubelet became unavailable.
 
-Correlate kubelet unavailability with network policy or firewall rule change timestamps within 10 minutes and verify whether connectivity issues began after network configuration changes, using network policy events and kubelet connection logs as supporting evidence.
+5. If node events indicate network issues, verify network connectivity from Playbook step 5. Kubelet may be running but unable to communicate with the API server due to network partitioning or firewall rules.
 
-Compare kubelet process resource usage with node available resources at failure times and verify whether resource constraints caused kubelet failures, using node metrics and process resource usage as supporting evidence.
+6. If node events indicate resource pressure (MemoryPressure, DiskPressure, PIDPressure), check node conditions from Playbook step 6. Resource exhaustion can cause kubelet to be killed by OOM killer or fail health checks.
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for infrastructure changes, review node system logs, check for storage issues affecting kubelet, verify container runtime health, examine historical kubelet stability patterns. Kubelet failures may result from node hardware issues, operating system problems, or container runtime failures rather than immediate configuration changes.
+7. If kubelet logs show container runtime errors, verify container runtime health. Kubelet depends on the container runtime and cannot function properly if runtime is unavailable or unresponsive.
+
+**If no root cause is identified from events**: Review system logs (journalctl, dmesg) for kernel-level issues, check for disk corruption or filesystem errors, verify node hardware health, and examine if kubelet was manually stopped or affected by node-level security policies.

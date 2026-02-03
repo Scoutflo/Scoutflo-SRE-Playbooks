@@ -18,31 +18,31 @@ Pods cannot start; applications fail to read secrets; Secret access failures occ
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect image pull secrets, pod volume configuration, container volume mounts, or environment variable sources to identify which Secrets are referenced.
+1. Describe pod <pod-name> in namespace <namespace> to inspect image pull secrets, pod volume configuration, container volume mounts, or environment variable sources to identify which Secrets are referenced - look in Events section for "Failed" or "FailedMount" with the specific Secret name.
 
-2. Retrieve the Secret `<secret-name>` referenced in the pod and verify it exists in the same namespace.
+2. Retrieve events in namespace <namespace> for pod <pod-name> sorted by timestamp to see the sequence of Secret-related events, focusing on events with reasons such as Failed, FailedMount, or messages indicating Secret access failures.
 
-3. List events in namespace `<namespace>` and filter for Secret-related events, focusing on events with reasons such as `Failed`, `FailedMount`, or messages indicating Secret access failures.
+3. Retrieve the Secret <secret-name> in namespace <namespace> and verify it exists in the same namespace.
 
-4. Check the pod `<pod-name>` status and inspect container waiting state reason and message fields to identify Secret access errors.
+4. Check the pod <pod-name> status in namespace <namespace> and inspect container waiting state reason and message fields to identify Secret access errors.
 
-5. Verify RBAC permissions by checking if the pod's service account has permissions to access Secrets in the namespace.
+5. Verify RBAC permissions by checking if the pod's service account <service-account-name> has permissions to access Secrets in namespace <namespace>.
 
-6. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and review Secret references in the pod template to verify configuration is correct.
+6. Retrieve the Deployment <deployment-name> in namespace <namespace> and review Secret references in the pod template to verify configuration is correct.
 
 ## Diagnosis
 
-1. Compare the pod Secret pull failure timestamps with Secret deletion timestamps, and check whether Secrets were deleted within 30 minutes before pod failures.
+1. Analyze pod events from Playbook to identify the specific Secret pull error. Events showing "secret not found" indicate the Secret does not exist or is in a different namespace. Events showing "FailedMount" indicate volume mount issues. Events showing "forbidden" indicate RBAC permission problems.
 
-2. Compare the pod Secret pull failure timestamps with pod Secret reference modification timestamps in the deployment, and check whether Secret name changes occurred within 30 minutes before pull failures.
+2. If events indicate Secret not found, use the Playbook Secret retrieval results to confirm the Secret does not exist. Check if the Secret was recently deleted, never created, or exists in a different namespace than the pod.
 
-3. Compare the pod Secret pull failure timestamps with RBAC Role or RoleBinding modification timestamps, and check whether permission changes occurred within 30 minutes before pull failures.
+3. If events indicate RBAC permission issues, leverage the Playbook RBAC verification results to confirm the pod's service account has permissions to access Secrets. Verify Role and RoleBinding objects exist and are correctly configured for the service account.
 
-4. Compare the pod Secret pull failure timestamps with deployment rollout or pod template update timestamps, and check whether Secret reference changes occurred within 1 hour before pull failures.
+4. If events indicate imagePullSecrets issues (for image pull failures), verify the imagePullSecrets reference in the pod spec points to an existing Secret of type kubernetes.io/dockerconfigjson. Check if the Secret contains valid registry credentials.
 
-5. Compare the pod Secret pull failure timestamps with service account modification timestamps, and check whether service account changes occurred within 30 minutes before pull failures.
+5. If events indicate volume mount failures, review the pod volume configuration from Playbook describe output. Verify Secret key references match actual keys in the Secret, and check if optional flag is set appropriately for non-critical Secrets.
 
-6. Compare the pod Secret pull failure timestamps with namespace creation or pod namespace change timestamps, and check whether namespace mismatches occurred within 30 minutes before pull failures.
+6. If events are inconclusive, compare event timestamps with recent deployment changes. Check if the Secret reference was modified, if a new pod template was rolled out, or if namespace configuration changed.
 
-**If no correlation is found within the specified time windows**: Extend the search window (30 minutes → 1 hour, 1 hour → 2 hours), review pod logs for gradual Secret access issues, check for intermittent RBAC permission problems, examine if Secret references drifted over time, verify if Secrets were never created but referenced, and check for API server or etcd issues affecting Secret retrieval. Secret pull failures may result from gradual configuration drift rather than immediate changes.
+**If no clear cause is identified from events**: Verify the Secret data is not corrupted or empty, check if the Secret was created with the correct type, examine if any admission controllers or policies are blocking Secret access, and review API server logs for Secret retrieval errors.
 

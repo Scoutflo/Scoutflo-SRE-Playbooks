@@ -15,30 +15,59 @@ KubePodNotReady alerts fire; service degradation or unavailability; pod not atta
 
 ## Playbook
 
-1. Retrieve the Pod `<pod-name>` in namespace `<namespace>` and inspect its phase, ready condition, and container status to verify NotReady state.
+1. Describe pod <pod-name> in namespace <namespace> to see:
+   - Conditions section showing Ready=False and the reason
+   - Container status showing waiting/running state
+   - Events section showing probe failures or other errors
 
-2. Retrieve events for the Pod `<pod-name>` in namespace `<namespace>` and filter for error patterns including 'Failed', 'Error', 'Unhealthy', 'Readiness probe failed' to identify health check issues.
+2. Retrieve events for pod <pod-name> in namespace <namespace> sorted by timestamp to see readiness probe failures, startup issues, or dependency errors with timestamps.
 
-3. Retrieve logs from the Pod `<pod-name>` in namespace `<namespace>` for container `<container-name>` and filter for error patterns related to application startup or health checks to identify application issues.
+3. Retrieve the conditions for pod <pod-name> in namespace <namespace> and identify which condition is failing (Ready, ContainersReady, PodScheduled, or Initialized).
 
-4. Retrieve the Deployment or StatefulSet `<workload-name>` in namespace `<namespace>` and check pod template parameters including readiness and liveness probe configurations, resource requests and limits, and security context settings to verify configuration issues.
+4. Retrieve logs from pod <pod-name> in namespace <namespace> to see application startup issues - look for errors during initialization or health check endpoint failures.
 
-5. Retrieve the Node `<node-name>` where pod `<pod-name>` is scheduled and verify node resource availability and conditions to identify resource constraints.
+5. Describe Deployment <deployment-name> in namespace <namespace> to check:
+   - Readiness probe configuration (path, port, timeoutSeconds, failureThreshold)
+   - Resource requests/limits that may cause slow startup
+   - Environment variables or ConfigMap/Secret references
 
-6. Retrieve ConfigMap, Secret, and PersistentVolumeClaim resources referenced by pod `<pod-name>` in namespace `<namespace>` and check for missing dependencies that block container initialization.
+6. Verify dependencies exist: check ConfigMap <name>, Secret <name>, and PVC <name> in namespace <namespace>.
+
+7. Describe node <node-name> where pod is running and check Conditions section to see if node issues are affecting pod health.
 
 ## Diagnosis
 
-Compare pod NotReady detection timestamps with deployment or StatefulSet change timestamps within 30 minutes and verify whether pods became NotReady shortly after configuration changes, using pod events and deployment rollout history as supporting evidence.
+1. Analyze pod events from Playbook steps 1-2 to identify why the pod is NotReady. Events showing probe failures, startup errors, or dependency issues indicate the specific cause.
 
-Correlate pod NotReady timestamps with readiness probe failure timestamps within 5 minutes and verify whether readiness probe failures caused NotReady state, using pod events and probe status as supporting evidence.
+2. If pod conditions show Ready=False with reason (from Playbook step 3), identify the failing condition:
+   - ContainersReady=False: Container health checks failing
+   - PodScheduled=False: Pod cannot be scheduled (still Pending)
+   - Initialized=False: Init containers not complete
 
-Compare pod NotReady timestamps with node condition transitions within 5 minutes and verify whether node resource pressure or NotReady conditions affected pod health, using node conditions and pod status as supporting evidence.
+3. If events show "Readiness probe failed" (from Playbook step 2):
+   - Check probe configuration (Playbook step 5)
+   - Verify application responds on probe endpoint
+   - Adjust initialDelaySeconds if startup is slow
+   - Review application logs for errors (Playbook step 4)
 
-Analyze pod NotReady patterns over the last 15 minutes to determine if NotReady is persistent (application issue) or intermittent (resource constraints), using pod status history and container health as supporting evidence.
+4. If pod shows CrashLoopBackOff or container restarts:
+   - Check termination reason (OOMKilled, Error)
+   - Review previous container logs for crash cause
+   - Verify resource limits are adequate
 
-Correlate pod NotReady with ConfigMap or Secret update timestamps within 5 minutes and verify whether configuration changes caused application failures leading to NotReady state, using pod events and resource modification times as supporting evidence.
+5. If events show missing dependencies (from Playbook step 6):
+   - ConfigMap or Secret does not exist
+   - PVC cannot be bound
+   - Service dependencies unavailable
 
-Compare pod resource requests with node available resources at NotReady times and verify whether resource constraints prevented pods from becoming ready, using node metrics and pod resource specifications as supporting evidence.
+6. If node shows issues (from Playbook step 7):
+   - Node NotReady affects all pods on that node
+   - Node resource pressure may cause pod eviction
+   - Check node conditions and resource usage
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for deployment changes, review application logs for gradual degradation patterns, check for external dependency failures (databases, APIs), examine historical pod readiness patterns, verify container image changes. Pod NotReady may result from application bugs, misconfigured health probes, or runtime environment issues rather than immediate configuration changes.
+7. If application logs show startup or runtime errors (from Playbook step 4):
+   - Application configuration issues
+   - Database or external API connectivity problems
+   - Missing environment variables or files
+
+**To resolve NotReady pods**: Fix the underlying issue identified in events and logs. For readiness probe failures, adjust probe configuration or fix application health endpoints. For crashes, address the root cause in application code or configuration. For missing dependencies, create required resources.

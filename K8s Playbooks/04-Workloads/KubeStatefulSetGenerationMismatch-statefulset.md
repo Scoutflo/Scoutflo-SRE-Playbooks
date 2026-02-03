@@ -15,30 +15,35 @@ KubeStatefulSetGenerationMismatch alerts fire; service degradation or unavailabi
 
 ## Playbook
 
-1. Retrieve the StatefulSet `<statefulset-name>` in namespace `<namespace>` and inspect its status to check observed generation versus desired generation and identify the mismatch.
+1. Describe StatefulSet <statefulset-name> in namespace <namespace> to see:
+   - Observed generation versus desired generation
+   - Replicas status (desired/current/ready)
+   - Update strategy configuration
+   - Conditions showing why generation mismatch exists
+   - Events showing Failed, ProgressDeadlineExceeded, or PodCreateError errors
 
-2. Retrieve rollout history for the StatefulSet `<statefulset-name>` in namespace `<namespace>` to identify recent updates or rollbacks that may have caused the mismatch.
+2. Retrieve events for StatefulSet <statefulset-name> in namespace <namespace> sorted by timestamp to see the sequence of generation mismatch issues.
 
-3. Retrieve events for the StatefulSet `<statefulset-name>` in namespace `<namespace>` and filter for error patterns including 'Failed', 'ProgressDeadlineExceeded', 'PodCreateError' to identify StatefulSet issues.
+3. Retrieve rollout history for StatefulSet <statefulset-name> in namespace <namespace> to identify recent updates or rollbacks that may have caused the mismatch.
 
-4. Retrieve the Pod `<pod-name>` in namespace `<namespace>` belonging to the StatefulSet `<statefulset-name>` and check pod status to identify pods in failed or error states.
+4. List pods belonging to StatefulSet in namespace <namespace> with label app=<statefulset-label> and describe pods to identify pods in failed or error states.
 
-5. Retrieve PersistentVolumeClaim resources belonging to StatefulSet pods and check PersistentVolumeClaim status to verify volume binding and availability.
+5. List PersistentVolumeClaim resources in namespace <namespace> with label app=<statefulset-label> and describe PVCs to verify volume binding and availability.
 
-6. Retrieve the StatefulSet `<statefulset-name>` in namespace `<namespace>` and verify StatefulSet update strategy and check if rollout is paused to identify update blockers.
+6. Retrieve StatefulSet <statefulset-name> configuration in namespace <namespace> and check update strategy to identify update blockers.
 
 ## Diagnosis
 
-Compare StatefulSet generation mismatch detection timestamps with StatefulSet update or rollback initiation times within 30 minutes and verify whether generation mismatch began when update or rollback started, using StatefulSet events and rollout history as supporting evidence.
+1. Analyze StatefulSet events from Playbook to identify why the controller cannot reconcile to the desired generation. Events showing "FailedCreate" or "FailedScheduling" indicate the controller is attempting to update pods but encountering blockers. Events showing "ProgressDeadlineExceeded" indicate the update has stalled beyond acceptable time.
 
-Correlate StatefulSet generation mismatch with pod creation failure timestamps within 30 minutes and verify whether pod creation failures prevented generation update, using pod events and StatefulSet status as supporting evidence.
+2. If events indicate pod creation failures (FailedCreate, PodCreateError), the controller cannot create new pods for the updated generation. Check PVC binding status and resource quota availability in the namespace. StatefulSets require successful PVC binding before pod creation.
 
-Compare StatefulSet generation mismatch with PersistentVolume binding failure timestamps within 10 minutes and verify whether volume binding failures prevented StatefulSet from achieving desired generation, using PVC events and StatefulSet pod status as supporting evidence.
+3. If events indicate scheduling failures, the new pods cannot be placed on nodes. Compare resource requests in the updated pod template with available node capacity. Verify that node selectors and tolerations in the new spec match available nodes.
 
-Analyze StatefulSet generation mismatch patterns over the last 1 hour to determine if mismatch is persistent (reconciliation failure) or transient (update in progress), using StatefulSet status history and pod status as supporting evidence.
+4. If rollout history from Playbook shows a recent update or rollback, verify whether the update strategy allows the rollout to proceed. Check the partition field in updateStrategy - a non-zero partition intentionally prevents some pods from updating, which may appear as a generation mismatch.
 
-Correlate StatefulSet generation mismatch with resource quota exhaustion timestamps within 30 minutes and verify whether quota limits prevented pod creation, using resource quota status and StatefulSet events as supporting evidence.
+5. If pods exist but are not transitioning to the new revision, check if pods are stuck in termination or if the update strategy is waiting for pods to become Ready before proceeding. StatefulSets with OrderedReady strategy update pods one at a time, waiting for each to be Ready.
 
-Compare StatefulSet generation mismatch with node capacity exhaustion timestamps within 30 minutes and verify whether insufficient cluster capacity prevented StatefulSet from achieving desired generation, using node metrics and StatefulSet scaling attempts as supporting evidence.
+6. If events indicate resource quota exceeded (Forbidden, exceeded quota), the namespace quota prevents creating new pods. Check ResourceQuota status and current usage against limits.
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for StatefulSet operations, review StatefulSet update strategy configuration, check for persistent resource constraints, verify PersistentVolume availability and zone configurations, examine historical StatefulSet generation patterns. StatefulSet generation mismatch may result from persistent resource constraints, volume zone issues, or cluster capacity limitations rather than immediate changes.
+7. If no clear event pattern exists, compare observed generation with metadata generation in the StatefulSet spec. A persistent mismatch indicates the StatefulSet controller is unable to process the spec change. Check kube-controller-manager logs for StatefulSet controller errors.

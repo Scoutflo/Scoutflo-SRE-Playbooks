@@ -18,31 +18,41 @@ PersistentVolumes remain in Released state indefinitely; storage resources are n
 
 ## Playbook
 
-1. List PersistentVolumes and filter for volumes with status `Released` to identify all stuck volumes.
+1. Describe PersistentVolume <pv-name> to inspect the volume status, phase, reclaim policy, claim reference, and finalizers to understand why it is stuck in Released state.
 
-2. Retrieve the PersistentVolume `<pv-name>` and inspect its status, phase, reclaim policy, and claim reference to understand why it is stuck in Released state.
+2. Retrieve events for PersistentVolume <pv-name> sorted by timestamp to identify events related to volume release or deletion, including any errors preventing cleanup.
 
-3. Check if the PersistentVolumeClaim that was previously bound to the volume still exists or was deleted.
+3. List all PersistentVolumes with status Released to identify all stuck volumes in the cluster.
 
-4. Retrieve the PersistentVolume `<pv-name>` and inspect its persistent volume reclaim policy to verify if it is set to `Retain`, `Delete`, or `Recycle`.
+4. Check if the PersistentVolumeClaim that was previously bound to the volume still exists or was deleted.
 
-5. List events related to the PersistentVolume and filter for volume release or deletion events to identify any errors preventing release.
+5. Verify the PersistentVolume reclaim policy to check if it is set to Retain, Delete, or Recycle.
 
 6. Check the storage backend to verify if the underlying storage resource can be released or if backend issues are preventing cleanup.
 
+7. Check for orphaned storage resources in the cloud provider that may need manual cleanup.
+
 ## Diagnosis
 
-1. Compare the PersistentVolume Released state timestamps with PersistentVolumeClaim deletion timestamps, and check whether PVCs were deleted within 30 minutes before volumes entered Released state.
+1. Analyze PV events from Playbook step 2 to identify why the volume is stuck in Released state. Events may show:
+   - No cleanup events - Indicates Retain reclaim policy is working as designed (not an error)
+   - "VolumeFailedDelete" - Storage backend cannot delete the underlying resource
+   - Finalizer-related events - External controllers are blocking cleanup
 
-2. Compare the PersistentVolume Released state timestamps with PersistentVolume reclaim policy modification timestamps, and check whether reclaim policy changes occurred within 30 minutes before volumes became stuck.
+2. Check the reclaim policy from Playbook step 5. If persistentVolumeReclaimPolicy is "Retain", the Released state is expected behavior after PVC deletion:
+   - If Retain was intentional (for data protection), the volume requires manual cleanup or reconfiguration
+   - If Retain was unintentional, the reclaim policy should be changed before PVC deletion in the future
 
-3. Compare the PersistentVolume Released state timestamps with storage backend unavailability or API error timestamps, and check whether storage provider issues occurred within 10 minutes before volumes became stuck.
+3. If reclaim policy is "Delete" but the volume is stuck, examine PV events from step 2 for storage backend errors. The CSI driver or storage provisioner cannot delete the underlying storage resource. Check if:
+   - The storage backend resource still exists (step 6)
+   - The storage backend is accessible (step 6)
+   - The CSI driver/provisioner has permissions to delete resources
 
-4. Compare the PersistentVolume Released state timestamps with volume finalizer addition timestamps, and check whether finalizers were added within 30 minutes before volumes became stuck, preventing cleanup.
+4. If the PV description from Playbook step 1 shows finalizers, identify which controller owns the finalizer. A stuck finalizer prevents the volume from being cleaned up even with Delete policy.
 
-5. Compare the PersistentVolume Released state timestamps with cluster storage plugin restart or failure timestamps, and check whether storage infrastructure issues occurred within 1 hour before volumes became stuck.
+5. If the previously bound PVC from Playbook step 4 still exists but is not bound to this PV, there may be a claimRef mismatch. The PV thinks the claim was deleted, but the PVC exists in a different state.
 
-6. Compare the PersistentVolume Released state timestamps with PersistentVolume deletion attempt failure timestamps, and check whether deletion attempts failed within 30 minutes before volumes became stuck.
+6. If cloud provider orphaned resources exist from step 7, the PV was partially cleaned up but the backend resource remains. This requires manual cleanup in the cloud provider console.
 
 **If no correlation is found within the specified time windows**: Extend the search window (10 minutes → 30 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review storage plugin logs for gradual volume cleanup issues, check for intermittent storage backend connectivity problems, examine if reclaim policies were always set to Retain but only recently enforced, verify if storage provider capabilities changed gradually, and check for volume finalizer processing issues that may have accumulated. PersistentVolume Released state issues may result from gradual storage infrastructure or policy configuration rather than immediate changes.
 

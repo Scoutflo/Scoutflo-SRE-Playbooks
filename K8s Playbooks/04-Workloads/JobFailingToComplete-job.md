@@ -18,28 +18,46 @@ Jobs fail to complete successfully; batch processing tasks do not finish; cron j
 
 ## Playbook
 
-1. Retrieve logs from job pod in namespace `<namespace>` and filter for errors.
+1. Describe the job `<job-name>` in namespace `<namespace>` to inspect job status, completion status, and configuration.
 
-2. Retrieve job `<job-name>` in namespace `<namespace>` and check job status and completion status.
+2. Retrieve events in namespace `<namespace>` sorted by timestamp to identify job-related failures and pod errors.
 
-3. List pods in namespace `<namespace>` and filter for job pods to check pod status and restart count.
+3. Retrieve logs from job pod in namespace `<namespace>` and filter for errors.
 
-4. Retrieve job `<job-name>` in namespace `<namespace>` and verify job configuration including backoffLimit and activeDeadlineSeconds.
+4. List pods in namespace `<namespace>` and filter for job pods to check pod status and restart count.
 
-5. Retrieve job pod in namespace `<namespace>` to check for resource constraints.
+5. Retrieve job `<job-name>` in namespace `<namespace>` and verify job configuration including backoffLimit and activeDeadlineSeconds.
+
+6. Retrieve job pod in namespace `<namespace>` to check for resource constraints.
 
 ## Diagnosis
 
-1. Compare the timestamps when job failures occurred (from job status) with job configuration change timestamps, and check whether failures begin within 1 hour of job spec modifications.
+Begin by analyzing the Job describe output, pod logs, and events collected in the Playbook section. The Job conditions, pod exit codes, and container termination reasons provide the primary diagnostic signals.
 
-2. Compare the job failure timestamps with pod restart pattern timestamps from job pod restarts, and verify whether failures correlate with repeated pod restarts at the same time.
+**If Job status shows backoffLimitExceeded:**
+- The job pods failed more times than `backoffLimit` allows. Check pod logs for the actual error causing failures. The application is failing, not the Job configuration.
 
-3. Compare the job failure timestamps with resource constraint timestamps from job pod resource usage, and check whether failures correlate with resource constraints.
+**If Job status shows DeadlineExceeded:**
+- The job exceeded `activeDeadlineSeconds` before completing. Either increase the deadline if the job legitimately needs more time, or investigate why the job takes longer than expected.
 
-4. Compare the job failure timestamps with deployment or configuration change timestamps, and verify whether failures begin within 1 hour of related configuration changes.
+**If pod logs show application errors or non-zero exit codes:**
+- The job container is failing due to application issues. Review the specific error in logs. Common causes include missing environment variables, failed database connections, or invalid input data.
 
-5. Compare the job failure timestamps with backoffLimit or activeDeadlineSeconds limit timestamps, and check whether failures correlate with reaching job execution limits.
+**If pod shows OOMKilled in termination reason:**
+- The job container exceeded memory limits. Increase memory limits in the Job spec, or optimize the job workload to use less memory.
 
-6. Compare the job failure timestamps with node status or network connectivity issue timestamps, and verify whether failures correlate with node problems at the same time.
+**If pod shows Evicted status:**
+- Node resource pressure caused pod eviction. Check node conditions for memory or disk pressure. Consider adding resource requests to protect job pods from eviction.
 
-**If no correlation is found within the specified time windows**: Extend the search window (1 hour → 2 hours), review job pod logs for application-level errors, check for job dependency failures, examine job configuration for restrictive limits, verify if job pods have sufficient resources, check for node taint or affinity constraints, and review job history for previous failure patterns. Job failures may result from application logic errors or dependency issues not immediately visible in Kubernetes resource changes.
+**If pod is stuck in Pending with scheduling failures:**
+- The job pod cannot be scheduled. Check events for `Insufficient cpu`, `Insufficient memory`, or node affinity issues. Adjust resource requests or node selectors.
+
+**If the job runs but never completes (pod stays Running):**
+- The job process may be hanging. Check pod logs for the last activity. The application may be waiting on external dependencies or stuck in a loop.
+
+**If events are inconclusive, correlate timestamps:**
+1. Check if job failures began after the Job spec was modified.
+2. Check if failures correlate with ConfigMap or Secret changes the job depends on.
+3. Check if external service dependencies became unavailable.
+
+**If no clear cause is identified:** Run the job container locally or in a debug pod with the same image and environment to reproduce and debug the application failure interactively.

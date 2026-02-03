@@ -18,9 +18,9 @@ Pods cannot start; pod sandbox creation fails; pods remain in ContainerCreating 
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect container waiting state reason and message fields to identify sandbox creation failures.
+1. Describe pod <pod-name> in namespace <namespace> to inspect container waiting state reason and message fields to identify sandbox creation failures.
 
-2. List events in namespace `<namespace>` and filter for pod-related events, focusing on events with reasons such as `FailedCreatePodSandbox` or messages indicating sandbox creation failures.
+2. Retrieve events in namespace <namespace> for pod <pod-name> sorted by timestamp to identify pod-related events, focusing on events with reasons such as FailedCreatePodSandbox or messages indicating sandbox creation failures.
 
 3. On the node where the pod is scheduled, check container runtime status (Docker, containerd) using Pod Exec tool or SSH if node access is available to verify if the runtime is functioning.
 
@@ -32,17 +32,31 @@ Pods cannot start; pod sandbox creation fails; pods remain in ContainerCreating 
 
 ## Diagnosis
 
-1. Compare the pod sandbox creation failure timestamps with container runtime restart or failure timestamps on the node, and check whether runtime issues occurred within 5 minutes before sandbox creation failures.
+1. Analyze pod events from Playbook steps 1-2 to identify the sandbox creation failure reason. Events showing "FailedCreatePodSandbox" include detailed error messages indicating the specific cause.
 
-2. Compare the pod sandbox creation failure timestamps with CNI plugin pod restart or failure timestamps, and check whether network plugin issues occurred within 5 minutes before sandbox creation failures.
+2. If events show CNI-related errors (e.g., "network plugin is not ready", "failed to set up pod network"), check CNI plugin status (Playbook step 4):
+   - Verify CNI plugin pods (Calico, Flannel, Cilium, etc.) are running in kube-system namespace
+   - Check CNI plugin pod logs for errors
+   - Verify CNI configuration files exist in /etc/cni/net.d/ on the node
+   - Check if CNI binaries exist in /opt/cni/bin/
 
-3. Compare the pod sandbox creation failure timestamps with node resource pressure condition timestamps, and check whether resource constraints occurred within 5 minutes before sandbox creation failures.
+3. If events show container runtime errors (from Playbook step 3), the runtime cannot create the pod sandbox:
+   - Verify containerd or Docker service is running
+   - Check runtime logs for specific errors
+   - Verify runtime socket is accessible (/run/containerd/containerd.sock)
 
-4. Compare the pod sandbox creation failure timestamps with cluster network plugin configuration modification timestamps, and check whether network configuration changes occurred within 30 minutes before sandbox creation failures.
+4. If kubelet logs show sandbox errors (from Playbook step 5), common causes include:
+   - Runtime not responding to sandbox creation requests
+   - Network namespace creation failures
+   - IP address allocation failures (IPAM exhausted)
+   - Cgroup creation failures
 
-5. Compare the pod sandbox creation failure timestamps with kubelet restart or configuration modification timestamps, and check whether kubelet changes occurred within 30 minutes before sandbox creation failures.
+5. If node shows resource pressure (from Playbook step 6), sandbox creation may fail due to:
+   - Insufficient disk space for container layers
+   - Too many open files (PID or file descriptor limits)
+   - Memory pressure preventing new cgroup creation
 
-6. Compare the pod sandbox creation failure timestamps with cluster upgrade or container runtime update timestamps, and check whether infrastructure changes occurred within 1 hour before sandbox creation failures.
+6. If the issue affects all pods on a specific node, the problem is node-specific (runtime, CNI, or resource). If it affects pods across multiple nodes, the issue is likely cluster-wide (CNI configuration, IPAM exhaustion).
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review kubelet logs for gradual sandbox creation issues, check for intermittent container runtime problems, examine if CNI plugin configurations drifted over time, verify if node resource constraints developed gradually, and check for network plugin issues that may have accumulated. Pod sandbox creation failures may result from gradual infrastructure degradation rather than immediate changes.
+**To resolve sandbox failures**: Restart the CNI plugin pods if they are unhealthy, restart the container runtime if it is unresponsive, verify network configuration is correct, and ensure node has sufficient resources. For persistent issues, check kubelet and runtime logs for detailed error information.
 

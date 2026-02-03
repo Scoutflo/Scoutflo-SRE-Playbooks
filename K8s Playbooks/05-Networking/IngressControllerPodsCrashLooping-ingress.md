@@ -18,11 +18,11 @@ Ingress controller is unavailable; all ingress resources stop routing traffic; e
 
 ## Playbook
 
-1. Retrieve the ingress controller pod `<controller-pod-name>` in namespace `<namespace>` and inspect pod restart count and container termination reason to confirm crash loop and identify restart causes.
+1. Describe the ingress controller pod `<controller-pod-name>` in namespace `<namespace>` using `kubectl describe pod <controller-pod-name> -n <namespace>` and inspect pod restart count, container termination reason, and conditions to confirm crash loop and identify restart causes.
 
-2. Retrieve logs from the ingress controller pod `<controller-pod-name>` in namespace `<namespace>` and filter for configuration errors, startup failures, or crash messages that explain why the controller cannot start.
+2. List events in namespace `<namespace>` using `kubectl get events -n <namespace> --field-selector involvedObject.name=<controller-pod-name> --sort-by='.lastTimestamp'` and filter for ingress controller-related events, focusing on events with reasons such as `Failed`, `CrashLoopBackOff`, or messages indicating configuration or startup errors.
 
-3. List events in namespace `<namespace>` and filter for ingress controller-related events, focusing on events with reasons such as `Failed`, `CrashLoopBackOff`, or messages indicating configuration or startup errors.
+3. Retrieve logs from the ingress controller pod `<controller-pod-name>` in namespace `<namespace>` and filter for configuration errors, startup failures, or crash messages that explain why the controller cannot start.
 
 4. Retrieve the ingress controller Deployment or DaemonSet in namespace `<namespace>` and review configuration, environment variables, and resource limits to verify if configuration issues are causing crashes.
 
@@ -32,17 +32,27 @@ Ingress controller is unavailable; all ingress resources stop routing traffic; e
 
 ## Diagnosis
 
-1. Compare the ingress controller pod crash timestamps with ingress controller configuration modification timestamps, and check whether configuration changes occurred within 30 minutes before crashes began.
+Begin by analyzing the pod describe output and events collected in the Playbook section. The container termination reason, restart count, and controller logs provide the primary diagnostic signals.
 
-2. Compare the ingress controller pod crash timestamps with invalid Ingress resource creation or modification timestamps, and check whether problematic ingress resources were added within 30 minutes before controller crashes.
+**If events show OOMKilled in the container termination reason:**
+- The ingress controller is running out of memory. Check memory limits in the Deployment and compare with controller memory usage patterns. Increase memory limits or reduce the number of Ingress resources if the cluster has many routes.
 
-3. Compare the ingress controller pod crash timestamps with ingress controller resource limit modification timestamps, and check whether resource constraints were introduced within 30 minutes before crashes.
+**If logs show configuration parsing errors or invalid annotation warnings:**
+- An Ingress resource has invalid configuration. Review the list of all Ingress resources for syntax errors, unsupported annotations, or invalid backend references. Fix or remove the problematic Ingress resource.
 
-4. Compare the ingress controller pod crash timestamps with ingress controller image update or deployment rollout timestamps, and check whether controller updates occurred within 1 hour before crashes, indicating the new version may have bugs or different requirements.
+**If logs show TLS secret not found or certificate loading errors:**
+- A referenced TLS secret is missing or invalid. Check the Ingress TLS section for secret references. Verify the secrets exist in the same namespace as the Ingress and contain valid `tls.crt` and `tls.key` data.
 
-5. Compare the ingress controller pod crash timestamps with required Secret or ConfigMap unavailability timestamps, and check whether dependencies became unavailable within 5 minutes before controller crashes.
+**If logs show failed to start or listen on port errors:**
+- The controller cannot bind to required ports. Check if another process is using ports 80/443 on the node (for hostNetwork mode) or if the service port configuration conflicts.
 
-6. Compare the ingress controller pod crash timestamps with node resource pressure or network policy modification timestamps, and check whether infrastructure changes occurred within 1 hour before controller crashes.
+**If events show ImagePullBackOff or ErrImagePull:**
+- The controller image cannot be pulled. Verify image name and tag are correct. Check registry authentication if using a private registry.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review ingress controller logs for gradual performance degradation, check for intermittent configuration validation failures, examine if ingress resources accumulated invalid configurations over time, verify if resource constraints developed gradually, and check for external dependency issues that may have caused controller failures. Ingress controller crashes may result from cumulative configuration or infrastructure issues rather than immediate changes.
+**If events are inconclusive, correlate timestamps:**
+1. Check if crashes began after a Deployment update by comparing crash timestamps with Deployment revision changes.
+2. Check if crashes align with new Ingress resource creation by examining Ingress creation timestamps across all namespaces.
+3. Check if a specific ConfigMap or Secret was deleted by reviewing deletion events in the controller namespace.
+
+**If no clear cause is identified:** Enable debug logging on the ingress controller by modifying its configuration, then reproduce the crash to capture detailed error information. Check if the controller version is compatible with the Kubernetes version.
 

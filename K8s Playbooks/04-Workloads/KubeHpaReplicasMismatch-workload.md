@@ -15,30 +15,36 @@ KubeHpaReplicasMismatch alerts fire; HPA cannot achieve desired replica count; a
 
 ## Playbook
 
-1. Retrieve the HorizontalPodAutoscaler `<hpa-name>` in namespace `<namespace>` and inspect its status to check current replicas versus desired replicas and identify the mismatch.
+1. Describe HPA <hpa-name> in namespace <namespace> to see:
+   - Current replicas versus desired replicas
+   - Current metrics versus target metrics
+   - Conditions showing why replicas mismatch
+   - Events showing scaling constraints or failures
 
-2. Retrieve the Pod `<pod-name>` in namespace `<namespace>` managed by HPA and check pod status to identify pods in Pending state.
+2. Retrieve events for HPA <hpa-name> in namespace <namespace> sorted by timestamp to see the sequence of replica mismatch issues.
 
-3. Retrieve events for the Pod `<pod-name>` in namespace `<namespace>` and filter for scheduling error patterns including 'InsufficientCPU', 'InsufficientMemory', 'Unschedulable' to identify scheduling blockers.
+3. List pods managed by HPA in namespace <namespace> with label app=<app-label> and describe pods in Pending state to identify scheduling blockers (InsufficientCPU, InsufficientMemory, Unschedulable).
 
-4. Retrieve the ResourceQuota `<quota-name>` in namespace `<namespace>` and check resource quota status to verify if quotas are preventing pod creation.
+4. Describe ResourceQuota in namespace <namespace> and check resource quota status to verify if quotas are preventing pod creation.
 
-5. Retrieve the Node `<node-name>` resources and verify node capacity and availability across the cluster for scheduling additional pods.
+5. Analyse node capacity by describing nodes and checking allocated resources to verify availability across the cluster for scheduling additional pods.
 
-6. Retrieve PriorityClass resources and check for pod priority class configurations that may cause preemption of HPA-managed pods.
+6. List PriorityClass resources and verify pod priority class configurations that may cause preemption of HPA-managed pods.
 
 ## Diagnosis
 
-Compare HPA desired replica increase timestamps with pod scheduling failure timestamps within 30 minutes and verify whether scheduling failures began when HPA attempted to scale up, using HPA events and pod scheduling events as supporting evidence.
+1. Analyze HPA and pod events from Playbook to identify why desired replicas cannot be achieved. If events show scheduling failures, quota errors, or scaling constraints, use event timestamps to determine when the mismatch began.
 
-Correlate HPA replica mismatch detection with resource quota exhaustion timestamps within 30 minutes and verify whether resource quotas prevented achieving desired replica count, using resource quota status and HPA scaling attempts as supporting evidence.
+2. If events indicate pod scheduling failures (InsufficientCPU, InsufficientMemory, Unschedulable), examine pending pods from Playbook step 3. If scheduling events show specific resource constraints, cluster capacity is the limiting factor.
 
-Analyze pod scheduling failure patterns over the last 15 minutes to determine if failures are due to resource constraints, node availability, or quota limits, using pod events and node conditions as supporting evidence.
+3. If events indicate resource quota exhaustion, verify ResourceQuota status from Playbook step 4. If quota events show limits reached, namespace quotas are preventing additional pod creation.
 
-Compare HPA desired replica count with available node capacity at mismatch times and verify whether insufficient cluster capacity prevented scaling, using node metrics and cluster capacity data as supporting evidence.
+4. If events indicate node capacity issues, analyze node allocatable resources from Playbook step 5. If node capacity is exhausted across the cluster, insufficient cluster resources are preventing scaling.
 
-Correlate HPA replica mismatch with node removal or cordoning event timestamps within 30 minutes and verify whether node capacity reduction caused scheduling failures, using node condition changes and pod scheduling events as supporting evidence.
+5. If events indicate node taints or cordoning, verify node scheduling availability. If node events show cordoning or tainting at timestamps when mismatch began, reduced schedulable nodes caused the issue.
 
-Compare HPA scaling attempts with cluster autoscaler activity timestamps within 30 minutes and verify whether autoscaler failed to add nodes when HPA needed capacity, using autoscaler logs and node creation events as supporting evidence.
+6. If events indicate cluster autoscaler activity, verify autoscaler response. If autoscaler events show pending scale-up or failures at HPA scaling timestamps, cluster autoscaler may be unable to provision additional nodes.
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for capacity analysis, review HPA target metric configurations, check for persistent resource constraints, verify pod disruption budgets, examine historical HPA scaling patterns. HPA replica mismatch may result from cluster capacity limitations, misconfigured resource quotas, or persistent scheduling constraints rather than immediate changes.
+7. If events indicate PriorityClass or preemption issues, verify pod priority configurations from Playbook step 6. If lower-priority HPA pods are being preempted, priority adjustments may be needed.
+
+**If no correlation is found**: Extend timeframes to 1 hour for capacity analysis, review HPA target metric configurations, check for persistent resource constraints, verify pod disruption budgets, examine historical HPA scaling patterns. HPA replica mismatch may result from cluster capacity limitations, misconfigured resource quotas, or persistent scheduling constraints rather than immediate changes.

@@ -15,30 +15,36 @@ KubeAggregatedAPIErrors alerts fire; aggregated API endpoints return intermitten
 
 ## Playbook
 
-1. Retrieve the Pod `<pod-name>` in namespace `<namespace>` for aggregated API server deployments and inspect its status, restart count, and container states to identify pods in error states.
+1. Describe all apiservice resources to retrieve detailed information about all aggregated API services and identify any services experiencing errors or intermittent failures.
 
-2. Retrieve logs from the Pod `<pod-name>` in namespace `<namespace>` and filter for error patterns including 'error', 'failed', 'timeout', 'connection refused', 'rate limit' to identify error causes.
+2. List events in namespace kube-system sorted by last timestamp to retrieve recent control plane events, filtering for aggregated API errors, timeouts, or connectivity issues.
 
-3. Retrieve events for the Pod `<pod-name>` in namespace `<namespace>` and filter for error patterns including 'Failed', 'Error', 'Unhealthy' to identify pod lifecycle issues.
+3. Retrieve the Pod `<pod-name>` in namespace `<namespace>` for aggregated API server deployments and inspect its status, restart count, and container states to identify pods in error states.
 
-4. Retrieve metrics for aggregated API server error rates and response times to identify error patterns and performance degradation.
+4. Retrieve logs from the Pod `<pod-name>` in namespace `<namespace>` and filter for error patterns including 'error', 'failed', 'timeout', 'connection refused', 'rate limit' to identify error causes.
 
-5. Retrieve the Service `<service-name>` for aggregated API server endpoints in namespace `<namespace>` and verify network connectivity between API server and aggregated API server endpoints.
+5. Retrieve metrics for aggregated API server error rates and response times to identify error patterns and performance degradation.
 
-6. Retrieve NetworkPolicy resources in namespace `<namespace>` and check if network policies intermittently block communication between API server and aggregated API servers.
+6. Retrieve the Service `<service-name>` for aggregated API server endpoints in namespace `<namespace>` and verify network connectivity between API server and aggregated API server endpoints.
+
+7. Retrieve NetworkPolicy resources in namespace `<namespace>` and check if network policies intermittently block communication between API server and aggregated API servers.
 
 ## Diagnosis
 
-Compare aggregated API error spike timestamps with aggregated API server pod restart or failure timestamps within 5 minutes and verify whether errors coincide with pod instability, using pod events and aggregated API error rates as supporting evidence.
+1. Analyze aggregated API server pod events from Playbook to identify if pod instability is causing intermittent errors. If events show restarts, probe failures, or transient errors, use event timestamps to correlate with error spikes.
 
-Correlate aggregated API errors with network policy or firewall rule change timestamps within 10 minutes and verify whether network configuration changes caused intermittent connectivity issues, using network policy events and connection error logs as supporting evidence.
+2. If events indicate pod restarts or instability, examine restart patterns and causes from Playbook step 3. If restarts are frequent at timestamps when errors spike, pod instability is causing intermittent failures.
 
-Compare aggregated API error patterns with API server load or latency spike times within 5 minutes and verify whether API server issues caused aggregated API errors, using API server metrics and aggregated API error logs as supporting evidence.
+3. If events indicate network connectivity issues, verify service endpoints and connectivity from Playbook step 6. If network events show intermittent failures at error timestamps, network instability is the root cause.
 
-Analyze aggregated API error frequency patterns over the last 15 minutes to determine if errors are constant (persistent issue) or intermittent (network or resource issues), using aggregated API error logs and pod status as supporting evidence.
+4. If events indicate network policy changes, examine NetworkPolicy modifications from Playbook step 7. If policy changes occurred before errors increased, network configuration may be intermittently blocking communication.
 
-Correlate aggregated API errors with aggregated API server resource usage spikes within 5 minutes and verify whether resource constraints caused intermittent failures, using pod metrics and error timestamps as supporting evidence.
+5. If events indicate resource pressure, verify pod resource usage at error timestamps. If CPU or memory approached limits during error spikes, resource constraints are causing intermittent failures.
 
-Compare aggregated API error patterns with historical error rates over the last 7 days and verify whether current errors represent a new issue or ongoing reliability problems, using aggregated API error history and baseline error rates as supporting evidence.
+6. If events indicate API server load issues, analyze API server metrics at error timestamps. If API server latency or error rates increased when aggregated API errors spiked, upstream API server problems are contributing.
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for infrastructure changes, review aggregated API server configuration, check for network instability, verify API server aggregation layer health, examine historical aggregated API error patterns. Aggregated API errors may result from network instability, resource constraints, or aggregated API server reliability issues rather than immediate changes.
+7. If events show consistent error patterns (not intermittent), the issue is persistent rather than transient. If errors occur at regular intervals, investigate scheduled operations or recurring triggers at those timestamps.
+
+8. If events show intermittent error patterns, focus on transient causes such as network instability, resource bursts, or competing workloads at error timestamps.
+
+**If no correlation is found**: Extend timeframes to 1 hour for infrastructure changes, review aggregated API server configuration, check for network instability, verify API server aggregation layer health, examine historical aggregated API error patterns. Aggregated API errors may result from network instability, resource constraints, or reliability issues rather than immediate changes.

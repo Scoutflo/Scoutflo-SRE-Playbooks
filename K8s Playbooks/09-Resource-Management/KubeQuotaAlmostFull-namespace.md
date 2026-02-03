@@ -15,11 +15,11 @@ KubeQuotaAlmostFull alerts fire; future deployments may not be possible; scaling
 
 ## Playbook
 
-1. Retrieve the ResourceQuota `<quota-name>` in namespace `<namespace>` and inspect its status to check current usage versus hard limits for all resource types to verify approaching limits.
+1. Describe the ResourceQuota `<quota-name>` in namespace `<namespace>` to inspect its status and check current usage versus hard limits for all resource types.
 
-2. List Pod resources in namespace `<namespace>` and aggregate resource requests to identify major resource consumers.
+2. Retrieve events in namespace `<namespace>` sorted by timestamp to identify quota-related events and resource allocation warnings.
 
-3. Retrieve the ResourceQuota `<quota-name>` in namespace `<namespace>` and check resource quota configuration to verify quota limits and scope.
+3. List Pod resources in namespace `<namespace>` and aggregate resource requests to identify major resource consumers.
 
 4. Retrieve metrics for resource usage trends in namespace `<namespace>` over the last 24 hours to identify growth patterns.
 
@@ -29,16 +29,16 @@ KubeQuotaAlmostFull alerts fire; future deployments may not be possible; scaling
 
 ## Diagnosis
 
-Compare resource quota usage growth trends with deployment or scaling event timestamps over the last 24 hours and verify whether recent scaling operations accelerated quota consumption, using resource quota metrics and deployment history as supporting evidence.
+1. Analyze ResourceQuota status from Playbook to identify which resource types are approaching limits. Compare current usage against hard limits for each resource type (cpu, memory, pods, etc.) to determine which will be exhausted first.
 
-Correlate quota approaching limits with resource request misconfiguration detection within 1 hour and verify whether pods with excessive resource requests are consuming quota unnecessarily, using pod resource specifications and quota usage as supporting evidence.
+2. If CPU or memory requests are approaching limits, analyze pod resource requests from Playbook. Identify pods with the largest requests and evaluate if those requests match actual usage. Over-provisioned requests waste quota capacity.
 
-Analyze resource quota usage patterns across resource types over the last 7 days to identify which resource types are growing fastest, using resource quota metrics and historical usage data as supporting evidence.
+3. If pod count is approaching limit, count running pods from Playbook. Determine if the pod count represents necessary workloads or if orphaned pods, completed jobs, or failed pods could be cleaned up.
 
-Compare current quota usage with historical baseline usage over the last 30 days and verify whether quota limits are set appropriately for actual workload requirements, using resource quota metrics and workload growth trends as supporting evidence.
+4. If events show recent scaling activity or deployments, correlate quota growth with those operations. Increasing replica counts or deploying new services directly increases quota consumption.
 
-Correlate quota approaching limits with namespace resource creation event timestamps within 1 hour and verify whether recent resource creation accelerated quota consumption, using resource creation events and quota usage changes as supporting evidence.
+5. If quota usage has grown gradually without obvious triggering events, examine namespace usage trends over time. Normal workload growth may require periodic quota increases as part of capacity planning.
 
-Compare quota configuration with similar namespace quotas to verify whether quota limits are consistent with namespace importance and workload requirements, using quota configurations and namespace characteristics as supporting evidence.
+6. If multiple resource types are simultaneously approaching limits, the namespace may need a comprehensive quota increase. If only one resource type is near limit while others have capacity, consider rebalancing resource requests or quota allocation.
 
-If no correlation is found within the specified time windows: extend timeframes to 30 days for capacity planning analysis, review namespace resource quota configurations, check for gradual workload growth, verify resource request accuracy, examine historical quota usage patterns. Quota may be approaching limits due to normal workload growth, inadequate quota sizing, or resource request misconfigurations rather than immediate operational changes.
+7. If quota limits appear appropriate but usage is high, evaluate workload efficiency. Right-sizing pod resource requests based on actual usage can reclaim significant quota capacity without changing workload functionality.

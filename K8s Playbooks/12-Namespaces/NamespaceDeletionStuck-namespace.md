@@ -18,11 +18,11 @@ Namespaces remain in Terminating state indefinitely; namespace cleanup is blocke
 
 ## Playbook
 
-1. Retrieve the namespace `<namespace-name>` and inspect namespace deletion timestamp and finalizers to confirm Terminating state and identify which finalizers are preventing deletion.
+1. Describe the namespace `<namespace-name>` to inspect namespace deletion timestamp, finalizers, and status to confirm Terminating state and identify which finalizers are preventing deletion.
 
-2. List all resources in namespace `<namespace-name>` and identify resources that remain and have finalizers.
+2. Retrieve events for the namespace `<namespace-name>` sorted by timestamp to identify deletion-related events and finalizer processing failures.
 
-3. List events in namespace `<namespace-name>` and filter for deletion-related events, focusing on events with reasons such as `FailedDelete` or messages indicating why resources cannot be deleted.
+3. List all resources in namespace `<namespace-name>` and identify resources that remain and have finalizers.
 
 4. Check custom resource controllers or operators responsible for finalizers and verify if they are running and can process finalizers.
 
@@ -32,17 +32,17 @@ Namespaces remain in Terminating state indefinitely; namespace cleanup is blocke
 
 ## Diagnosis
 
-1. Compare the namespace deletion stuck timestamps with resource finalizer addition timestamps, and check whether finalizers were added within 30 minutes before namespace became stuck.
+1. Analyze namespace events and finalizers from Playbook to identify what is blocking deletion. Check the namespace's metadata.finalizers field to see which finalizers remain. Common finalizers include "kubernetes" (built-in) and custom finalizers from operators.
 
-2. Compare the namespace deletion stuck timestamps with finalizer controller restart or failure timestamps, and check whether controller issues occurred within 5 minutes before namespace became stuck.
+2. If the kubernetes finalizer remains, resources still exist within the namespace that must be deleted first. List all resources in the namespace from Playbook to identify remaining resources. Focus on resources with their own finalizers that may be blocking cleanup.
 
-3. Compare the namespace deletion stuck timestamps with custom resource creation timestamps in the namespace, and check whether resources with finalizers were created within 30 minutes before deletion issues.
+3. If custom resource finalizers remain (e.g., from operators like Istio, Prometheus, or custom controllers), verify the controller responsible for that finalizer is running and healthy. If the controller was deleted before its resources, finalizers will never be processed.
 
-4. Compare the namespace deletion stuck timestamps with API server unavailability or performance degradation timestamps, and check whether API server issues occurred within 5 minutes before finalizer processing failures.
+4. If resources with finalizers exist but their controllers are missing or deleted, the finalizers must be manually removed. Identify the specific resources and their finalizers from Playbook output.
 
-5. Compare the namespace deletion stuck timestamps with cluster upgrade or operator update timestamps, and check whether infrastructure changes occurred within 1 hour before namespace became stuck, affecting finalizer processing.
+5. If events indicate API server errors or timeouts during finalizer processing, verify API server health and connectivity. Finalizer processing requires the API server to update resource metadata.
 
-6. Compare the namespace deletion stuck timestamps with resource quota or limit constraint timestamps, and check whether constraints prevented resource deletion within 30 minutes before namespace became stuck.
+6. If the namespace contains CustomResourceDefinitions that have been deleted, resources of those types become orphaned and cannot be deleted normally. Check for resources whose API group no longer exists.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review finalizer controller logs for gradual processing issues, check for intermittent API server connectivity problems, examine if finalizers were always present but only recently enforced, verify if finalizer controllers experienced gradual performance degradation, and check for cumulative resource cleanup issues. Namespace deletion stuck issues may result from cumulative finalizer processing problems rather than immediate changes.
+7. If all resources appear deleted but the namespace is still Terminating, the namespace-level kubernetes finalizer may be stuck. This can occur if the namespace controller cannot complete its cleanup. Verify kube-controller-manager health and check for namespace controller errors in logs.
 

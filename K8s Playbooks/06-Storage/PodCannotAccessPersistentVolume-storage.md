@@ -18,31 +18,41 @@ Pods cannot start; persistent storage is unavailable; volume mount failures occu
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect pod volume configuration to identify which PersistentVolumeClaim is referenced.
+1. Describe PersistentVolumeClaim <pvc-name> in namespace <namespace> to inspect the PVC status, phase, conditions, and verify if it is bound to a PersistentVolume.
 
-2. Retrieve the PersistentVolumeClaim `<pvc-name>` in namespace `<namespace>` and inspect its status, phase, and conditions to verify if it is bound to a PersistentVolume.
+2. Retrieve events for PersistentVolumeClaim <pvc-name> in namespace <namespace> sorted by timestamp to identify binding failures or provisioning issues.
 
-3. Retrieve the PersistentVolume bound to the PVC and inspect its status, phase, and access modes to verify volume availability.
+3. Describe pod <pod-name> in namespace <namespace> to inspect pod volume configuration and identify which PersistentVolumeClaim is referenced.
 
-4. List events in namespace `<namespace>` and filter for volume-related events, focusing on events with reasons such as `FailedMount`, `FailedAttachVolume`, or messages indicating volume attachment failures.
+4. Retrieve events for pod <pod-name> in namespace <namespace> sorted by timestamp to identify FailedMount, FailedAttachVolume, or volume attachment failures.
 
-5. Check the StorageClass referenced by the PVC and verify it exists and the provisioner is available.
+5. Describe PersistentVolume <pv-name> to inspect the bound volume status, phase, and access modes to verify volume availability.
 
-6. Check the node where the pod is scheduled for volume attachment status and verify if the volume can be attached to the node.
+6. Describe the StorageClass referenced by the PVC and verify it exists and the provisioner is available.
+
+7. Describe the node where the pod is scheduled to check volume attachment status and verify if the volume can be attached to the node.
 
 ## Diagnosis
 
-1. Compare the pod volume access failure timestamps with PersistentVolumeClaim creation timestamps, and check whether PVCs were created but not bound within 30 minutes before pod access failures.
+1. Analyze pod events from Playbook step 4 to identify the specific volume access failure type. The event reason indicates the failure point:
+   - "FailedMount" - Volume exists but cannot be mounted (permission, filesystem, or node issue)
+   - "FailedAttachVolume" - Volume cannot be attached to the node (CSI driver or backend issue)
+   - "FailedScheduling" with volume-related message - No node can satisfy volume requirements
 
-2. Compare the pod volume access failure timestamps with StorageClass modification or unavailability timestamps, and check whether storage class issues occurred within 30 minutes before volume access failures.
+2. If events show FailedMount or FailedAttachVolume, check the PVC status from Playbook step 1. If PVC phase is not "Bound", the volume binding is the root cause:
+   - If PVC is Pending, follow PVC Pending diagnosis (check StorageClass from step 6)
+   - If PVC is Lost, the underlying PV is no longer available (check PV from step 5)
 
-3. Compare the pod volume access failure timestamps with PersistentVolume deletion or release timestamps, and check whether volumes were released or deleted within 30 minutes before access failures.
+3. If PVC is Bound but pod still shows volume errors, examine PVC events from Playbook step 2. Events may show:
+   - "WaitForFirstConsumer" - Normal for certain binding modes, pod scheduling will trigger binding
+   - "ProvisioningFailed" - Storage backend cannot create the volume
+   - Access mode conflicts - PV access mode does not match pod requirements
 
-4. Compare the pod volume access failure timestamps with storage backend unavailability timestamps, and check whether storage provider issues occurred within 10 minutes before volume access failures.
+4. If PVC and PV appear healthy from steps 1-5, check the node status from Playbook step 7. If the node shows volume attachment limits reached or storage-related conditions, the pod cannot attach more volumes to that node.
 
-5. Compare the pod volume access failure timestamps with node volume attachment limit exhaustion timestamps, and check whether node attachment limits were reached within 30 minutes before access failures.
+5. If the StorageClass from step 6 is missing or misconfigured, correlate when the StorageClass was modified/deleted with when pods started failing to access volumes.
 
-6. Compare the pod volume access failure timestamps with cluster storage plugin restart or failure timestamps, and check whether storage infrastructure issues occurred within 1 hour before volume access failures.
+6. If all Kubernetes resources appear correct, the issue is at the storage backend level. Check if the PV's volumeHandle or storage path (from step 5) still exists and is accessible from the scheduled node.
 
 **If no correlation is found within the specified time windows**: Extend the search window (10 minutes → 30 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review storage plugin logs for gradual volume provisioning issues, check for intermittent storage backend connectivity problems, examine if storage class configurations drifted over time, verify if volume attachment limits accumulated gradually, and check for storage provider quota or capacity issues that may have developed. Volume access failures may result from gradual storage infrastructure degradation rather than immediate changes.
 

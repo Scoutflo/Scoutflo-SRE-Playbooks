@@ -18,31 +18,52 @@ Pods cannot start; main application containers never begin; deployments remain a
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect init container status to identify which init container is failing and check its state, reason, and message.
+1. Describe pod <pod-name> in namespace <namespace> to see which init container is failing - look at Init Containers section for state (Waiting/Running/Terminated) and the reason/message.
 
-2. Retrieve logs from the init container in pod `<pod-name>` in namespace `<namespace>` and filter for errors, failures, or hang indicators that explain why the init container cannot complete.
+2. Retrieve events for pod <pod-name> in namespace <namespace> sorted by timestamp to see init container errors with timestamps.
 
-3. List events in namespace `<namespace>` and filter for events related to the pod's init containers, focusing on failure events or error messages.
+3. Retrieve the init container statuses for pod <pod-name> in namespace <namespace> to see exactly which init container is stuck and why.
 
-4. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and review the init container configuration including commands, arguments, image, and resource constraints.
+4. Retrieve logs from the failing init container <init-container-name> in pod <pod-name> in namespace <namespace> to see what the init container is doing or where it is stuck.
 
-5. From a test pod, execute the init container command manually using Pod Exec tool to verify if the command completes successfully and test init container behavior.
+5. Describe Deployment <deployment-name> in namespace <namespace> to check init container configuration - command, args, image, and any dependencies.
 
-6. Check if the init container depends on external resources (databases, services, volumes) and verify those dependencies are available and accessible.
+6. If init container is waiting for a service, list services in namespace <namespace> and check endpoints for service <service-name> to verify the service exists.
+
+7. If init container is waiting for a database or external resource, test connectivity to <host> on <port> from a debug pod.
+
+8. Check if init container has enough resources by comparing requested resources with node availability using node resource metrics.
 
 ## Diagnosis
 
-1. Compare the init container failure timestamps with init container command or image modification timestamps in the deployment, and check whether init container configuration changes occurred within 30 minutes before failures.
+1. Analyze pod events from Playbook steps 1-2 to identify which init container is failing and why. The pod status shows init container states in order, and events provide specific failure reasons.
 
-2. Compare the init container failure timestamps with dependency service availability timestamps (databases, APIs, external services), and check whether dependencies became unavailable within 5 minutes before init container failures.
+2. If init container status shows "Waiting" (from Playbook step 1), check the reason:
+   - "ImagePullBackOff": Init container image cannot be pulled
+   - "CreateContainerConfigError": Missing ConfigMap or Secret
+   - "PodInitializing": Init container is still running (may be stuck)
 
-3. Compare the init container failure timestamps with volume mount or PersistentVolumeClaim binding timestamps, and check whether volume issues occurred within 5 minutes before init container failures.
+3. If init container status shows "Running" for extended time (from Playbook step 3), check init container logs (Playbook step 4) to understand what it is waiting for:
+   - Waiting for a service to become available
+   - Waiting for database connectivity
+   - Waiting for external resource
+   - Infinite loop or hang in init script
 
-4. Compare the init container failure timestamps with network policy or security policy modification timestamps that may affect init container network access, and check whether policy changes occurred within 10 minutes before failures.
+4. If init container logs show connection errors or timeouts (from Playbook step 4), verify the dependency is available:
+   - Check if target service exists (Playbook step 6)
+   - Test connectivity to external resources (Playbook step 7)
+   - Verify network policies allow init container traffic
 
-5. Compare the init container failure timestamps with deployment rollout or image update timestamps, and check whether application changes occurred within 1 hour before init container failures, indicating the new version may have different init requirements.
+5. If init container status shows "Terminated" with non-zero exit code (from Playbook step 3):
+   - Exit code 1: Command failed - check logs for error
+   - Exit code 126: Command not found or not executable
+   - Exit code 127: Shell or binary missing in image
+   - Exit code 137: OOMKilled or SIGKILL
 
-6. Compare the init container failure timestamps with node resource pressure condition timestamps, and check whether node-level resource constraints occurred within 5 minutes before init container failures.
+6. If init container needs resources not available (from Playbook steps 5, 8), it may fail or hang:
+   - Database not ready or credentials incorrect
+   - Required files not present in mounted volumes
+   - Schema migration failing
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review init container logs for gradual timeout or performance issues, check for intermittent dependency failures, examine network connectivity issues that may have developed over time, verify if init container resource constraints became insufficient, and check for external service degradation that may affect init container execution. Init container failures may result from gradual dependency or infrastructure issues rather than immediate configuration changes.
+**To resolve init container issues**: Fix the specific error shown in logs, ensure dependencies are available before pod starts, add timeout and retry logic to init scripts, and consider using startup probes instead of init containers for dependency checks.
 

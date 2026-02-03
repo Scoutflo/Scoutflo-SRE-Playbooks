@@ -18,31 +18,41 @@ DNS resolution fails intermittently; service discovery is unreliable; applicatio
 
 ## Playbook
 
-1. List CoreDNS pods in the kube-system namespace and check their status, resource usage, and restart counts to verify if pods are experiencing issues.
+1. Describe CoreDNS pods in `kube-system` namespace using `kubectl describe pod -n kube-system -l k8s-app=kube-dns` to inspect pod details, conditions, resource usage, and restart counts.
 
-2. Retrieve logs from CoreDNS pods in namespace kube-system and filter for timeout errors, query failures, or performance issues.
+2. Retrieve events in `kube-system` namespace using `kubectl get events -n kube-system --field-selector involvedObject.name=coredns --sort-by='.metadata.creationTimestamp'` to identify CoreDNS-related events and patterns over time.
 
-3. From test pods, execute repeated DNS queries using `nslookup` or `dig` via Pod Exec tool to test DNS resolution patterns and identify intermittent failures.
+3. Retrieve logs from CoreDNS pods in namespace kube-system and filter for timeout errors, query failures, or performance issues.
 
-4. Check CoreDNS configuration by retrieving ConfigMap `coredns` in namespace kube-system and reviewing DNS server settings, cache configuration, and upstream server configuration.
+4. From test pods, execute repeated DNS queries using `nslookup` or `dig` via Pod Exec tool to test DNS resolution patterns and identify intermittent failures.
 
-5. Monitor CoreDNS pod resource usage metrics to verify if CPU or memory constraints are causing performance issues.
+5. Check CoreDNS configuration by retrieving ConfigMap `coredns` in namespace kube-system and reviewing DNS server settings, cache configuration, and upstream server configuration.
 
-6. List events in namespace kube-system and filter for CoreDNS-related events over time to identify patterns in DNS issues.
+6. Monitor CoreDNS pod resource usage metrics to verify if CPU or memory constraints are causing performance issues.
 
 ## Diagnosis
 
-1. Compare the DNS resolution failure timestamps with CoreDNS pod resource usage spike timestamps, and check whether high CPU or memory usage occurred within 5 minutes of DNS failures.
+Begin by analyzing the events and pod status collected in the Playbook section. CoreDNS pod conditions, resource usage, and repeated DNS query test results provide the primary diagnostic signals.
 
-2. Compare the DNS resolution failure timestamps with CoreDNS configuration modification timestamps, and check whether configuration changes occurred within 30 minutes before intermittent failures.
+**If pod describe shows high restart counts or recent restarts:**
+- CoreDNS pod instability is causing intermittent failures. Examine the termination reason from the previous container state. If OOMKilled, increase memory limits. If Error, check logs for the specific failure cause.
 
-3. Compare the DNS resolution failure timestamps with cluster workload increase or scaling event timestamps, and check whether DNS load increased within 30 minutes before failures.
+**If CoreDNS logs show timeout errors to upstream DNS servers:**
+- Upstream DNS connectivity is unreliable. Test upstream DNS servers directly from a debug pod. Check for intermittent network issues or upstream server overload. Consider adding multiple upstream servers for redundancy.
 
-4. Compare the DNS resolution failure timestamps with NetworkPolicy modification timestamps that may affect DNS traffic, and check whether policy changes occurred intermittently within 10 minutes before DNS failures.
+**If CoreDNS logs show high query latency or queue overflow messages:**
+- CoreDNS is overloaded. Check CPU usage from pod metrics. If near limits, increase CPU requests/limits or scale CoreDNS replicas horizontally.
 
-5. Compare the DNS resolution failure timestamps with CoreDNS pod restart or crash timestamps, and check whether pod instability occurred within 5 minutes before DNS failures.
+**If DNS test queries fail only for specific domains:**
+- The issue is domain-specific, not a general CoreDNS problem. Check if the domain exists in cluster DNS, verify the service and endpoints exist, and confirm the service is in a Ready state.
 
-6. Compare the DNS resolution failure timestamps with upstream DNS server unavailability timestamps, and check whether external DNS issues occurred within 10 minutes before DNS failures.
+**If DNS queries succeed from CoreDNS pod but fail from application pods:**
+- Network path between application pods and CoreDNS is affected. Check for NetworkPolicies that intermittently block DNS traffic (port 53 UDP/TCP). Verify kube-dns service endpoints are populated.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 10 minutes → 30 minutes), review CoreDNS logs for gradual performance degradation patterns, check for intermittent network connectivity issues, examine if DNS query load gradually increased over time, verify if CoreDNS resource constraints developed gradually, and check for DNS cache or query limit issues that may occur intermittently. Intermittent DNS resolution failures may result from cumulative load or infrastructure instability rather than immediate changes.
+**If events are inconclusive, correlate timestamps:**
+1. Check if intermittent failures align with CoreDNS pod restarts by matching failure timestamps with pod restart times from describe output.
+2. Check if failures correlate with cluster scaling events that increased DNS query load.
+3. Check if failures occur during specific time windows that might indicate scheduled jobs or cron workloads.
+
+**If no clear cause is identified:** Increase CoreDNS replicas to improve availability, review DNS cache configuration for optimization opportunities, and monitor DNS query latency over an extended period to identify patterns.
 

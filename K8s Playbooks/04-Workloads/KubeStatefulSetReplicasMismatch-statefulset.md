@@ -15,30 +15,34 @@ KubeStatefulSetReplicasMismatch alerts fire; service degradation or unavailabili
 
 ## Playbook
 
-1. Retrieve the StatefulSet `<statefulset-name>` in namespace `<namespace>` and inspect its status to check current replicas versus desired replicas and identify the mismatch.
+1. Describe StatefulSet <statefulset-name> in namespace <namespace> to see:
+   - Replicas status (desired/current/ready)
+   - Pod template configuration including resource requests
+   - Conditions showing why replicas mismatch
+   - Events showing FailedCreate, FailedScheduling, or FailedAttachVolume errors
 
-2. Retrieve the Pod `<pod-name>` in namespace `<namespace>` belonging to the StatefulSet `<statefulset-name>` and check pod status to identify pods in Pending, CrashLoopBackOff, or NotReady states.
+2. Retrieve events for StatefulSet <statefulset-name> in namespace <namespace> sorted by timestamp to see the sequence of replica mismatch issues.
 
-3. Retrieve events for the StatefulSet `<statefulset-name>` in namespace `<namespace>` and filter for error patterns including 'FailedCreate', 'FailedScheduling', 'FailedAttachVolume' to identify StatefulSet issues.
+3. List pods belonging to StatefulSet in namespace <namespace> with label app=<statefulset-label> and describe pods to identify pods in Pending, CrashLoopBackOff, or NotReady states.
 
-4. Retrieve PersistentVolumeClaim resources belonging to StatefulSet pods and check PersistentVolumeClaim status to verify volume binding and availability.
+4. List PersistentVolumeClaim resources in namespace <namespace> with label app=<statefulset-label> and describe PVCs to verify volume binding and availability.
 
-5. Retrieve the StatefulSet `<statefulset-name>` in namespace `<namespace>` and check pod template parameters including resource requests, node selectors, tolerations, and affinity rules to verify configuration issues.
+5. Retrieve StatefulSet <statefulset-name> configuration in namespace <namespace> and verify resource requests, node selectors, tolerations, and affinity rules.
 
-6. Retrieve the Node `<node-name>` resources and verify node capacity and availability across the cluster for scheduling additional pods.
+6. Analyse node capacity by describing nodes and checking allocated resources to verify availability across the cluster for scheduling additional pods.
 
 ## Diagnosis
 
-Compare StatefulSet replica mismatch detection timestamps with StatefulSet scaling event timestamps within 30 minutes and verify whether mismatch began when StatefulSet attempted to scale, using StatefulSet events and scaling history as supporting evidence.
+1. Analyze StatefulSet events from Playbook to identify the replica creation blocker. Events showing "FailedCreate" indicate PVC or pod creation issues. Events showing "FailedScheduling" indicate resource or placement constraints. Events showing "FailedAttachVolume" indicate storage problems preventing pod startup.
 
-Correlate StatefulSet replica mismatch with PersistentVolume binding failure timestamps within 10 minutes and verify whether volume binding failures prevented pod creation, using PVC events and StatefulSet pod status as supporting evidence.
+2. If events indicate PVC binding issues (Pending PVCs, ProvisioningFailed), verify PVC status for each pod ordinal. StatefulSets create pods sequentially, so a single PVC binding failure blocks creation of that pod and all subsequent pods. Check StorageClass provisioner availability and zone constraints.
 
-Compare StatefulSet replica mismatch with pod scheduling failure timestamps within 30 minutes and verify whether pod scheduling failures prevented achieving desired replica count, using pod events and StatefulSet status as supporting evidence.
+3. If events indicate scheduling failures (InsufficientCPU, InsufficientMemory, NodeAffinity), compare pod resource requests with available node capacity from Playbook. Verify if node selectors or anti-affinity rules are too restrictive for the current cluster state.
 
-Analyze pod status patterns over the last 15 minutes to determine if replica mismatch is due to scheduling failures, pod crashes, volume issues, or readiness probe failures, using pod status and events as supporting evidence.
+4. If pods exist but are not Ready (CrashLoopBackOff, Error, or failing readiness probes), the replica count shows current pods but ready count is lower. Analyze pod logs and container exit codes to identify the application-level failure preventing readiness.
 
-Correlate StatefulSet replica mismatch with node capacity exhaustion or zone unavailability timestamps within 30 minutes and verify whether insufficient cluster capacity or zone constraints prevented scaling, using node metrics and StatefulSet scaling attempts as supporting evidence.
+5. If events indicate volume attachment failures, verify that StatefulSet's volumeClaimTemplates specify a StorageClass that can provision volumes in zones where schedulable nodes exist. Zone mismatches between PV and nodes cause permanent scheduling failures.
 
-Compare StatefulSet replica mismatch with PersistentVolume zone or availability issues and verify whether volume zone mismatches prevented pod scheduling, using PVC zone information and node zones as supporting evidence.
+6. If some replicas are running but fewer than desired, identify which pod ordinal is missing or failing. StatefulSets create pods in order (0, 1, 2...), so the lowest missing ordinal indicates where the failure occurred. Check events and status for that specific pod.
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for StatefulSet operations, review StatefulSet resource requests, check for persistent resource constraints, verify PersistentVolume availability and zone configurations, examine historical StatefulSet scaling patterns. StatefulSet replica mismatch may result from cluster capacity limitations, volume zone constraints, or persistent scheduling issues rather than immediate changes.
+7. If no clear event pattern exists, verify the StatefulSet's podManagementPolicy. With OrderedReady policy (default), any unhealthy pod blocks creation of higher-ordinal pods. With Parallel policy, all pods are created simultaneously but each still requires its PVC to be bound first.

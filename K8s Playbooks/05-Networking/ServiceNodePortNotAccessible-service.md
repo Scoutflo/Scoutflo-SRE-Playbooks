@@ -18,31 +18,31 @@ NodePort services are unreachable from outside the cluster; external traffic can
 
 ## Playbook
 
-1. Retrieve the Service `<service-name>` in namespace `<namespace>` and inspect its type, NodePort configuration, and port mappings to verify service setup.
+1. Describe the Service `<service-name>` in namespace `<namespace>` to inspect its type, NodePort configuration, and port mappings.
 
-2. List all nodes and retrieve their external IP addresses to identify which nodes should be accessible for NodePort connections.
+2. Retrieve events for the Service `<service-name>` in namespace `<namespace>` sorted by timestamp to identify NodePort configuration issues.
 
-3. From an external client or test pod, execute `curl` or `telnet` to test connectivity to `<node-ip>:<node-port>` to verify if the NodePort is reachable.
+3. List all nodes and retrieve their external IP addresses to identify which nodes should be accessible for NodePort connections.
 
-4. Check firewall rules on nodes or cloud provider security groups to verify if NodePort ports are open and accessible.
+4. From an external client or test pod, execute curl or telnet to test connectivity to `<node-ip>:<node-port>` to verify if the NodePort is reachable.
 
-5. Check kube-proxy pod status in the kube-system namespace to verify if the service proxy is functioning correctly and forwarding NodePort traffic.
+5. Check firewall rules on nodes or cloud provider security groups to verify if NodePort ports are open and accessible.
 
-6. List events in namespace `<namespace>` and filter for service-related events, focusing on events with reasons such as `FailedToUpdateEndpoint` or messages indicating NodePort configuration issues.
+6. Check kube-proxy pod status in the `kube-system` namespace to verify if the service proxy is functioning correctly and forwarding NodePort traffic.
 
 ## Diagnosis
 
-1. Compare the NodePort accessibility failure timestamps with firewall rule modification timestamps, and check whether firewall rules were changed within 10 minutes before NodePort became inaccessible.
+1. Analyze service events and configuration from Playbook to verify NodePort is correctly assigned. If service type is not NodePort or nodePort field is not set, external access via NodePort is not configured.
 
-2. Compare the NodePort accessibility failure timestamps with kube-proxy restart or failure timestamps, and check whether proxy issues occurred within 5 minutes before NodePort failures.
+2. If NodePort is configured, check service endpoints from Playbook. If endpoints list is empty, no backend pods are available to receive traffic (selector mismatch or pods not Ready).
 
-3. Compare the NodePort accessibility failure timestamps with node network interface or IP address change timestamps, and check whether node networking changes occurred within 10 minutes before NodePort became inaccessible.
+3. If endpoints exist, verify kube-proxy status from Playbook. If kube-proxy is not running or shows failures on nodes, NodePort iptables/ipvs rules are not programmed and traffic is not forwarded.
 
-4. Compare the NodePort accessibility failure timestamps with service NodePort configuration modification timestamps, and check whether service port changes occurred within 30 minutes before accessibility failures.
+4. If kube-proxy is healthy, check connectivity test results from Playbook (curl to node-ip:node-port). If connections are refused, verify the NodePort is within the allowed range (default 30000-32767) and not conflicting with existing ports.
 
-5. Compare the NodePort accessibility failure timestamps with cloud provider security group or network ACL modification timestamps, and check whether network policy changes occurred within 10 minutes before NodePort failures.
+5. If NodePort is valid, check firewall rules and security group configuration. If NodePort is blocked by node firewall (iptables rules), cloud security groups, or network ACLs, external traffic cannot reach the node.
 
-6. Compare the NodePort accessibility failure timestamps with cluster network plugin restart or failure timestamps, and check whether network infrastructure issues occurred within 1 hour before NodePort accessibility failures.
+6. If firewall allows traffic, verify node external IP addresses from Playbook and confirm nodes are reachable on the network. If nodes have only internal IPs or are behind NAT without proper port forwarding, NodePort is not accessible externally.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 10 minutes → 30 minutes, 1 hour → 2 hours), review kube-proxy logs for gradual performance degradation, check for intermittent network connectivity issues, examine if firewall rules were gradually tightened, verify if node networking configurations drifted over time, and check for cloud provider network policy changes that may have accumulated. NodePort accessibility failures may result from gradual network infrastructure changes rather than immediate modifications.
+**If no configuration issue is found**: Check externalTrafficPolicy setting (Local vs Cluster) for traffic routing behavior, verify if nodes are in a private subnet requiring bastion or VPN access, and examine if load balancer or ingress controller should be used instead of direct NodePort access.
 

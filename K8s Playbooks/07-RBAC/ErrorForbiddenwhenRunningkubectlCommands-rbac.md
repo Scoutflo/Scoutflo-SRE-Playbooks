@@ -18,17 +18,19 @@ kubectl commands fail with Forbidden errors; cluster operations are blocked; use
 
 ## Playbook
 
-1. Verify the current user or service account identity by checking kubeconfig context or pod service account.
+1. Test the exact command that failed using `kubectl auth can-i <verb> <resource> -n <namespace>` to confirm which specific permission is denied - this immediately identifies the permission gap.
 
-2. Retrieve the Role or ClusterRole bound to the user or service account and inspect its rules to verify which permissions are granted.
+2. Check your current identity using `kubectl auth whoami` (K8s 1.27+) or `kubectl config current-context` and `kubectl config view --minify -o jsonpath='{.contexts[0].context.user}'` to verify which user or service account is being used.
 
-3. Retrieve the RoleBinding or ClusterRoleBinding for the user or service account and verify the binding exists and references the correct role.
+3. List all your current permissions using `kubectl auth can-i --list -n <namespace>` to see what you CAN do, helping identify what's missing.
 
-4. Test specific permissions using `kubectl auth can-i <verb> <resource>` to identify which actions are denied.
+4. Check if a RoleBinding exists for your user using `kubectl get rolebindings -n <namespace> -o yaml | grep -A5 "<your-username-or-sa>"` or `kubectl get clusterrolebindings -o yaml | grep -A5 "<your-username-or-sa>"`.
 
-5. List events in the namespace or cluster and filter for authorization-related events, focusing on events with reasons such as `Forbidden` or messages indicating permission denials.
+5. If a binding exists, run `kubectl describe role <role-name> -n <namespace>` or `kubectl describe clusterrole <role-name>` to see what permissions the role grants.
 
-6. Check API server audit logs if available to review authorization decisions and identify which permissions are missing.
+6. List events related to authorization failures using `kubectl get events --all-namespaces --field-selector=reason=Forbidden` to see recent permission denials with timestamps.
+
+7. Check API server audit logs if available using `kubectl logs -n kube-system -l component=kube-apiserver --tail=100 | grep -i "403\|forbidden"` to review authorization decisions.
 
 ## Diagnosis
 

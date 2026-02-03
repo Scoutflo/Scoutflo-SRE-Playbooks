@@ -18,31 +18,38 @@ Kubelet cannot authenticate to API server; nodes become NotReady; pod status can
 
 ## Playbook
 
-1. On the node, check kubelet certificate expiration by inspecting certificate files or kubelet logs using Pod Exec tool or SSH if node access is available.
+1. Describe node <node-name> to see:
+   - Conditions section showing Ready status and certificate-related conditions
+   - Events section showing certificate expiration or rotation failures
+   - System Info showing kubelet version and certificate details
 
-2. Retrieve kubelet logs from the node and filter for certificate rotation errors, expiration warnings, or certificate signing request failures.
+2. Retrieve events for node <node-name> sorted by timestamp to see the sequence of certificate-related issues.
 
-3. List CertificateSigningRequest objects in the cluster and check if kubelet certificate signing requests are pending approval.
+3. On the node, check kubelet certificate expiration by inspecting certificate files or kubelet logs using Pod Exec tool or SSH if node access is available.
 
-4. Check the certificate authority (CA) status and verify if the CA is available and can sign certificates.
+4. Retrieve kubelet logs from the node and filter for certificate rotation errors, expiration warnings, or certificate signing request failures.
 
-5. Verify RBAC permissions for kubelet to create and approve certificate signing requests.
+5. List CertificateSigningRequest objects in the cluster and check if kubelet certificate signing requests are pending approval.
 
-6. List events on the node and filter for certificate-related events, focusing on events with reasons such as `CertificateExpired` or messages indicating certificate rotation failures.
+6. Check the certificate authority (CA) status and verify if the CA is available and can sign certificates.
+
+7. Verify RBAC permissions for kubelet to create and approve certificate signing requests.
 
 ## Diagnosis
 
-1. Compare the kubelet certificate rotation failure timestamps with kubelet certificate expiration timestamps, and check whether certificates expired within 1 hour before rotation failures.
+1. Analyze node events from Playbook steps 1-2 to identify certificate-related issues. Events showing "CertificateRotationFailed", "TLSHandshakeError", or authentication failures indicate certificate problems. Note event timestamps to establish when rotation failures began.
 
-2. Compare the kubelet certificate rotation failure timestamps with CertificateSigningRequest creation or approval failure timestamps, and check whether CSR processing failures occurred within 30 minutes before rotation failures.
+2. If node events indicate certificate expiration, check kubelet certificate expiration from Playbook step 3. Compare the certificate expiry timestamp with current time and with when kubelet started failing to authenticate.
 
-3. Compare the kubelet certificate rotation failure timestamps with certificate authority unavailability timestamps, and check whether CA issues occurred within 10 minutes before rotation failures.
+3. If kubelet logs from Playbook step 4 show CSR (CertificateSigningRequest) creation or submission errors, check pending CSRs from Playbook step 5. CSRs stuck in "Pending" status indicate approval process issues.
 
-4. Compare the kubelet certificate rotation failure timestamps with RBAC permission modification timestamps, and check whether permission changes occurred within 30 minutes before rotation failures.
+4. If CSRs are pending, check certificate authority status from Playbook step 6. CA unavailability or overload prevents CSR approval and certificate issuance.
 
-5. Compare the kubelet certificate rotation failure timestamps with cluster upgrade or certificate authority update timestamps, and check whether infrastructure changes occurred within 1 hour before rotation failures.
+5. If kubelet logs show permission denied errors when creating or approving CSRs, verify RBAC permissions from Playbook step 7. Insufficient permissions prevent kubelet from requesting certificate renewal.
 
-6. Compare the kubelet certificate rotation failure timestamps with kubelet restart or configuration modification timestamps, and check whether kubelet changes occurred within 30 minutes before rotation failures.
+6. If kubelet logs show connectivity errors when contacting the CA or API server for CSR submission, verify network connectivity between kubelet and control plane components.
 
-**If no correlation is found within the specified time windows**: Extend the search window (10 minutes → 30 minutes, 30 minutes → 1 hour, 1 hour → 24 hours for certificate expiration), review kubelet logs for gradual certificate rotation issues, check for intermittent certificate authority connectivity problems, examine if certificate rotation was always failing but only recently enforced, verify if RBAC permissions were gradually restricted, and check for certificate authority performance degradation that may have developed. Certificate rotation failures may result from gradual certificate management issues rather than immediate expiration.
+7. If certificate rotation was working previously and recently failed, check for cluster upgrades, CA certificate rotation, or RBAC policy changes that may have affected the rotation process.
+
+**If no root cause is identified from events**: Review kubelet configuration for certificate rotation settings, check if automatic rotation is enabled, verify CA certificate chain validity, and examine if certificate rotation has been failing silently and only recently caused visible issues when certificates finally expired.
 

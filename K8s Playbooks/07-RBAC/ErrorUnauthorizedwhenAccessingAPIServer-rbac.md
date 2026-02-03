@@ -18,17 +18,19 @@ kubectl commands fail with Unauthorized errors; API server access is denied; clu
 
 ## Playbook
 
-1. Verify the kubeconfig file and check if the current context, user credentials, and cluster information are correct.
+1. Test basic API access using `kubectl auth can-i --list` to confirm the 401 Unauthorized error - if this fails with 401, authentication is broken (not authorization).
 
-2. Check if authentication tokens are expired by inspecting token expiration times or attempting to refresh tokens.
+2. Check current context and credentials using `kubectl config current-context` and `kubectl config view --minify` to verify the kubeconfig points to the correct cluster and user.
 
-3. Verify certificate-based authentication by checking client certificate validity and expiration if certificates are used.
+3. Verify your identity is recognized using `kubectl auth whoami` (K8s 1.27+) - a 401 error here confirms the authentication token/certificate is invalid.
 
-4. Test API server connectivity and authentication by executing a simple kubectl command to verify if authentication is working.
+4. For token-based auth, check token expiration by decoding the JWT: `kubectl config view --raw -o jsonpath='{.users[0].user.token}' | cut -d'.' -f2 | base64 -d | jq '.exp'` and compare with current time.
 
-5. Check API server logs if accessible to review authentication failures and identify which authentication method is failing.
+5. For certificate-based auth, check certificate expiration: `kubectl config view --raw -o jsonpath='{.users[0].user.client-certificate-data}' | base64 -d | openssl x509 -noout -dates`.
 
-6. Verify service account token validity if using service account authentication by checking token expiration and secret existence.
+6. For service account auth inside a pod, verify the token is mounted: `cat /var/run/secrets/kubernetes.io/serviceaccount/token` and check if the ServiceAccount still exists.
+
+7. Check API server logs for authentication failures: `kubectl logs -n kube-system -l component=kube-apiserver --tail=100 | grep -i "401\|unauthorized\|authentication"` to identify the failing auth method.
 
 ## Diagnosis
 

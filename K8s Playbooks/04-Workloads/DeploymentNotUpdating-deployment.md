@@ -18,37 +18,44 @@ Deployment updates are not applied; new application versions cannot be deployed;
 
 ## Playbook
 
-1. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and inspect deployment status, conditions, and replica counts to identify update failures and mismatch between desired and updated replicas.
+1. Describe deployment <deployment-name> in namespace <namespace> to see:
+   - Replicas status (desired/updated/ready/available)
+   - Conditions showing why rollout is stuck
+   - Events showing FailedCreate, FailedScheduling, or other errors
 
-2. Verify ReplicaSet generation matches by comparing deployment generation with observed generation to check if deployment controller is reconciling.
+2. List events in namespace <namespace> filtered by involved object name <deployment-name> and sorted by last timestamp to see the sequence of update failures.
 
-3. List events in namespace `<namespace>` and filter for deployment-related events, focusing on events with reasons such as `FailedCreate`, `FailedUpdate`, or messages indicating pod creation or update failures.
+3. Check rollout status for deployment <deployment-name> in namespace <namespace> to see if rollout is progressing or stuck.
 
-4. Retrieve pods associated with the deployment and check their status to verify if new pods are being created, if they are failing to start, or if old pods are not being terminated.
+4. List ReplicaSets in namespace <namespace> with label app=<app-label> to see old vs new and check which ReplicaSet has the new pods vs old pods.
 
-5. Check the deployment's update strategy configuration (rolling update, recreate) and verify if strategy parameters are preventing updates.
+5. List pods in namespace <namespace> with label app=<app-label> and describe pod <new-pod-name> to see why new pods are failing.
 
-6. List events in namespace `<namespace>` and filter for pod creation failures, image pull errors, or resource constraint errors that may prevent new pods from being created during updates.
+6. Check for resource constraints:
+   - Describe ResourceQuota objects in namespace <namespace>
+   - Describe nodes to check allocated resources and capacity
 
-7. Verify that the deployment controller is running and functioning by checking deployment controller pod status in the kube-system namespace and reviewing deployment controller logs.
+7. Retrieve deployment <deployment-name> in namespace <namespace> and check the update strategy to see if maxUnavailable/maxSurge settings are blocking the rollout.
+
+8. Retrieve logs from kube-controller-manager pods in namespace kube-system and filter for deployment <deployment-name> related controller errors.
 
 ## Diagnosis
 
-1. Compare the deployment update failure timestamps with deployment controller reconciliation failure timestamps from deployment controller logs, and check whether controller reconciliation errors occurred within 5 minutes before deployment updates failed.
+1. Analyze deployment events from Playbook steps 1-2 to identify the primary update failure reason. Events showing "FailedCreate" indicate pod creation issues. Events showing "ProgressDeadlineExceeded" indicate rollout timeout. Events showing "FailedScheduling" indicate scheduling constraints. Events showing "ImagePullBackOff" or "ErrImagePull" indicate image pull failures.
 
-2. Compare the deployment update failure timestamps with ReplicaSet generation mismatch timestamps, and check whether ReplicaSet creation failures occurred within 5 minutes before deployment updates failed.
+2. If events indicate image pull failures (ErrImagePull, ImagePullBackOff), this is the most common cause of update failures. Verify the new image reference from deployment spec, check if the image exists in the registry, verify registry credentials if using a private registry, and check for network connectivity to the image registry.
 
-3. Compare the deployment update failure timestamps with pod creation failure event timestamps, and check whether pod creation errors occurred within 5 minutes before deployment updates failed.
+3. If events indicate scheduling failures (FailedScheduling), correlate with node capacity data from Playbook step 6 to confirm resource exhaustion. Check if the new pod spec has increased resource requests compared to the old version that cannot be satisfied.
 
-4. Compare the deployment update failure timestamps with image pull failure event timestamps, and check whether image pull errors occurred within 5 minutes before deployment updates failed, preventing new pods from starting.
+4. If events indicate resource quota issues (messages containing "exceeded quota"), verify quota status from Playbook step 6 and compare with new pod resource requests. Determine if quota needs to be increased or if new deployment resource requests are excessive.
 
-5. Compare the deployment update failure timestamps with deployment update strategy modification timestamps, and check whether strategy changes occurred within 30 minutes before update failures.
+5. If events indicate pod crashes for new pods (CrashLoopBackOff, Error, OOMKilled), analyze new pod describe output from Playbook step 5 to identify application-level issues with the new version. Check container logs for startup errors or configuration problems in the new version.
 
-6. Compare the deployment update failure timestamps with resource quota or limit modification timestamps, and check whether resource constraints were introduced within 30 minutes before deployment updates failed.
+6. If rollout status from Playbook step 3 shows rollout is stuck but no failure events, check deployment update strategy from Playbook step 7. Verify maxUnavailable and maxSurge settings are not blocking the rollout (e.g., maxUnavailable=0 with pods unable to become ready).
 
-7. Compare the deployment update failure timestamps with deployment controller restart or failure timestamps, and check whether controller issues occurred within 5 minutes before update failures.
+7. If ReplicaSet analysis from Playbook step 4 shows new ReplicaSet has 0 ready pods while old ReplicaSet still has all pods, the update is stuck at the first new pod creation. Focus diagnosis on why the first new pod cannot start.
 
-8. Compare the deployment update failure timestamps with cluster scaling events or node capacity changes, and check whether resource availability decreased within 30 minutes before deployment updates failed.
+8. If deployment controller logs from Playbook step 8 show reconciliation errors or the controller is not processing the deployment, this indicates control plane issues rather than workload issues.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 30 minutes → 1 hour, 1 hour → 2 hours), review deployment controller logs for gradual performance degradation, check for intermittent resource constraint issues, examine if deployment update strategy was always restrictive but only recently enforced, verify if image registry connectivity issues developed over time, and check for cumulative resource pressure that may have prevented pod creation. Deployment update failures may result from gradual infrastructure issues rather than immediate configuration changes.
+**If no clear failure reason is identified from events**: Review if deployment is paused (check deployment spec for paused: true), verify webhook configurations are not rejecting pod creation, check for pod security policy or admission controller blocks, examine if the new container has incompatible security context requirements, and verify service account permissions if the new version requires different RBAC access.
 

@@ -18,34 +18,40 @@ Pod status cannot be determined; pods may be running but appear unavailable; ser
 
 ## Playbook
 
-1. List pods across all namespaces with status phase Unknown to identify pods stuck in Unknown state.
+1. Describe pod <pod-name> in namespace <namespace> to identify which node the pod is running on and verify pod's node allocation and status.
 
-2. List all nodes and check node status.
+2. Retrieve events in namespace <namespace> for pod <pod-name> sorted by timestamp to identify pod-related events that may indicate communication or node issues.
 
-3. Retrieve pod `<pod-name>` in namespace `<namespace>` to identify which node the pod is running on and verify pod's node allocation and status.
+3. List pods across all namespaces with status phase Unknown to identify pods stuck in Unknown state.
 
-4. Retrieve node `<node-name>` and check node conditions to verify if node can communicate with API server.
+4. List all nodes and check node status.
 
-5. Check kubelet service status and logs on affected node via Pod Exec tool or SSH for last 100 entries if node access is available.
+5. Retrieve node <node-name> and check node conditions to verify if node can communicate with API server.
 
-6. From a pod on another reachable node, execute network connectivity tests such as `ping` to the unreachable node IP to test network connectivity.
+6. Check kubelet service status and logs on affected node via Pod Exec tool or SSH for last 100 entries if node access is available.
 
-7. From a pod on the affected node, execute `curl -k https://<api-server-ip>:6443` to verify API server connectivity from affected node.
+7. From a pod on another reachable node, execute network connectivity tests to the unreachable node IP to test network connectivity.
 
-8. List pods in namespace `kube-system` and filter for CNI plugin pods to check CNI status.
+8. From a pod on the affected node, verify API server connectivity to <api-server-ip> on port 6443.
+
+9. List pods in namespace kube-system and filter for CNI plugin pods to check CNI status.
 
 ## Diagnosis
 
-1. Compare the timestamps when pods entered Unknown state with node NotReady status change timestamps, and check whether Unknown state begins within 2 minutes of nodes becoming NotReady.
+1. Analyze pod events from Playbook steps 1-2 to identify when and why communication with the pod was lost. Events may show the last known state before the pod became Unknown.
 
-2. Compare the pod Unknown state timestamps with kubelet restart timestamps from affected node logs, and verify whether Unknown state correlates with kubelet restarts within 5 minutes.
+2. If node status shows NotReady condition (from Playbook steps 4-5), the kubelet on the node has lost communication with the API server. This is the primary cause of Unknown pod state. The pod may still be running on the node but its status cannot be reported.
 
-3. Compare the pod Unknown state timestamps with API server connectivity issue timestamps from connectivity test results, and check whether Unknown state correlates with API server communication failures at the same time.
+3. If kubelet service is not running or shows errors (from Playbook step 6), restart the kubelet service on the affected node. Check kubelet logs for certificate expiration, API server connectivity issues, or resource exhaustion.
 
-4. Compare the pod Unknown state timestamps with CNI plugin pod restart timestamps or network policy change timestamps, and verify whether Unknown state begins within 5 minutes of CNI issues or network policy changes.
+4. If network connectivity tests fail (from Playbook steps 7-8), there is a network partition between the node and control plane. Common causes include:
+   - Network infrastructure failures (switches, routers)
+   - Firewall rules blocking API server port 6443
+   - Cloud provider network issues
+   - Node network interface problems
 
-5. Compare the pod Unknown state timestamps with node resource exhaustion timestamps from node conditions, and check whether Unknown state correlates with node resource problems.
+5. If CNI plugin pods are failing (from Playbook step 9), pod networking on the node is broken. This can prevent kubelet from communicating with the API server if it routes through the pod network.
 
-6. Compare the pod Unknown state timestamps with cluster maintenance or upgrade activity timestamps, and verify whether Unknown state begins within 1 hour of infrastructure changes.
+6. If all checks pass but pods remain Unknown, the issue may be intermittent connectivity. Check for packet loss or high latency between the node and API server.
 
-**If no correlation is found within the specified time windows**: Extend the search window (2 minutes → 5 minutes, 5 minutes → 10 minutes, 1 hour → 2 hours), review kubelet logs for earlier communication failures, check for network partition events, examine node condition history for gradual degradation, verify if API server endpoints changed, check for CNI plugin configuration issues, and review infrastructure change records for delayed effects. Unknown pod state may result from network partition or gradual node degradation not immediately visible in status transitions.
+**If the node is confirmed unreachable**: Consider draining the node and investigating physical/virtual machine health. If the node cannot be recovered, delete it from the cluster. Pods on the Unknown node will be rescheduled to healthy nodes after the node is removed or the pod-eviction-timeout is exceeded.

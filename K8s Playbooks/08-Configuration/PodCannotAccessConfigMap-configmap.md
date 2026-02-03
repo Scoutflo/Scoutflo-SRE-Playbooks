@@ -18,31 +18,31 @@ Pods cannot start; applications fail to read configuration; ConfigMap mount fail
 
 ## Playbook
 
-1. Retrieve the pod `<pod-name>` in namespace `<namespace>` and inspect pod volume configuration and container volume mounts or environment variable sources to identify which ConfigMap is referenced.
+1. Describe pod <pod-name> in namespace <namespace> to inspect pod volume configuration and container volume mounts or environment variable sources to identify which ConfigMap is referenced - look in Events section for "FailedMount" with the specific ConfigMap name.
 
-2. Retrieve the ConfigMap `<configmap-name>` referenced in the pod and verify it exists in the same namespace or verify cross-namespace access if applicable.
+2. Retrieve events in namespace <namespace> for pod <pod-name> sorted by timestamp to see the sequence of ConfigMap-related events, focusing on events with reasons such as FailedMount or messages indicating ConfigMap access failures.
 
-3. List events in namespace `<namespace>` and filter for ConfigMap-related events, focusing on events with reasons such as `FailedMount` or messages indicating ConfigMap access failures.
+3. Retrieve the ConfigMap <configmap-name> in namespace <namespace> and verify it exists in the same namespace or verify cross-namespace access if applicable.
 
-4. Check the pod `<pod-name>` status and inspect container waiting state reason and message fields to identify ConfigMap access errors.
+4. Check the pod <pod-name> status in namespace <namespace> and inspect container waiting state reason and message fields to identify ConfigMap access errors.
 
-5. Verify RBAC permissions by checking if the pod's service account has permissions to access ConfigMaps in the namespace.
+5. Verify RBAC permissions by checking if the pod's service account <service-account-name> has permissions to access ConfigMaps in namespace <namespace>.
 
-6. Retrieve the Deployment `<deployment-name>` in namespace `<namespace>` and review ConfigMap references in the pod template to verify configuration is correct.
+6. Retrieve the Deployment <deployment-name> in namespace <namespace> and review ConfigMap references in the pod template to verify configuration is correct.
 
 ## Diagnosis
 
-1. Compare the pod ConfigMap access failure timestamps with ConfigMap deletion timestamps, and check whether ConfigMaps were deleted within 30 minutes before pod access failures.
+1. Analyze pod events from Playbook to identify the specific ConfigMap access error. Events showing "FailedMount" with "configmap not found" indicate the ConfigMap does not exist. Events showing "forbidden" indicate RBAC permission issues. Events showing "invalid key" indicate key reference problems.
 
-2. Compare the pod ConfigMap access failure timestamps with pod ConfigMap reference modification timestamps in the deployment, and check whether ConfigMap name changes occurred within 30 minutes before access failures.
+2. If events indicate ConfigMap not found, verify the ConfigMap exists using Playbook retrieval results. Confirm the ConfigMap name in the pod spec matches exactly (case-sensitive) and exists in the same namespace as the pod.
 
-3. Compare the pod ConfigMap access failure timestamps with namespace creation or pod namespace change timestamps, and check whether namespace mismatches occurred within 30 minutes before access failures.
+3. If events indicate RBAC permission issues, use the Playbook RBAC verification results to confirm the service account has "get" permissions for ConfigMaps. Check if Role or RoleBinding was recently modified or is missing for the service account.
 
-4. Compare the pod ConfigMap access failure timestamps with RBAC Role or RoleBinding modification timestamps, and check whether permission changes occurred within 30 minutes before access failures.
+4. If events indicate namespace mismatch, compare the pod's namespace with the ConfigMap's expected namespace. ConfigMaps must exist in the same namespace as the pod referencing them (cross-namespace access is not supported natively).
 
-5. Compare the pod ConfigMap access failure timestamps with deployment rollout or pod template update timestamps, and check whether ConfigMap reference changes occurred within 1 hour before access failures.
+5. If events indicate key reference errors, compare the keys referenced in volumeMounts items or env valueFrom with the actual keys in the ConfigMap data. Verify the key names match exactly, including case sensitivity.
 
-6. Compare the pod ConfigMap access failure timestamps with ConfigMap data modification timestamps, and check whether ConfigMap updates occurred within 30 minutes before access failures, potentially causing validation or parsing errors.
+6. If events are inconclusive, compare event timestamps with recent deployment or ConfigMap changes. Check if the ConfigMap reference was modified, if ConfigMap data was updated with incompatible keys, or if the pod template was changed.
 
-**If no correlation is found within the specified time windows**: Extend the search window (30 minutes → 1 hour, 1 hour → 2 hours), review pod logs for gradual ConfigMap access issues, check for intermittent namespace or RBAC permission problems, examine if ConfigMap references drifted over time, verify if ConfigMap data became invalid gradually, and check for API server or etcd issues affecting ConfigMap retrieval. ConfigMap access failures may result from gradual configuration drift rather than immediate changes.
+**If no clear cause is identified from events**: Verify the ConfigMap data is not empty, check if the ConfigMap was recently recreated with different keys, examine if any admission webhooks are blocking ConfigMap access, and review if mount paths conflict with other volume mounts.
 

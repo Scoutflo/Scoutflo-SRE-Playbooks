@@ -18,26 +18,36 @@ Application pods fail to start; services become unavailable; deployments cannot 
 
 ## Playbook
 
-1. Retrieve logs from pod `<pod-name>` in namespace `<namespace>` and analyze error messages and stack traces.
+1. Describe pod `<pod-name>` in namespace `<namespace>` to see pod status, restart count, termination reason (OOMKilled, Error, etc.), and recent events - this immediately shows why the pod is crashing.
 
-2. Retrieve deployment `<deployment-name>` in namespace `<namespace>` and check container image name and tag.
+2. Retrieve events in namespace `<namespace>` for pod `<pod-name>` sorted by timestamp to see the sequence of failures with timestamps.
 
-3. Retrieve pod `<pod-name>` in namespace `<namespace>` and check pod status and restart count.
+3. Retrieve pod `<pod-name>` in namespace `<namespace>` and check container termination reason from container status - if OOMKilled, the issue is memory limits.
 
-4. Retrieve pod `<pod-name>` in namespace `<namespace>` and check resource limits and requests.
+4. Retrieve logs from pod `<pod-name>` in namespace `<namespace>` from the previous (crashed) container to see what happened before the crash.
+
+5. Describe deployment `<deployment-name>` in namespace `<namespace>` to check container image, resource limits, environment variables, and liveness/readiness probe configuration.
+
+6. Retrieve rollout history for deployment `<deployment-name>` in namespace `<namespace>` to check if the issue started after a recent deployment.
 
 ## Diagnosis
 
-1. Compare the timestamps when pod crashes occurred (from pod restart timestamps) with deployment modification timestamps, and check whether crashes begin within 1 hour of deployment changes.
+1. Analyze pod events from Playbook steps 1-2 to identify the primary failure reason. Events showing "BackOff" with "CrashLoopBackOff" indicate container crashes. Events showing "Back-off restarting failed container" confirm the crash loop pattern.
 
-2. Compare the pod crash timestamps with resource usage spike timestamps from pod metrics, and verify whether crashes correlate with resource limits being exceeded at the same time.
+2. If termination reason shows "OOMKilled" (from Playbook step 3), the issue is memory exhaustion. The container exceeded its memory limit and was killed by the kernel. Increase memory limits or investigate memory leaks in the application.
 
-3. Compare the pod crash timestamps with container image change timestamps from deployment image modifications, and check whether crashes begin after image changes.
+3. If termination reason shows "Error" with a non-zero exit code, analyze container logs from the previous crashed instance (Playbook step 4) to identify application-level errors causing the crash. Common causes include:
+   - Exit code 1: Application error or uncaught exception
+   - Exit code 137: SIGKILL (OOMKilled or manual kill)
+   - Exit code 139: SIGSEGV (segmentation fault)
+   - Exit code 143: SIGTERM (graceful termination failed)
 
-4. Compare the pod crash timestamps with error pattern timestamps from pod logs, and verify whether crash frequency patterns align with specific error patterns in the logs.
+4. If pod events indicate "ImagePullBackOff" or "ErrImagePull", the container image cannot be pulled. Verify image name, tag, registry accessibility, and imagePullSecrets configuration.
 
-5. Compare the pod crash timestamps with deployment configuration change timestamps including environment variables or command changes, and check whether crashes begin within 1 hour of configuration changes.
+5. If pod events indicate "CreateContainerConfigError", check for missing ConfigMaps, Secrets, or environment variable references in the pod specification.
 
-6. Compare the pod crash timestamps with cluster upgrade or maintenance window timestamps, and verify whether crashes correlate with infrastructure changes within 1 hour.
+6. If events indicate recent deployment changes (from Playbook step 6), correlate crash onset with the deployment rollout timestamp to identify if code or configuration changes are the root cause.
 
-**If no correlation is found within the specified time windows**: Extend the search window (1 hour → 2 hours), review pod logs for earlier error patterns, check for gradual resource exhaustion, examine container image health, verify if application dependencies are available, check for configuration drift, and review deployment history for delayed effects. CrashLoopBackOff may result from application-level issues or dependency failures not immediately visible in Kubernetes resource changes.
+7. If events and logs are inconclusive, compare crash patterns with resource usage metrics to identify gradual resource exhaustion or dependency failures.
+
+**If no clear root cause is identified from pod events**: Review application logs for stack traces or error patterns, check if liveness probes are misconfigured (too aggressive timeouts), verify external dependencies (databases, APIs) are reachable, examine if startup time exceeds initialDelaySeconds, and check for configuration issues in environment variables or mounted volumes.

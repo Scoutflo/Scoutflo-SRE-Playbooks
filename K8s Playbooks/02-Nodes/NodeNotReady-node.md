@@ -18,15 +18,18 @@ Node becomes unschedulable; pods on node may become unavailable or restart; work
 
 ## Playbook
 
-1. List all nodes and check their status to identify nodes where the Ready condition is `False` or `Unknown`.
+1. Describe node <node-name> to see:
+   - Conditions section showing Ready status and other pressure conditions
+   - Events section showing NodeNotReady, KubeletNotReady events with timestamps
+   - Labels, taints, and allocated resources
 
-2. For each affected node, retrieve detailed node information to review labels, taints, conditions, and any recent changes.
+2. Retrieve events for node <node-name> sorted by timestamp to see the sequence of node issues.
 
-3. Inspect node conditions such as `DiskPressure`, `MemoryPressure`, and `NetworkUnavailable` to see which underlying pressures are contributing to the NotReady state.
+3. Check node conditions for node <node-name> to see Ready, MemoryPressure, DiskPressure, PIDPressure, NetworkUnavailable status and lastTransitionTime.
 
-4. On affected nodes, check kubelet service logs (for example, last 100–500 lines) for errors about registration, health checks, resource pressure, or runtime issues.
+4. On affected nodes, check kubelet service logs (for example, last 100-500 lines) for errors about registration, health checks, resource pressure, or runtime issues.
 
-5. From a pod on the affected node (or a test pod in the cluster), run network connectivity tests such as `ping` or `curl` to key cluster endpoints to verify that node networking is functioning.
+5. From a pod on the affected node (or a test pod in the cluster), verify network connectivity to key cluster endpoints to confirm that node networking is functioning.
 
 6. Check the container runtime status on affected nodes using its health or info commands to confirm it is running correctly and able to start containers.
 
@@ -34,17 +37,19 @@ Node becomes unschedulable; pods on node may become unavailable or restart; work
 
 ## Diagnosis
 
-1. Compare the timestamps when nodes transitioned to NotReady state with the timestamps when disk pressure conditions were reported on those nodes, and check whether disk pressure appears within 5 minutes of the NotReady transition.
+1. Analyze node events from Playbook steps 1-2 to identify the primary cause of NotReady. Events showing "NodeNotReady" with reason "KubeletNotReady" indicate kubelet issues. Events showing "NodeHasDiskPressure", "NodeHasMemoryPressure", or "NodeHasPIDPressure" indicate resource exhaustion issues. Events showing "NodeNotSchedulable" indicate manual cordoning.
 
-2. Compare the node NotReady transition timestamps with the timestamps when memory pressure conditions were reported, and check whether memory pressure is reported within 5 minutes of the NotReady transition.
+2. If node events indicate kubelet issues (KubeletNotReady, KubeletStopped), verify kubelet service status from Playbook step 4 to confirm kubelet is not running or unhealthy. Check kubelet logs for crash reasons, OOM kills, or startup failures.
 
-3. Compare the node NotReady transition timestamps with kubelet restart timestamps from the affected node's logs, and check whether kubelet restarts occur within 5 minutes before the node becomes NotReady.
+3. If node events indicate resource pressure (MemoryPressure, DiskPressure, PIDPressure), correlate with node conditions from Playbook step 3 to identify which resource is exhausted. Check the lastTransitionTime of pressure conditions against the NotReady transition time.
 
-4. Compare the node NotReady transition timestamps with the results and timestamps of network connectivity tests (for example, `ping` or `curl` from pods on the node or other nodes), and check whether network failures appear at the same time as the NotReady events.
+4. If node events show network-related errors or no recent heartbeat updates, verify network connectivity results from Playbook step 5 to identify network issues preventing node-to-API-server communication.
 
-5. Compare the node NotReady transition timestamps with node maintenance or configuration change timestamps from your infrastructure or change records, and check whether NotReady events start within 1 hour of those changes.
+5. If node events show certificate-related errors or authentication failures, verify node certificate validity from Playbook step 7 and compare certificate expiration timestamps with the NotReady transition time.
 
-6. Compare the node NotReady transition timestamps with cluster upgrade windows, container runtime failure times, and kubelet certificate expiration timestamps, and check whether any of these events occur within 1 hour before or at the time of the NotReady transition.
+6. If node events show container runtime errors (ContainerRuntimeDown, RuntimeUnhealthy), check container runtime status from Playbook step 6 to confirm runtime issues preventing kubelet from managing containers.
 
-**If no correlation is found within the specified time windows**: Extend the search window (5 minutes → 10 minutes, 1 hour → 2 hours), check kubelet logs for earlier warning signs, review infrastructure change records for delayed effects, examine related nodes for similar patterns, and verify network connectivity tests from multiple time points. Node condition changes may be preceded by gradual degradation not immediately visible in status transitions.
+7. If node events are inconclusive, compare the node condition lastTransitionTime timestamps with kubelet log timestamps to identify whether kubelet crashes, resource exhaustion, or external factors triggered the NotReady state.
+
+**If no root cause is identified from events**: Review kubelet logs for warnings preceding the NotReady transition, check for node-level system issues (kernel panics, hardware failures), verify if multiple nodes show similar patterns indicating cluster-wide issues, and examine infrastructure change records for recent modifications.
 

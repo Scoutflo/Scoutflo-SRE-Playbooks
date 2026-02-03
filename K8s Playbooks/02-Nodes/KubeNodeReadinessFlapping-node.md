@@ -15,30 +15,35 @@ KubeNodeReadinessFlapping alerts fire; performance of cluster deployments is aff
 
 ## Playbook
 
-1. Retrieve the Node `<node-name>` and inspect its status to check Ready condition status, transition history, and condition timestamps to verify readiness flapping.
+1. Describe node <node-name> to see:
+   - Conditions section showing Ready status, transition history, and timestamps
+   - Events section showing NodeNotReady and NodeReady transitions
+   - Pressure conditions (MemoryPressure, DiskPressure, PIDPressure, NetworkUnavailable)
 
-2. Retrieve the Node `<node-name>` and check node conditions including MemoryPressure, DiskPressure, PIDPressure, and NetworkUnavailable that may cause readiness flapping.
+2. Retrieve events for node <node-name> sorted by timestamp to see the sequence of condition transitions including 'NodeNotReady', 'NodeReady', 'KubeletNotReady'.
 
-3. Retrieve events for the Node `<node-name>` and filter for condition transition patterns including 'NodeNotReady', 'NodeReady', 'KubeletNotReady' to identify flapping causes.
+3. Check node conditions for node <node-name> to see Ready, MemoryPressure, DiskPressure, PIDPressure, NetworkUnavailable status and lastTransitionTime.
 
-4. Check kubelet status and health on the Node `<node-name>` by accessing via Pod Exec tool or SSH if node access is available to verify kubelet instability.
+4. Check kubelet status and health on the Node <node-name> by accessing via Pod Exec tool or SSH if node access is available to verify kubelet instability.
 
-5. Verify network connectivity stability between the Node `<node-name>` and API server endpoints to identify intermittent connectivity issues.
+5. Verify network connectivity stability between the Node <node-name> and API server endpoints to identify intermittent connectivity issues.
 
-6. Retrieve metrics for the Node `<node-name>` and check node resource usage metrics for CPU, memory, and disk to identify resource pressure patterns.
+6. Retrieve resource usage metrics for node <node-name> to see CPU and memory utilization and identify resource pressure patterns.
 
 ## Diagnosis
 
-Compare node readiness flapping detection timestamps with node resource pressure condition transition times within 5 minutes and verify whether readiness flapping coincides with resource pressure fluctuations, using node conditions and readiness transitions as supporting evidence.
+1. Analyze node events from Playbook steps 1-2 to identify the pattern of readiness transitions. Count events showing "NodeNotReady" and "NodeReady" transitions and note the timestamps to understand the flapping frequency and pattern.
 
-Correlate node readiness flapping with network connectivity instability timestamps within 5 minutes and verify whether intermittent network issues cause readiness to flap, using network metrics and kubelet connection logs as supporting evidence.
+2. If node events show rapid transitions (multiple within minutes), this typically indicates network connectivity instability between kubelet and API server. Verify network connectivity stability from Playbook step 5 and correlate network test results with event timestamps.
 
-Compare node readiness flapping patterns with kubelet health check failure timestamps within 5 minutes and verify whether kubelet health check instability causes readiness flapping, using kubelet logs and readiness probe results as supporting evidence.
+3. If node events show slower transitions with resource pressure conditions (NodeHasMemoryPressure, NodeHasDiskPressure, NodeHasPIDPressure), check node conditions from Playbook step 3. Resource pressure fluctuating near thresholds causes readiness to flap as conditions toggle.
 
-Analyze node readiness transition frequency over the last 15 minutes to determine if flapping is rapid (network issues) or slower (resource pressure), using node condition history and transition timestamps as supporting evidence.
+4. If node events indicate kubelet health check failures (KubeletNotReady followed by KubeletReady), check kubelet status and health from Playbook step 4. Kubelet instability or resource constraints can cause intermittent health check failures.
 
-Correlate node readiness flapping with API server connectivity instability timestamps within 5 minutes and verify whether API server connectivity issues cause readiness to flap, using API server connection metrics and kubelet logs as supporting evidence.
+5. If node events show flapping correlated with resource metrics, verify CPU and memory utilization from Playbook step 6. Sustained high resource usage near capacity causes intermittent health check timeouts.
 
-Compare node readiness flapping with other node readiness issues within the same timeframe and verify whether flapping is isolated to single node or affects multiple nodes (cluster-wide issue), using node status across cluster and flapping patterns as supporting evidence.
+6. If node events show readiness flapping on multiple nodes simultaneously, this indicates cluster-wide issues such as API server performance problems, network infrastructure instability, or control plane resource constraints rather than individual node issues.
 
-If no correlation is found within the specified time windows: extend timeframes to 1 hour for infrastructure changes, review node system logs, check for hardware instabilities, verify network infrastructure health, examine historical node stability patterns. Node readiness flapping may result from network instability, hardware issues, or node-level resource management problems rather than immediate configuration changes.
+7. Analyze the node condition lastTransitionTime frequency from Playbook step 3 to determine if flapping is ongoing or has stabilized, which helps assess whether the issue is actively occurring or has resolved.
+
+**If no root cause is identified from events**: Review kubelet logs for warnings between flapping transitions, check for intermittent hardware issues (disk I/O spikes, memory pressure), verify network infrastructure stability, and examine if node autoscaling or pod scheduling patterns are causing resource fluctuations.
