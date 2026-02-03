@@ -5,17 +5,17 @@ Use this flowchart to quickly identify which playbook to use for your issue.
 ## Start Here: What Type of Issue?
 
 ```
-                    ┌─────────────────┐
-                    │  What's wrong?  │
-                    └────────┬────────┘
-                             │
-                ┌────────────┴────────────┐
-                │                         │
-         ┌──────▼──────┐          ┌──────▼──────┐
-         │   AWS       │          │ Kubernetes  │
-         │  Issue?     │          │   Issue?     │
-         └──────┬──────┘          └──────┬──────┘
-                │                         │
+                         ┌─────────────────┐
+                         │  What's wrong?  │
+                         └────────┬────────┘
+                                  │
+          ┌───────────────────────┼───────────────────────┐
+          │                       │                       │
+   ┌──────▼──────┐         ┌──────▼──────┐         ┌──────▼──────┐
+   │   AWS       │         │ Kubernetes  │         │   Sentry    │
+   │  Issue?     │         │   Issue?    │         │   Issue?    │
+   └──────┬──────┘         └──────┬──────┘         └──────┬──────┘
+          │                       │                       │
 ```
 
 ## AWS Issues Path
@@ -37,38 +37,60 @@ Use this flowchart to quickly identify which playbook to use for your issue.
     ▼          ▼          ▼
 ```
 
-### AWS EC2 Issues
+### AWS Compute Issues (01-Compute/)
 
 ```
-EC2 Issue?
+Compute Issue?
     │
-    ├─ Can't SSH? → Connection-Timeout-SSH-Issues-EC2.md
-    ├─ Not starting? → Instance-Not-Starting-EC2.md
-    ├─ No internet? → Instance-Unable-to-Reach-the-Internet-EC2.md
-    └─ NAT Gateway? → Instance-Cant-Reach-Internet-via-NAT-Gateway-EC2.md
+    ├─ Can't SSH to EC2? → 01-Compute/Connection-Timeout-SSH-Issues-EC2.md
+    ├─ EC2 not starting? → 01-Compute/Instance-Not-Starting-EC2.md
+    ├─ Lambda timeout? → 01-Compute/Timeout-Error-Lambda.md
+    ├─ ECS task pending? → 01-Compute/Task-Stuck-in-Pending-State-ECS.md
+    └─ EKS pods crashing? → 01-Compute/Pod-Stuck-in-CrashLoopBackOff-EKS.md
 ```
 
-### AWS RDS Issues
+### AWS Database Issues (02-Database/)
 
 ```
-RDS Issue?
+Database Issue?
     │
-    ├─ Can't connect? → Instance-Not-Connecting-RDS.md
-    ├─ Lambda timeout? → Connection-Timeout-from-Lambda-RDS.md
-    └─ Storage full? → Storage-Full-Error-RDS.md
+    ├─ Can't connect to RDS? → 02-Database/Instance-Not-Connecting-RDS.md
+    ├─ RDS storage full? → 02-Database/Storage-Full-Error-RDS.md
+    ├─ DynamoDB throttling? → 02-Database/Throttling-Errors-DynamoDB.md
+    └─ Backup failing? → 02-Database/Automatic-Backup-Not-Working-RDS.md
 ```
 
-### Other AWS Services
+### AWS Networking Issues (04-Networking/)
+
+```
+Networking Issue?
+    │
+    ├─ ELB not routing? → 04-Networking/Not-Routing-Traffic-ELB.md
+    ├─ DNS failing? → 04-Networking/DNS-Resolution-Failing-Route-53.md
+    ├─ API Gateway 500? → 04-Networking/Returning-500-Internal-Server-Error-API-Gateway.md
+    └─ VPC peering? → 04-Networking/Peering-Not-Working-VPC.md
+```
+
+### AWS Security Issues (05-Security/)
+
+```
+Security Issue?
+    │
+    ├─ IAM permissions? → 05-Security/Policy-Not-Granting-Expected-Access-IAM.md
+    ├─ Access key leaked? → 05-Security/Access-Key-Leaked-Warning-IAM.md
+    ├─ KMS decryption? → 05-Security/Key-Policy-Preventing-Decryption-KMS.md
+    └─ WAF blocking? → 05-Security/Blocking-Legitimate-Traffic-WAF.md
+```
+
+### Other AWS Issues
 
 ```
 Other AWS Issue?
     │
-    ├─ S3 access denied? → Bucket-Access-Denied-403-Error-S3.md
-    ├─ Lambda timeout? → Timeout-Error-Lambda.md
-    ├─ ELB unhealthy? → Target-Group-Showing-Unhealthy-Instances-ELB.md
-    ├─ IAM permissions? → Policy-Not-Granting-Expected-Access-IAM.md
-    ├─ VPC peering? → Peering-Not-Working-VPC.md
-    └─ Route 53 DNS? → DNS-Resolution-Failing-Route-53.md
+    ├─ S3 access denied? → 03-Storage/Bucket-Access-Denied-403-Error-S3.md
+    ├─ CloudWatch alarm? → 06-Monitoring/Alarm-Not-Triggering-as-Expected-CloudWatch.md
+    ├─ Pipeline stuck? → 07-CI-CD/Stuck-in-Progress-CodePipeline.md
+    └─ Proactive checks? → 08-Proactive/
 ```
 
 ## Kubernetes Issues Path
@@ -208,9 +230,51 @@ Node Issue?
 | `KubeQuotaExceeded` | `09-Resource-Management/KubeQuotaExceeded-namespace.md` |
 | `KubeDeploymentReplicasMismatch` | `04-Workloads/KubeDeploymentReplicasMismatch-deployment.md` |
 
+## Sentry Issues Path
+
+```
+         ┌──────▼──────┐
+         │   Sentry    │
+         │   Issue?    │
+         └──────┬──────┘
+                │
+    ┌───────────┼───────────┐
+    │                       │
+┌───▼───┐              ┌───▼───┐
+│ Error │              │Perf   │
+│       │              │       │
+└───┬───┘              └───┬───┘
+```
+
+### Sentry Error Tracking Issues (01-Error-Tracking/)
+
+```
+Error Tracking Issue?
+    │
+    ├─ Database connection error? → 01-Error-Tracking/ConnectionError-ConnectionRefused-Database-Error-application.md
+    ├─ Redis connection error? → 01-Error-Tracking/ConnectionError-ConnectionRefused-Redis-Error-application.md
+    ├─ Kafka consumer error? → 01-Error-Tracking/ConsumerError-ConnectionError-Kafka-Error-application.md
+    ├─ API call failed? → 01-Error-Tracking/APICallFailed-Error-application.md
+    ├─ Unhandled exception? → 01-Error-Tracking/UnhandledException-Error-application.md
+    ├─ Memory error? → 01-Error-Tracking/MemoryError-Error-application.md
+    ├─ Key/Value error? → 01-Error-Tracking/KeyError-MissingKey-Error-application.md
+    └─ Validation error? → 01-Error-Tracking/ValidationError-DataValidation-Error-application.md
+```
+
+### Sentry Performance Issues (02-Performance/)
+
+```
+Performance Issue?
+    │
+    ├─ Database timeout? → 02-Performance/TimeoutError-QueryTimeout-Database-Error-application.md
+    ├─ Redis timeout? → 02-Performance/ConnectionError-ConnectionTimeout-Redis-Error-application.md
+    ├─ API timeout? → 02-Performance/TimeoutError-RequestTimeout-API-Error-application.md
+    └─ Connection timeout? → 02-Performance/TimeoutError-ConnectionTimeout-API-Error-application.md
+```
+
 ## Still Not Sure?
 
-1. **Check the main README**: [K8s Playbooks/README.md](K8s%20Playbooks/README.md)
+1. **Check the main README**: [Main README](README.md)
 2. **Browse by category**: Each folder has a README explaining what it covers
 3. **Search the repository**: Use GitHub's search or Ctrl+F
 4. **Ask the community**: [GitHub Discussions](https://github.com/Scoutflo/scoutflo-SRE-Playbooks/discussions)

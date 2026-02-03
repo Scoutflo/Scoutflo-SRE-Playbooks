@@ -1,32 +1,37 @@
 # AWS Playbooks
 
-[![AWS](https://img.shields.io/badge/AWS-25%20playbooks-orange)](README.md)
+[![AWS](https://img.shields.io/badge/AWS-168%20playbooks-orange)](README.md)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](../../CONTRIBUTING.md)
 
-> **25 comprehensive AWS incident response playbooks** - Systematic troubleshooting guides for common AWS service issues to help SREs diagnose and resolve infrastructure problems faster.
+> **168 comprehensive AWS incident response playbooks** organized into 8 categorized folders - Systematic troubleshooting guides for common AWS service issues to help SREs diagnose and resolve infrastructure problems faster.
 
 ## 📋 Table of Contents
 
 - [Overview](#overview)
+- [Directory Structure](#directory-structure)
 - [Playbook Structure](#playbook-structure)
-- [Complete Playbook List](#complete-playbook-list)
+- [Playbook Categories](#playbook-categories)
 - [Getting Started](#getting-started)
 - [Usage Guidelines](#usage-guidelines)
+- [Terminology & Glossary](#terminology--glossary)
 - [Contributing](#contributing)
 - [Connect with Us](#connect-with-us)
 - [Related Resources](#related-resources)
 
 ## Overview
 
-This directory contains **25 AWS incident response playbooks** designed to help Site Reliability Engineers (SREs) diagnose and resolve common AWS service issues. Each playbook follows a structured format to provide systematic troubleshooting guidance.
+This directory contains **168 AWS incident response playbooks** organized into **8 categorized folders** to help Site Reliability Engineers (SREs) diagnose and resolve common AWS service issues. Each playbook follows a structured format to provide systematic troubleshooting guidance.
 
 ### Services Covered
 
-- **Compute Services**: EC2, Lambda, ECS, EKS
-- **Networking**: VPC, ELB, Route 53, NAT Gateway
-- **Storage**: S3, EBS, RDS
-- **Security**: IAM, KMS, GuardDuty, CloudTrail
-- **Integration**: API Gateway, CodePipeline
+- **Compute Services**: EC2, Lambda, ECS, EKS, Fargate, Auto Scaling, Spot Instances
+- **Database**: RDS, DynamoDB
+- **Storage**: S3
+- **Networking**: VPC, ELB, Route 53, NAT Gateway, API Gateway, CloudFront, Direct Connect, VPN, PrivateLink
+- **Security**: IAM, KMS, GuardDuty, WAF, Shield, Cognito, Secrets Manager, ACM, Security Hub
+- **Monitoring**: CloudWatch, CloudTrail, Config, X-Ray
+- **CI/CD**: CodePipeline, CodeBuild, CodeDeploy, CloudFormation, Step Functions, Glue, Batch, App Runner
+- **Proactive**: Capacity planning, security compliance, backup/DR, cost optimization, observability
 
 ### Key Topics
 
@@ -35,6 +40,31 @@ This directory contains **25 AWS incident response playbooks** designed to help 
 - Resource unavailability and capacity issues
 - Security breaches and threat detection
 - Service integration failures
+- Proactive capacity and compliance monitoring
+- Cost optimization and resource management
+
+## Directory Structure
+
+Playbooks are organized into numbered folders by category for easy navigation:
+
+```
+AWS Playbooks/
+├── 01-Compute/                    (27 playbooks)
+├── 02-Database/                   (8 playbooks)
+├── 03-Storage/                    (7 playbooks)
+├── 04-Networking/                 (17 playbooks)
+├── 05-Security/                   (17 playbooks)
+├── 06-Monitoring/                 (8 playbooks)
+├── 07-CI-CD/                      (9 playbooks)
+└── 08-Proactive/                  (75 playbooks)
+    ├── 01-Capacity-Performance/   (11 playbooks)
+    ├── 02-Security-Compliance/    (11 playbooks)
+    ├── 03-Backup-DR/              (9 playbooks)
+    ├── 04-Cost-Optimization/      (16 playbooks)
+    ├── 05-Observability/          (10 playbooks)
+    ├── 06-Data-Integrity/         (2 playbooks)
+    └── 07-Operational-Readiness/  (8 playbooks)
+```
 
 ## Playbook Structure
 
@@ -59,11 +89,11 @@ Description of the business and technical impact, including:
 
 ### 4. **Playbook** (H2)
 Numbered, actionable steps in natural language to diagnose the issue:
-- Each step uses natural language instructions for AI agents (e.g., "Retrieve the EC2 Instance `<instance-id>` and verify instance state")
+- Each step uses natural language instructions for AI agents
 - Steps include specific AWS resource identifiers (e.g., `<instance-id>`, `<bucket-name>`)
 - Steps reference AWS services, CloudWatch Logs, and configuration checks
 - Ordered from most common to more specific diagnostic steps
-- **Note**: Playbooks are designed for AI agents using NLP - see "Understanding Playbook Steps" section for manual kubectl/AWS CLI equivalents
+- **Note**: Playbooks are designed for AI agents using NLP
 
 ### 5. **Diagnosis** (H2)
 Correlation analysis framework:
@@ -71,45 +101,281 @@ Correlation analysis framework:
 - Comparison of configuration changes with failure timestamps
 - Analysis patterns to determine if issues are constant or intermittent
 - Guidance for extending time windows if initial correlations aren't found
-- Alternative evidence sources and gradual issue identification
 
-## Complete Playbook List
+## Playbook Categories
 
-1. **Access-Key-Leaked-Warning-IAM.md** - IAM access key security breach detection and response
-2. **Bucket-Access-Denied-403-Error-S3.md** - S3 bucket access permission issues
-3. **Connection-Timeout-from-Lambda-RDS.md** - Lambda to RDS database connectivity problems
-4. **Connection-Timeout-SSH-Issues-EC2.md** - EC2 instance SSH connection failures
-5. **DNS-Resolution-Failing-Route-53.md** - Route 53 DNS resolution failures
-6. **Failing-Due-to-S3-Permissions-CodePipeline.md** - CodePipeline execution failures due to S3 permissions
-7. **Instance-Cant-Reach-Internet-via-NAT-Gateway-EC2.md** - EC2 instances unable to reach internet through NAT Gateway
-8. **Instance-Not-Connecting-RDS.md** - RDS database connection failures
-9. **Instance-Not-Starting-EC2.md** - EC2 instance launch failures
-10. **Instance-Unable-to-Reach-the-Internet-EC2.md** - EC2 instances without internet connectivity
-11. **Key-Policy-Preventing-Decryption-KMS.md** - KMS key decryption permission issues
-12. **Logs-Not-Capturing-Events-CloudTrail.md** - CloudTrail event logging gaps
-13. **Not-Detecting-Threats-GuardDuty.md** - GuardDuty threat detection failures
-14. **Not-Routing-Traffic-ELB.md** - Elastic Load Balancer traffic routing failures
-15. **Not-Triggering-from-S3-Event-Lambda.md** - Lambda functions not triggering from S3 events
-16. **Peering-Not-Working-VPC.md** - VPC peering connection failures
-17. **Pod-Stuck-in-CrashLoopBackOff-EKS.md** - EKS pod crash loop issues
-18. **Policy-Not-Granting-Expected-Access-IAM.md** - IAM policy permission issues
-19. **Returning-500-Internal-Server-Error-API-Gateway.md** - API Gateway 500 error responses
-20. **Role-Not-Attaching-to-EC2-Instance-IAM.md** - IAM role attachment failures on EC2 instances
-21. **Rules-Not-Applying-Correctly-Security-Group.md** - Security group rule effectiveness issues
-22. **Storage-Full-Error-RDS.md** - RDS database storage capacity exhaustion
-23. **Target-Group-Showing-Unhealthy-Instances-ELB.md** - ELB target group health check failures
-24. **Task-Stuck-in-Pending-State-ECS.md** - ECS task placement failures
-25. **Timeout-Error-Lambda.md** - Lambda function execution timeouts
+### 01-Compute/ (27 playbooks)
+EC2, Lambda, ECS, EKS, Fargate, Auto Scaling, Spot Instances, CodeDeploy
+
+**Key Topics:**
+- Instance connectivity and startup issues
+- Lambda timeouts and memory limits
+- Container orchestration problems
+- Auto scaling failures
+- Spot instance interruptions
+
+**Playbooks:**
+- `Cold-Start-Delays-Performance-Lambda.md`
+- `Connection-Timeout-from-Lambda-RDS.md`
+- `Connection-Timeout-SSH-Issues-EC2.md`
+- `Exceeds-Memory-Limit-Lambda.md`
+- `Failing-on-EC2-Instances-CodeDeploy.md`
+- `High-CPU-Utilization-EC2.md`
+- `IAM-Role-Not-Attaching-to-Service-Account-EKS.md`
+- `Image-Pull-Failing-in-ECS-Docker.md`
+- `Ingress-Controller-Not-Routing-Traffic-EKS.md`
+- `Instance-Cant-Reach-Internet-via-NAT-Gateway-EC2.md`
+- `Instance-Not-Starting-EC2.md`
+- `Instance-Unable-to-Reach-the-Internet-EC2.md`
+- `Interrupted-Unexpectedly-Spot-Instance.md`
+- `Logs-Not-Appearing-in-CloudWatch-ECS.md`
+- `Nodes-Not-Joining-Cluster-EKS.md`
+- `Not-Launching-New-Instances-Auto-Scaling.md`
+- `Not-Scaling-as-Expected-ECS.md`
+- `Not-Triggering-from-S3-Event-Lambda.md`
+- `Pod-Stuck-in-CrashLoopBackOff-EKS.md`
+- `Role-Not-Attaching-to-EC2-Instance-IAM.md`
+- `Running-Out-of-Memory-Fargate.md`
+- `Spot-Instance-Pricing-Unexpectedly-High-Cost.md`
+- `Streams-Not-Triggering-Lambda-DynamoDB.md`
+- `Stuck-in-Initializing-State-EC2.md`
+- `Task-Stuck-in-Pending-State-ECS.md`
+- `Terminating-Instances-Unexpectedly-Auto-Scaling.md`
+- `Timeout-Error-Lambda.md`
+
+### 02-Database/ (8 playbooks)
+RDS, DynamoDB
+
+**Key Topics:**
+- Database connectivity issues
+- Storage and performance problems
+- Backup failures
+- Throttling and replication
+
+**Playbooks:**
+- `Automatic-Backup-Not-Working-RDS.md`
+- `Backup-Failing-DynamoDB.md`
+- `High-CPU-Utilization-RDS.md`
+- `Instance-Not-Connecting-RDS.md`
+- `Query-Performance-Slower-Than-Expected-DynamoDB.md`
+- `Read-Replica-Lagging-Behind-Primary-RDS.md`
+- `Storage-Full-Error-RDS.md`
+- `Throttling-Errors-DynamoDB.md`
+
+### 03-Storage/ (7 playbooks)
+S3
+
+**Key Topics:**
+- Bucket access and permissions
+- Replication issues
+- Lifecycle policies
+- Upload performance
+
+**Playbooks:**
+- `Bucket-Access-Denied-403-Error-S3.md`
+- `Cross-Region-Replication-Not-Working-S3.md`
+- `Failing-Due-to-S3-Permissions-CodePipeline.md`
+- `File-Upload-Extremely-Slow-S3.md`
+- `Intelligent-Tiering-Not-Moving-Data-as-Expected-S3.md`
+- `Lifecycle-Policy-Not-Deleting-Objects-S3.md`
+- `Public-Access-Block-Preventing-Access-S3.md`
+
+### 04-Networking/ (17 playbooks)
+VPC, ELB, Route 53, API Gateway, CloudFront, Direct Connect, VPN, PrivateLink, NACL, Global Accelerator
+
+**Key Topics:**
+- Load balancer traffic routing
+- DNS resolution failures
+- API Gateway errors
+- VPC peering and connectivity
+- CDN and caching issues
+
+**Playbooks:**
+- `Blocking-Expected-Traffic-NACL.md`
+- `Certificate-Not-Working-on-ELB.md`
+- `Connection-Dropping-Frequently-VPN.md`
+- `CORS-Issues-API-Gateway.md`
+- `Distribution-Deployment-Stuck-in-Progress-CloudFront.md`
+- `DNS-Resolution-Failing-Route-53.md`
+- `Endpoint-Not-Working-PrivateLink.md`
+- `Latency-Based-Routing-Not-Working-Route-53.md`
+- `Latency-Higher-Than-Expected-Direct-Connect.md`
+- `Not-Distributing-Traffic-Properly-Global-Accelerator.md`
+- `Not-Routing-Traffic-ELB.md`
+- `Not-Serving-Updated-Content-CloudFront.md`
+- `Peering-Not-Working-VPC.md`
+- `Returning-500-Internal-Server-Error-API-Gateway.md`
+- `Route-Not-Matching-Requests-API-Gateway.md`
+- `Target-Group-Showing-Unhealthy-Instances-ELB.md`
+- `Throttling-Requests-API-Gateway.md`
+
+### 05-Security/ (17 playbooks)
+IAM, KMS, GuardDuty, WAF, Shield, Cognito, Secrets Manager, ACM, Security Hub, STS, Organizations
+
+**Key Topics:**
+- IAM permissions and access keys
+- Encryption and key management
+- Threat detection
+- WAF and DDoS protection
+- Certificate management
+
+**Playbooks:**
+- `Access-Key-Leaked-Warning-IAM.md`
+- `Authentication-Failing-for-IAM-User-MFA.md`
+- `Blocking-Legitimate-Traffic-WAF.md`
+- `Certificate-Not-Issuing-ACM.md`
+- `Key-Policy-Preventing-Decryption-KMS.md`
+- `Not-Aggregating-Findings-Security-Hub.md`
+- `Not-Detecting-Security-Threats-GuardDuty.md`
+- `Not-Detecting-Threats-GuardDuty.md`
+- `Not-Mitigating-DDoS-Attacks-Shield.md`
+- `Not-Rotating-Credentials-Secrets-Manager.md`
+- `Policy-Not-Granting-Expected-Access-IAM.md`
+- `Rules-Causing-False-Positives-WAF.md`
+- `Rules-Not-Applying-Correctly-Security-Group.md`
+- `SCP-Preventing-Service-Access-Organizations.md`
+- `Token-Expired-Error-STS.md`
+- `User-Pool-Login-Issues-Cognito.md`
+
+### 06-Monitoring/ (8 playbooks)
+CloudWatch, CloudTrail, Config, X-Ray
+
+**Key Topics:**
+- Alarm and metric issues
+- Log capture problems
+- Configuration recording
+- Distributed tracing
+
+**Playbooks:**
+- `Alarm-Not-Triggering-as-Expected-CloudWatch.md`
+- `Events-Not-Showing-in-Logs-CloudTrail.md`
+- `Logs-Not-Appearing-CloudWatch.md`
+- `Logs-Not-Capturing-Events-CloudTrail.md`
+- `Metrics-Missing-Data-Points-CloudWatch.md`
+- `Not-Recording-Changes-Config.md`
+- `Not-Recording-Resource-Changes-Config.md`
+- `Traces-Missing-in-Application-Logs-X-Ray.md`
+
+### 07-CI-CD/ (9 playbooks)
+CodePipeline, CodeBuild, CloudFormation, Step Functions, Glue, Batch, App Runner, CodeCommit
+
+**Key Topics:**
+- Pipeline execution failures
+- Build dependency issues
+- Infrastructure as code problems
+- Job scheduling failures
+
+**Playbooks:**
+- `Deployment-Failing-App-Runner.md`
+- `Drift-Detection-Not-Detecting-Changes-CloudFormation.md`
+- `Execution-Stuck-in-Running-State-Step-Functions.md`
+- `Failing-Due-to-Dependency-Errors-CodeBuild.md`
+- `Job-Failing-Randomly-Glue.md`
+- `Jobs-Not-Starting-Batch.md`
+- `Repository-Not-Allowing-Push-CodeCommit.md`
+- `Stack-Failing-to-Create-CloudFormation.md`
+- `Stuck-in-Progress-CodePipeline.md`
+
+### 08-Proactive/ (75 playbooks)
+Proactive monitoring, capacity planning, security compliance, and operational readiness
+
+**Key Topics:**
+- Capacity and performance forecasting
+- Security and compliance checks
+- Backup and disaster recovery
+- Cost optimization
+- Observability gaps
+- Data integrity
+- Operational readiness
+
+#### 01-Capacity-Performance (11 playbooks)
+- `Baseline-Comparison-AWS.md`
+- `Capacity-Trend-Analysis-AWS.md`
+- `Cascading-Failure-Analysis-AWS.md`
+- `Error-Budget-Tracking-AWS.md`
+- `Performance-Regression-Detection-AWS.md`
+- `Performance-Trend-Analysis-AWS.md`
+- `Quota-Utilization-Tracking-AWS.md`
+- `Resource-Exhaustion-Prediction-AWS.md`
+- `Resource-Usage-Forecasting-AWS.md`
+- `Right-sizing-Analysis-AWS.md`
+- `Scaling-Projections-AWS.md`
+
+#### 02-Security-Compliance (11 playbooks)
+- `Access-Review-AWS.md`
+- `Audit-Log-Review-AWS.md`
+- `Compliance-Check-AWS.md`
+- `Compliance-Status-Check-AWS.md`
+- `IAM-Policy-Review-AWS.md`
+- `Network-Security-Audit-AWS.md`
+- `Policy-Compliance-Verification-AWS.md`
+- `Regulatory-Requirement-Check-AWS.md`
+- `Secrets-Rotation-Status-AWS.md`
+- `Security-Group-Audit-AWS.md`
+- `Vulnerability-Scanning-AWS.md`
+
+#### 03-Backup-DR (9 playbooks)
+- `Backup-Integrity-Verification-AWS.md`
+- `Backup-Verification-AWS.md`
+- `Cross-region-Backup-Sync-AWS.md`
+- `Data-Replication-Status-AWS.md`
+- `Disaster-Recovery-Runbook-Execution-AWS.md`
+- `Multi-region-Failover-AWS.md`
+- `Replication-Lag-Monitoring-AWS.md`
+- `Restore-Testing-AWS.md`
+- `RTO-RPO-Validation-AWS.md`
+
+#### 04-Cost-Optimization (16 playbooks)
+- `Budgets-Not-Sending-Alerts-Cost.md`
+- `Compute-Savings-Plan-Not-Optimizing-Costs-Cost.md`
+- `Cost-Anomaly-Detection-AWS.md`
+- `Cost-Explorer-Not-Displaying-Data-Cost.md`
+- `Free-Tier-Unexpectedly-Exceeded-Cost.md`
+- `Idle-Resource-Detection-AWS.md`
+- `On-Demand-Pricing-Higher-Than-Expected-DynamoDB.md`
+- `Reserved-Instance-Discount-Not-Applying-Cost.md`
+- `Reserved-Instance-Not-Reflecting-in-Billing-RDS.md`
+- `Reserved-Instance-Optimization-AWS.md`
+- `Spot-Instance-Management-AWS.md`
+- `Spot-Instance-Pricing-Unexpectedly-High-Cost.md`
+- `Storage-Tier-Optimization-AWS.md`
+- `Unexpected-Increase-in-AWS-Bill-Cost.md`
+- `Unused-Resource-Cleanup-AWS.md`
+
+#### 05-Observability (10 playbooks)
+- `Alert-Coverage-Analysis-AWS.md`
+- `Automation-Coverage-AWS.md`
+- `Certificate-Expiration-Monitoring-AWS.md`
+- `Log-Coverage-Analysis-AWS.md`
+- `Metric-Coverage-Gaps-AWS.md`
+- `Missing-Instrumentation-AWS.md`
+- `SLO-SLI-Monitoring-AWS.md`
+- `Trace-Coverage-Issues-AWS.md`
+- `Transaction-Log-Analysis-AWS.md`
+
+#### 06-Data-Integrity (2 playbooks)
+- `Data-Consistency-Checks-AWS.md`
+- `Data-Corruption-Detection-AWS.md`
+
+#### 07-Operational-Readiness (8 playbooks)
+- `API-Dependency-Status-AWS.md`
+- `Dependency-Health-Check-AWS.md`
+- `Documentation-Gaps-AWS.md`
+- `Incident-Response-Preparedness-AWS.md`
+- `On-call-Readiness-AWS.md`
+- `Runbook-Completeness-AWS.md`
+- `Service-Dependency-Mapping-AWS.md`
+- `Service-Mesh-Health-AWS.md`
 
 ## Getting Started
 
 ### 1. Documentation
 
-This directory contains 25 AWS incident response playbooks covering critical AWS services. Each playbook provides systematic troubleshooting guidance for common AWS issues.
+This directory contains 168 AWS incident response playbooks organized into 8 categorized folders. Each playbook provides systematic troubleshooting guidance for common AWS issues.
 
 **Quick Navigation:**
-- Browse all playbooks in this directory
-- Use Ctrl+F (or Cmd+F) to search for specific issues
+- Browse by category folder (e.g., `01-Compute/` for compute issues)
+- Use GitHub's search to find specific playbooks
 - Match your symptoms to playbook titles
 
 ### 2. Installation
@@ -123,18 +389,13 @@ git clone https://github.com/Scoutflo/scoutflo-SRE-Playbooks.git
 # Navigate to AWS playbooks
 cd scoutflo-SRE-Playbooks/AWS\ Playbooks/
 
-# List all available playbooks
-ls *.md
+# Browse by category
+ls 01-Compute/
+ls 04-Networking/
 
 # View a specific playbook
-cat Connection-Timeout-SSH-Issues-EC2.md
+cat 01-Compute/Connection-Timeout-SSH-Issues-EC2.md
 ```
-
-**Quick Access Options:**
-- **Bookmark this directory** for quick reference during incidents
-- **Add to your SRE runbook collection** for easy access
-- **Use GitHub web interface** to search and view playbooks online
-- **Clone locally** for offline access and customization
 
 ### 3. Learn More
 
@@ -149,39 +410,32 @@ cat Connection-Timeout-SSH-Issues-EC2.md
 
 ### Step-by-Step Process
 
-1. **Identify the Issue**: Match your symptoms to the appropriate playbook title
-2. **Open the Playbook**: Navigate to the relevant `.md` file
-3. **Follow the Playbook**: Execute the numbered steps in order, replacing placeholder values (e.g., `<instance-id>`) with your actual resource identifiers
-4. **Review Diagnosis Section**: Use the correlation analysis to identify root causes
-5. **Extend Time Windows**: If initial correlations don't reveal the cause, extend time windows as suggested
-6. **Check Alternative Sources**: Review alternative evidence sources mentioned in the Diagnosis section
+1. **Identify the Category**: Determine which category your issue falls into (Compute, Database, Networking, etc.)
+2. **Navigate to Folder**: Go to the appropriate numbered folder (e.g., `01-Compute/` for EC2/Lambda issues)
+3. **Find the Playbook**: Locate the playbook matching your specific issue
+4. **Follow the Playbook**: Execute the numbered steps in order, replacing placeholder values
+5. **Review Diagnosis Section**: Use the correlation analysis to identify root causes
+6. **Extend Time Windows**: If initial correlations don't reveal the cause, extend time windows as suggested
 
 ### Example Workflow
 
 **Scenario**: EC2 instance SSH connection timeout
 
-1. Open `Connection-Timeout-SSH-Issues-EC2.md`
-2. Read the **Meaning** section to understand the issue
-3. Review the **Impact** section to assess severity
-4. Follow **Playbook** steps:
-   - Step 1: Verify instance is running
-   - Step 2: Check security group rules
-   - Step 3: Verify public IP assignment
-   - ... (continue through all steps)
-5. Use **Diagnosis** section to correlate events:
-   - Compare security group changes with connection failures
-   - Check if failures began after recent changes
-6. Apply the identified fix
+1. Navigate to `01-Compute/` folder
+2. Open `Connection-Timeout-SSH-Issues-EC2.md`
+3. Read the **Meaning** section to understand the issue
+4. Review the **Impact** section to assess severity
+5. Follow **Playbook** steps in order
+6. Use **Diagnosis** section to correlate events
+7. Apply the identified fix
 
 ### Common Placeholders
 
-Playbooks use the following placeholder format that should be replaced with actual values:
 - `<instance-id>` - EC2 instance identifier
 - `<bucket-name>` - S3 bucket name
 - `<region>` - AWS region
 - `<function-name>` - Lambda function name
 - `<role-name>` - IAM role name
-- `<user-name>` - IAM user name
 - `<security-group-id>` - Security group identifier
 - `<vpc-id>` - VPC identifier
 - `<rds-instance-id>` - RDS instance identifier
@@ -191,268 +445,96 @@ Playbooks use the following placeholder format that should be replaced with actu
 
 ### AWS Service Abbreviations
 
-**EC2 (Elastic Compute Cloud)**
-- AWS's virtual server service. An "EC2 instance" is a virtual machine running on AWS.
+- **EC2** - Elastic Compute Cloud (virtual servers)
+- **VPC** - Virtual Private Cloud (isolated network)
+- **IAM** - Identity and Access Management
+- **S3** - Simple Storage Service
+- **RDS** - Relational Database Service
+- **ELB** - Elastic Load Balancer
+- **ECS** - Elastic Container Service
+- **EKS** - Elastic Kubernetes Service
+- **KMS** - Key Management Service
+- **ACM** - AWS Certificate Manager
+- **WAF** - Web Application Firewall
 
-**VPC (Virtual Private Cloud)**
-- An isolated network environment within AWS where you can launch resources like EC2 instances.
+### Common Terms
 
-**IAM (Identity and Access Management)**
-- AWS service that manages user access, roles, and permissions to AWS resources.
+- **Security Group** - Virtual firewall for AWS resources
+- **IAM Role** - AWS identity with permissions
+- **Region** - Geographic area with AWS data centers
+- **Availability Zone** - Isolated data center within a region
+- **Target Group** - Resources receiving load balancer traffic
 
-**S3 (Simple Storage Service)**
-- AWS's object storage service for storing files, backups, and data.
+## Quick Navigation Guide
 
-**RDS (Relational Database Service)**
-- AWS's managed database service for relational databases like MySQL, PostgreSQL, Oracle, etc.
-
-**Lambda**
-- AWS's serverless computing service that runs code without managing servers. You just upload code and it runs.
-
-**ELB (Elastic Load Balancer)**
-- AWS service that distributes incoming traffic across multiple targets (like EC2 instances) to ensure high availability.
-
-**CloudWatch**
-- AWS's monitoring and observability service for collecting metrics, logs, and events from AWS resources.
-
-**CloudTrail**
-- AWS service that logs API calls and changes made to your AWS account for security and compliance.
-
-**GuardDuty**
-- AWS's threat detection service that continuously monitors for malicious activity and unauthorized behavior.
-
-**KMS (Key Management Service)**
-- AWS service for creating and managing encryption keys used to encrypt your data.
-
-**NAT Gateway**
-- A network address translation service that allows resources in private subnets to access the internet securely.
-
-**Route 53**
-- AWS's DNS (Domain Name System) web service that routes internet traffic to your applications.
-
-**EKS (Elastic Kubernetes Service)**
-- AWS's managed Kubernetes service for running containerized applications.
-
-**ECS (Elastic Container Service)**
-- AWS's container orchestration service for running Docker containers.
-
-**API Gateway**
-- AWS service that creates, publishes, and manages APIs for your applications.
-
-**CodePipeline**
-- AWS's continuous delivery service for automating release pipelines.
-
-### Common AWS Terms
-
-**Security Group**
-- A virtual firewall that controls inbound and outbound traffic for AWS resources.
-
-**IAM Role**
-- An AWS identity with permissions that can be assumed by AWS services or users.
-
-**IAM Policy**
-- A document that defines permissions for AWS resources. Attached to users, groups, or roles.
-
-**Region**
-- A geographic area where AWS has data centers (e.g., us-east-1, eu-west-1).
-
-**Availability Zone (AZ)**
-- One or more discrete data centers within a region, designed to be isolated from failures in other zones.
-
-**Subnet**
-- A range of IP addresses in your VPC where you can launch resources.
-
-**Internet Gateway**
-- A horizontally scaled, redundant component that allows communication between your VPC and the internet.
-
-**Target Group**
-- A group of resources (like EC2 instances) that receive traffic from a load balancer.
-
-**Health Check**
-- A periodic check to determine if a resource is healthy and should receive traffic.
-
-### Playbook Terms
-
-**Diagnosis Section**
-- Part of each playbook that helps you correlate events (like configuration changes) with failures using time-based analysis.
-
-**Placeholder**
-- A value in playbooks (like `<instance-id>`) that you replace with your actual AWS resource identifier.
-
-**Correlation Window**
-- A time period you examine to find relationships between events and failures (e.g., "check CloudTrail logs from the last 30 minutes").
-
-**Root Cause**
-- The underlying reason why an issue occurred, as opposed to just the symptoms you're seeing.
-
-**CloudWatch Logs Insights**
-- A feature that allows you to search and analyze log data from CloudWatch Logs using a query language.
-
----
-
-**Need more help?** Check out:
-- [AWS Documentation](https://docs.aws.amazon.com/)
-- [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/)
-- [Scoutflo Documentation](https://scoutflo-documentation.gitbook.io/scoutflo-documentation)
-
-### Best Practices
-
-- **Start Early**: Begin with the most common causes (earlier steps in the Playbook section)
-- **Use CloudWatch Logs Insights**: Efficient log analysis for troubleshooting
-- **Correlate Timestamps**: Use the Diagnosis section to correlate events with failures
-- **Document Findings**: Keep notes of what you've checked and what you found
-- **Consider Gradual Issues**: If immediate correlations aren't found, check for gradual degradation
-- **Check AWS Service Health**: Verify if AWS service issues are affecting your resources
-- **Review CloudTrail Events**: Check for configuration changes that might have caused the issue
+| Issue Type | Folder | Example Playbooks |
+|------------|--------|-------------------|
+| EC2/Lambda problems | `01-Compute/` | `Instance-Not-Starting-EC2.md`, `Timeout-Error-Lambda.md` |
+| Database connectivity | `02-Database/` | `Instance-Not-Connecting-RDS.md`, `Throttling-Errors-DynamoDB.md` |
+| S3 access issues | `03-Storage/` | `Bucket-Access-Denied-403-Error-S3.md` |
+| Load balancer/DNS | `04-Networking/` | `Not-Routing-Traffic-ELB.md`, `DNS-Resolution-Failing-Route-53.md` |
+| IAM/permissions | `05-Security/` | `Policy-Not-Granting-Expected-Access-IAM.md` |
+| Alarms/logs | `06-Monitoring/` | `Alarm-Not-Triggering-as-Expected-CloudWatch.md` |
+| Pipeline failures | `07-CI-CD/` | `Stuck-in-Progress-CodePipeline.md` |
+| Proactive checks | `08-Proactive/` | `Cost-Anomaly-Detection-AWS.md`, `Backup-Verification-AWS.md` |
 
 ## Contributing
 
-We welcome contributions to improve AWS playbooks! Your contributions help the entire SRE community.
+We welcome contributions to improve AWS playbooks!
 
 ### How to Contribute
 
-#### 1. Raising Issues
+1. **Fork the Repository**
+2. **Create a Branch**: `git checkout -b fix/aws-playbook-name`
+3. **Make Your Changes**: Follow the established structure
+4. **Place in Correct Folder**: Use appropriate category folder
+5. **Create Pull Request**
 
-If you find an error, unclear instructions, or have suggestions:
+### Location Guidelines
 
-1. **Check Existing Issues**: Search [GitHub Issues](https://github.com/Scoutflo/scoutflo-SRE-Playbooks/issues) first
-2. **Create a New Issue**:
-   - Use clear, descriptive title (e.g., "Fix: Incorrect step in Connection-Timeout-SSH-Issues-EC2.md")
-   - Describe the problem or suggestion
-   - Include relevant AWS service, error messages, or examples
-   - Tag with `aws-playbook` label
+- Compute issues (EC2, Lambda, ECS, EKS) → `01-Compute/`
+- Database issues (RDS, DynamoDB) → `02-Database/`
+- Storage issues (S3) → `03-Storage/`
+- Networking issues (VPC, ELB, Route 53) → `04-Networking/`
+- Security issues (IAM, KMS, WAF) → `05-Security/`
+- Monitoring issues (CloudWatch, CloudTrail) → `06-Monitoring/`
+- CI/CD issues (CodePipeline, CloudFormation) → `07-CI-CD/`
+- Proactive monitoring → `08-Proactive/`
 
-#### 2. Updating Existing Playbooks
-
-To improve or fix existing AWS playbooks:
-
-1. **Fork the Repository**: Create your own fork
-2. **Create a Branch**:
-   ```bash
-   git checkout -b fix/aws-playbook-name
-   ```
-3. **Make Your Changes**:
-   - Follow the established structure (Title, Meaning, Impact, Playbook, Diagnosis)
-   - Use consistent placeholder naming (`<instance-id>`, `<bucket-name>`, etc.)
-   - Maintain accuracy and clarity
-   - Ensure steps are actionable and specific
-4. **Test Your Changes**: Verify the playbook works with real AWS scenarios
-5. **Commit and Push**:
-   ```bash
-   git add AWS\ Playbooks/Your-Playbook-Name.md
-   git commit -m "Fix: Improve [playbook-name] - [description]"
-   git push origin fix/aws-playbook-name
-   ```
-6. **Create a Pull Request**: 
-   - Reference the issue (if applicable)
-   - Describe your changes clearly
-   - Request review from maintainers
-
-#### 3. Adding New AWS Playbooks
-
-To add a new playbook for an uncovered AWS issue:
-
-1. **Check for Duplicates**: Ensure a similar playbook doesn't exist
-2. **Follow Naming Convention**: `<IssueOrSymptom>-<Component>.md`
-   - Example: `Connection-Timeout-SSH-Issues-EC2.md`
-   - Example: `Bucket-Access-Denied-403-Error-S3.md`
-3. **Include All Required Sections**:
-   - **Title** (H1): Clear, descriptive title
-   - **Meaning** (H2): What the issue means, triggers, symptoms, affected service layer
-   - **Impact** (H2): Business and technical impact, alarms, cascading effects
-   - **Playbook** (H2): 8-10 numbered diagnostic steps with AWS resource identifiers
-   - **Diagnosis** (H2): 5 correlation analysis steps with time windows
-4. **Use AWS MCP Tools**: Ensure playbook steps use only available AWS MCP tools
-5. **Update README**: Add the new playbook to the "Complete Playbook List" section above
-6. **Create Pull Request**: Follow standard contribution process
-
-### Contribution Guidelines
-
-- **Follow Structure**: Maintain consistency with existing playbooks
-- **Use Placeholders**: Replace specific values with placeholders
-- **Be Actionable**: Provide clear, step-by-step instructions
-- **Include Correlation**: Add time-based correlation in Diagnosis section
-- **Test Accuracy**: Verify playbooks work with real AWS scenarios
-- **Document Changes**: Clearly describe what and why you changed
-
-### Review Process
-
-1. All contributions require maintainer review
-2. Feedback provided within 2-3 business days
-3. Address requested changes promptly
-4. Once approved, your contribution will be merged
-
-📖 For detailed contribution guidelines, see [CONTRIBUTING.md](../../CONTRIBUTING.md)
+📖 For detailed contribution guidelines, see [CONTRIBUTING.md](../CONTRIBUTING.md)
 
 ## Connect with Us
 
-**Want to contribute?** Read our [Contributing Guidelines](#contributing) above.
-
-**For Feedback or Feature Requests**: 
+**For Feedback or Feature Requests**:
 - Share with us in [Slack](https://scoutflo.slack.com) or create a [GitHub Issue](https://github.com/Scoutflo/scoutflo-SRE-Playbooks/issues)
-
-**Bug Report?** 
-- Create a detailed issue and share it with us on [GitHub Issues](https://github.com/Scoutflo/scoutflo-SRE-Playbooks/issues) or [Slack](https://scoutflo.slack.com)
 
 **Links:**
 - [Slack Community](https://scoutflo.slack.com) | [Roadmap](https://github.com/Scoutflo/scoutflo-SRE-Playbooks/projects) | [Documentation](https://github.com/Scoutflo/scoutflo-SRE-Playbooks/wiki)
 
 **Scoutflo Resources:**
 - [Official Documentation](https://scoutflo-documentation.gitbook.io/scoutflo-documentation) | [Website](https://scoutflo.com/) | [AI SRE Tool](https://ai.scoutflo.com/get-started)
-- [Infra Management Tool](https://deploy.scoutflo.com/) | [YouTube Channel](https://www.youtube.com/@scoutflo6727) | [LinkedIn](https://www.linkedin.com/company/scoutflo/)
-- [Twitter/X](https://x.com/scout_flo) | [Blog](https://scoutflo.com/blog) | [Pricing](https://scoutflo.com/pricing)
+- [YouTube Channel](https://www.youtube.com/@scoutflo6727) | [LinkedIn](https://www.linkedin.com/company/scoutflo/) | [Twitter/X](https://x.com/scout_flo)
 
 ## Related Resources
 
 ### AWS Official Documentation
-- [AWS Documentation](https://docs.aws.amazon.com/) - Complete AWS service documentation
-- [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/) - Best practices for building on AWS
-- [AWS Troubleshooting Guides](https://docs.aws.amazon.com/general/latest/gr/aws_troubleshooting.html) - Official troubleshooting guides
-- [AWS Service Health Dashboard](https://status.aws.amazon.com/) - Real-time service status
-- [AWS Architecture Center](https://aws.amazon.com/architecture/) - Reference architectures and solutions
+- [AWS Documentation](https://docs.aws.amazon.com/)
+- [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/)
+- [AWS Troubleshooting Guides](https://docs.aws.amazon.com/general/latest/gr/aws_troubleshooting.html)
+- [AWS Service Health Dashboard](https://status.aws.amazon.com/)
 
 ### AWS Tools & CLI
-- [AWS CLI Documentation](https://docs.aws.amazon.com/cli/latest/userguide/) - Command-line interface guide
-- [AWS CloudShell](https://aws.amazon.com/cloudshell/) - Browser-based shell environment
-- [AWS Systems Manager](https://docs.aws.amazon.com/systems-manager/) - Operations management and automation
-- [AWS CloudWatch](https://docs.aws.amazon.com/cloudwatch/) - Monitoring and observability
-- [CloudWatch Logs Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html) - Log analysis queries
-- [AWS CloudFormation](https://docs.aws.amazon.com/cloudformation/) - Infrastructure as code
+- [AWS CLI Documentation](https://docs.aws.amazon.com/cli/latest/userguide/)
+- [AWS CloudShell](https://aws.amazon.com/cloudshell/)
+- [AWS Systems Manager](https://docs.aws.amazon.com/systems-manager/)
 
-### AWS Learning Resources
-- [AWS Training](https://aws.amazon.com/training/) - Free and paid training courses
-- [AWS re:Post](https://repost.aws/) - AWS community Q&A and discussions
-- [AWS Architecture Blog](https://aws.amazon.com/blogs/architecture/) - Architecture best practices
-- [AWS Security Blog](https://aws.amazon.com/blogs/security/) - Security updates and best practices
-- [AWS Compute Blog](https://aws.amazon.com/blogs/compute/) - Compute service updates
+## Statistics
 
-### AWS Best Practices
-- [AWS Security Best Practices](https://aws.amazon.com/security/security-resources/) - Security guidelines
-- [AWS Cost Optimization](https://aws.amazon.com/pricing/cost-optimization/) - Cost management strategies
-- [AWS Well-Architected Labs](https://www.wellarchitectedlabs.com/) - Hands-on labs
-- [AWS Well-Architected Tool](https://aws.amazon.com/well-architected-tool/) - Review your workloads
-
-### AWS Service-Specific Resources
-- **EC2**: [EC2 User Guide](https://docs.aws.amazon.com/ec2/) | [EC2 Best Practices](https://aws.amazon.com/ec2/pricing/)
-- **VPC**: [VPC User Guide](https://docs.aws.amazon.com/vpc/) | [VPC Best Practices](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-best-practices.html)
-- **IAM**: [IAM User Guide](https://docs.aws.amazon.com/iam/) | [IAM Best Practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html)
-- **S3**: [S3 User Guide](https://docs.aws.amazon.com/s3/) | [S3 Best Practices](https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html)
-- **RDS**: [RDS User Guide](https://docs.aws.amazon.com/rds/) | [RDS Best Practices](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_BestPractices.html)
-- **Lambda**: [Lambda Developer Guide](https://docs.aws.amazon.com/lambda/) | [Lambda Best Practices](https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html)
-- **EKS**: [EKS User Guide](https://docs.aws.amazon.com/eks/) | [EKS Best Practices](https://aws.github.io/aws-eks-best-practices/)
-
-### SRE & Incident Response
-- [Google SRE Book](https://sre.google/books/) - Site Reliability Engineering principles
-- [Site Reliability Engineering](https://sre.google/sre-book/table-of-contents/) - SRE practices and methodologies
-- [PagerDuty Incident Response](https://response.pagerduty.com/) - Incident response best practices
-- [AWS Incident Response Guide](https://aws.amazon.com/blogs/security/incident-response-in-aws/) - AWS-specific incident response
-
-### Community & Forums
-- [AWS re:Post](https://repost.aws/) - Official AWS community forum
-- [Stack Overflow - AWS](https://stackoverflow.com/questions/tagged/amazon-web-services) - Q&A platform
-- [AWS Subreddit](https://www.reddit.com/r/aws/) - Reddit community
-- [AWS User Groups](https://aws.amazon.com/developer/community/usergroups/) - Local meetups
+- **Total Playbooks**: 168
+- **Categories**: 8 (including Proactive monitoring)
+- **Organization**: Numbered folders for easy navigation
+- **Coverage**: All major AWS services and proactive monitoring
 
 ---
 
-**Back to [Main Repository](../../README.md)** | **View [K8s Playbooks](../K8s%20Playbooks/README.md)**
+**Back to [Main Repository](../README.md)** | **View [K8s Playbooks](../K8s%20Playbooks/README.md)** | **View [Sentry Playbooks](../Sentry%20Playbooks/README.md)**

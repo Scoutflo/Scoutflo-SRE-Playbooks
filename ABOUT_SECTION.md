@@ -4,7 +4,7 @@ Use these settings in your GitHub repository's **About** section:
 
 ## Description
 ```
-🚀 163 SRE incident response playbooks for AWS & Kubernetes. Step-by-step troubleshooting guides to help on-call engineers resolve infrastructure issues faster.
+🚀 389 SRE incident response playbooks for AWS, Kubernetes & Sentry. Step-by-step troubleshooting guides to help on-call engineers resolve infrastructure issues faster.
 ```
 
 ## Website
@@ -20,6 +20,7 @@ runbooks
 aws
 kubernetes
 k8s
+sentry
 devops
 troubleshooting
 playbooks
@@ -28,17 +29,18 @@ infrastructure
 cloud
 monitoring
 observability
+error-tracking
 best-practices
 ```
 
 ## Alternative Shorter Description
 ```
-Comprehensive SRE playbooks for AWS & Kubernetes. 163 step-by-step troubleshooting guides for on-call engineers.
+Comprehensive SRE playbooks for AWS, Kubernetes & Sentry. 389 step-by-step troubleshooting guides for on-call engineers.
 ```
 
 ## Alternative Longer Description
 ```
-🚀 Open-source SRE incident response playbooks for AWS and Kubernetes environments. 163 comprehensive playbooks with systematic troubleshooting steps, correlation analysis, and best practices. Perfect for on-call engineers and SRE teams.
+🚀 Open-source SRE incident response playbooks for AWS, Kubernetes, and Sentry environments. 389 comprehensive playbooks with systematic troubleshooting steps, correlation analysis, and best practices. Perfect for on-call engineers and SRE teams.
 ```
 
 ---

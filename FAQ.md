@@ -6,13 +6,14 @@ Common questions about using the SRE Playbooks repository.
 
 ### What are these playbooks?
 
-These are step-by-step troubleshooting guides for common AWS and Kubernetes issues. Each playbook provides systematic diagnostic steps to help SREs and on-call engineers resolve infrastructure problems faster.
+These are step-by-step troubleshooting guides for common AWS, Kubernetes, and Sentry issues. Each playbook provides systematic diagnostic steps to help SREs and on-call engineers resolve infrastructure problems faster.
 
 ### How many playbooks are there?
 
-- **163 total playbooks**
-  - 25 AWS playbooks
-  - 138 Kubernetes playbooks (organized in 12 categories)
+- **389 total playbooks**
+  - 168 AWS playbooks (organized in 8 categories)
+  - 196 Kubernetes playbooks (organized in 13 categories)
+  - 25 Sentry playbooks (organized in 2 categories)
 
 ### Are these playbooks free to use?
 
@@ -29,9 +30,9 @@ Absolutely! We welcome contributions. See our [Contributing Guide](CONTRIBUTING.
 
 ### How do I find the right playbook for my issue?
 
-1. **Identify the service**: Is it AWS or Kubernetes?
+1. **Identify the service**: Is it AWS, Kubernetes, or Sentry?
 2. **Match symptoms**: Look for playbooks with titles matching your issue
-3. **Check categories**: For K8s, browse the 12 category folders
+3. **Check categories**: Browse the numbered category folders (8 for AWS, 13 for K8s, 3 for Sentry)
 4. **Search**: Use GitHub's search or Ctrl+F to find keywords
 
 ### What if I can't find a playbook for my issue?
@@ -69,12 +70,15 @@ Yes, you need appropriate AWS credentials and permissions to execute the diagnos
 
 ### Which AWS services are covered?
 
-We cover major AWS services including:
-- EC2, Lambda, ECS, EKS
-- VPC, ELB, Route 53, NAT Gateway
-- S3, EBS, RDS
-- IAM, KMS, GuardDuty, CloudTrail
-- API Gateway, CodePipeline
+AWS playbooks are organized into 8 categories covering:
+- **Compute**: EC2, Lambda, ECS, EKS, Fargate, Auto Scaling
+- **Database**: RDS, DynamoDB
+- **Storage**: S3
+- **Networking**: VPC, ELB, Route 53, API Gateway, CloudFront
+- **Security**: IAM, KMS, GuardDuty, WAF, Shield, Cognito
+- **Monitoring**: CloudWatch, CloudTrail, Config, X-Ray
+- **CI/CD**: CodePipeline, CodeBuild, CloudFormation
+- **Proactive**: Capacity planning, cost optimization, compliance
 
 ### Can I use these playbooks in any AWS region?
 
@@ -88,7 +92,7 @@ Yes, you need `kubectl` configured with access to your Kubernetes cluster.
 
 ### How are Kubernetes playbooks organized?
 
-K8s playbooks are organized into 12 numbered folders:
+K8s playbooks are organized into 13 numbered folders:
 - `01-Control-Plane/` - Control plane issues
 - `02-Nodes/` - Node problems
 - `03-Pods/` - Pod issues (most common)
@@ -101,6 +105,7 @@ K8s playbooks are organized into 12 numbered folders:
 - `10-Monitoring-Autoscaling/` - Metrics, HPA
 - `11-Installation-Setup/` - Installation issues
 - `12-Namespaces/` - Namespace management
+- `13-Proactive/` - Proactive monitoring and compliance
 
 ### What if my pod is in CrashLoopBackOff?
 

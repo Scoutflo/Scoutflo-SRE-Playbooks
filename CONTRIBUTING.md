@@ -197,14 +197,43 @@ All playbooks must follow this structure:
   - `KubePodCrashLooping-pod.md`
   - `ServiceNotResolvingDNS-dns.md`
 
+**Sentry Playbooks:**
+- Format: `<ErrorType>-<SubType>-<Component>-Error-application.md`
+- Examples:
+  - `ConnectionError-ConnectionRefused-Database-Error-application.md`
+  - `TimeoutError-QueryTimeout-Database-Error-application.md`
+
 ### Location Guidelines
 
-- **AWS Playbooks**: Place in `AWS Playbooks/` directory
+- **AWS Playbooks**: Place in appropriate category folder:
+  - Compute issues (EC2, Lambda, ECS, EKS) → `AWS Playbooks/01-Compute/`
+  - Database issues (RDS, DynamoDB) → `AWS Playbooks/02-Database/`
+  - Storage issues (S3) → `AWS Playbooks/03-Storage/`
+  - Networking issues (VPC, ELB, Route 53) → `AWS Playbooks/04-Networking/`
+  - Security issues (IAM, KMS, WAF) → `AWS Playbooks/05-Security/`
+  - Monitoring issues (CloudWatch, CloudTrail) → `AWS Playbooks/06-Monitoring/`
+  - CI/CD issues (CodePipeline, CloudFormation) → `AWS Playbooks/07-CI-CD/`
+  - Proactive monitoring → `AWS Playbooks/08-Proactive/`
+
 - **K8s Playbooks**: Place in appropriate category folder:
   - Control plane issues → `K8s Playbooks/01-Control-Plane/`
+  - Node issues → `K8s Playbooks/02-Nodes/`
   - Pod issues → `K8s Playbooks/03-Pods/`
+  - Workload issues → `K8s Playbooks/04-Workloads/`
   - Networking issues → `K8s Playbooks/05-Networking/`
-  - etc.
+  - Storage issues → `K8s Playbooks/06-Storage/`
+  - RBAC issues → `K8s Playbooks/07-RBAC/`
+  - Configuration issues → `K8s Playbooks/08-Configuration/`
+  - Resource management → `K8s Playbooks/09-Resource-Management/`
+  - Monitoring/Autoscaling → `K8s Playbooks/10-Monitoring-Autoscaling/`
+  - Installation/Setup → `K8s Playbooks/11-Installation-Setup/`
+  - Namespace issues → `K8s Playbooks/12-Namespaces/`
+  - Proactive monitoring → `K8s Playbooks/13-Proactive/`
+
+- **Sentry Playbooks**: Place in appropriate category folder:
+  - Error tracking issues → `Sentry Playbooks/01-Error-Tracking/`
+  - Performance issues → `Sentry Playbooks/02-Performance/`
+  - Release health issues → `Sentry Playbooks/03-Release-Health/`
 
 ## Pull Request Process
 
