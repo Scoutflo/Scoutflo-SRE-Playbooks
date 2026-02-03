@@ -1,0 +1,117 @@
+name: Check Links
+
+on:
+  schedule:
+    # Run weekly on Sundays
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '**.md'
+
+jobs:
+  link-check:
+    name: Check for Broken Links
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install markdown-link-check
+        run: npm install -g markdown-link-check
+
+      - name: Check Links in Documentation
+        run: |
+          echo "## Link Check Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          broken_count=0
+          checked_count=0
+
+          # Check main documentation files
+          for file in README.md CONTRIBUTING.md FAQ.md QUICK_REFERENCE.md EXAMPLES.md; do
+            if [ -f "$file" ]; then
+              checked_count=$((checked_count + 1))
+              echo "Checking $file..."
+              if ! markdown-link-check "$file" --quiet 2>/dev/null; then
+                echo "- :warning: **$file** has broken links" >> $GITHUB_STEP_SUMMARY
+                broken_count=$((broken_count + 1))
+              fi
+            fi
+          done
+
+          # Check .github folder
+          for file in $(find .github -name "*.md" -type f 2>/dev/null); do
+            checked_count=$((checked_count + 1))
+            echo "Checking $file..."
+            if ! markdown-link-check "$file" --quiet 2>/dev/null; then
+              echo "- :warning: **$file** has broken links" >> $GITHUB_STEP_SUMMARY
+              broken_count=$((broken_count + 1))
+            fi
+          done
+
+          # Check provider README files
+          for file in "AWS Playbooks/README.md" "K8s Playbooks/README.md" "Sentry Playbooks/README.md"; do
+            if [ -f "$file" ]; then
+              checked_count=$((checked_count + 1))
+              echo "Checking $file..."
+              if ! markdown-link-check "$file" --quiet 2>/dev/null; then
+                echo "- :warning: **$file** has broken links" >> $GITHUB_STEP_SUMMARY
+                broken_count=$((broken_count + 1))
+              fi
+            fi
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+
+          if [ $broken_count -eq 0 ]; then
+            echo ":white_check_mark: All $checked_count files passed link check" >> $GITHUB_STEP_SUMMARY
+          else
+            echo ":x: Found broken links in $broken_count of $checked_count files" >> $GITHUB_STEP_SUMMARY
+            echo ""
+            echo "::warning::Found broken links in $broken_count files. Please review the summary."
+          fi
+        continue-on-error: true
+
+  internal-links:
+    name: Check Internal Links
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify Internal File References
+        run: |
+          echo "## Internal Link Verification" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          errors=0
+
+          # Check for references to playbook files that don't exist
+          for readme in "AWS Playbooks/README.md" "K8s Playbooks/README.md" "Sentry Playbooks/README.md"; do
+            if [ -f "$readme" ]; then
+              dir=$(dirname "$readme")
+
+              # Extract .md file references (simplified check)
+              grep -oE '[A-Za-z0-9_-]+\.md' "$readme" 2>/dev/null | sort -u | while read -r ref; do
+                # Skip if it's README.md itself
+                if [ "$ref" != "README.md" ]; then
+                  # Check if file exists in the directory tree
+                  if ! find "$dir" -name "$ref" -type f 2>/dev/null | grep -q .; then
+                    echo "- Missing: **$ref** referenced in $readme" >> $GITHUB_STEP_SUMMARY
+                    errors=$((errors + 1))
+                  fi
+                fi
+              done
+            fi
+          done
+
+          if [ $errors -eq 0 ]; then
+            echo ":white_check_mark: All internal file references are valid" >> $GITHUB_STEP_SUMMARY
+          fi

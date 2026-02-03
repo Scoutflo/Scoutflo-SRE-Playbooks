@@ -2,12 +2,15 @@
 
 Thank you for your interest in contributing to the SRE Playbooks repository! This document provides guidelines and instructions for contributing to this open-source project.
 
+> **New to contributing?** Check out our [Getting Started Guide](.github/GETTING_STARTED.md) for a quick onboarding experience.
+
 ## Table of Contents
 
 - [Code of Conduct](#code-of-conduct)
 - [How Can I Contribute?](#how-can-i-contribute)
 - [Development Process](#development-process)
 - [Playbook Standards](#playbook-standards)
+- [Exemplary Playbooks](#exemplary-playbooks)
 - [Pull Request Process](#pull-request-process)
 - [Review Process](#review-process)
 
@@ -234,6 +237,52 @@ All playbooks must follow this structure:
   - Error tracking issues → `Sentry Playbooks/01-Error-Tracking/`
   - Performance issues → `Sentry Playbooks/02-Performance/`
   - Release health issues → `Sentry Playbooks/03-Release-Health/`
+
+## Exemplary Playbooks
+
+Study these well-structured playbooks as reference examples before creating your own:
+
+### AWS Example: EC2 SSH Connection Timeout
+
+**File:** [`AWS Playbooks/01-Compute/Connection-Timeout-SSH-Issues-EC2.md`](AWS%20Playbooks/01-Compute/Connection-Timeout-SSH-Issues-EC2.md)
+
+**Why it's exemplary:**
+- Clear, descriptive title following naming convention
+- Comprehensive Meaning section with multiple root causes
+- Well-structured Impact section with business implications
+- 10 numbered diagnostic steps ordered from common to specific
+- Thorough Diagnosis section with time-based correlation
+
+### Kubernetes Example: CrashLoopBackOff
+
+**File:** [`K8s Playbooks/03-Pods/CrashLoopBackOff-pod.md`](K8s%20Playbooks/03-Pods/CrashLoopBackOff-pod.md)
+
+**Why it's exemplary:**
+- Standard alert-based naming convention
+- Covers all common causes in Meaning section
+- Clear severity indicators in Impact section
+- Actionable steps using kubectl commands
+- Conditional logic in Diagnosis ("If X, then Y")
+
+### Sentry Example: Unhandled Exception
+
+**File:** [`Sentry Playbooks/01-Error-Tracking/UnhandledException-Error-application.md`](Sentry%20Playbooks/01-Error-Tracking/UnhandledException-Error-application.md)
+
+**Why it's exemplary:**
+- Follows Sentry naming convention exactly
+- Cross-domain keywords for multi-source matching
+- Clear diagnostic flow for error tracking
+- Integration-aware troubleshooting steps
+
+### Proactive Example: Cost Anomaly Detection
+
+**File:** [`AWS Playbooks/08-Proactive/04-Cost-Optimization/Cost-Anomaly-Detection-AWS.md`](AWS%20Playbooks/08-Proactive/04-Cost-Optimization/Cost-Anomaly-Detection-AWS.md)
+
+**Why it's exemplary:**
+- Proactive monitoring focus (not reactive)
+- Threshold-based alerting guidance
+- Integration with AWS Cost Explorer
+- Business impact clearly stated
 
 ## Pull Request Process
 

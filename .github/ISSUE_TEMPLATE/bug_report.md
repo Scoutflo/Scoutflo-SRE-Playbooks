@@ -14,6 +14,7 @@ A clear and concise description of what the bug is.
 
 - [ ] AWS Playbook
 - [ ] Kubernetes Playbook
+- [ ] Sentry Playbook
 - [ ] Documentation
 - [ ] Other (please specify)
 

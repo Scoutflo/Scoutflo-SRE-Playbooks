@@ -1,0 +1,131 @@
+# GitHub Labels Configuration
+#
+# To apply these labels to your repository:
+# 1. Install github-label-sync: npm install -g github-label-sync
+# 2. Run: github-label-sync --access-token YOUR_TOKEN Scoutflo/scoutflo-SRE-Playbooks
+#
+# Or manually create them via Settings > Labels
+
+# =============================================================================
+# CATEGORY LABELS (What area of the project)
+# =============================================================================
+
+- name: "aws-playbook"
+  color: "FF9900"
+  description: "Related to AWS playbooks"
+
+- name: "k8s-playbook"
+  color: "326CE5"
+  description: "Related to Kubernetes playbooks"
+
+- name: "sentry-playbook"
+  color: "362D59"
+  description: "Related to Sentry playbooks"
+
+- name: "documentation"
+  color: "0075CA"
+  description: "Documentation improvements"
+
+- name: "workflows"
+  color: "6E5494"
+  description: "GitHub Actions and automation"
+
+# =============================================================================
+# TYPE LABELS (What kind of change)
+# =============================================================================
+
+- name: "bug"
+  color: "D73A4A"
+  description: "Something isn't working correctly"
+
+- name: "enhancement"
+  color: "A2EEEF"
+  description: "Improvement to existing playbook"
+
+- name: "new-playbook"
+  color: "0E8A16"
+  description: "Request or PR for new playbook"
+
+- name: "question"
+  color: "D876E3"
+  description: "Further information is requested"
+
+- name: "typo"
+  color: "FEF2C0"
+  description: "Typo or grammatical fix"
+
+# =============================================================================
+# STATUS LABELS (Current state)
+# =============================================================================
+
+- name: "good first issue"
+  color: "7057FF"
+  description: "Good for newcomers - easy to get started"
+
+- name: "help wanted"
+  color: "008672"
+  description: "Extra attention is needed - community help welcome"
+
+- name: "in-progress"
+  color: "FBCA04"
+  description: "Currently being worked on"
+
+- name: "needs-review"
+  color: "0052CC"
+  description: "Ready for maintainer review"
+
+- name: "blocked"
+  color: "B60205"
+  description: "Blocked by external dependency"
+
+- name: "duplicate"
+  color: "CFD3D7"
+  description: "This issue or PR already exists"
+
+- name: "wontfix"
+  color: "FFFFFF"
+  description: "This will not be worked on"
+
+- name: "invalid"
+  color: "E4E669"
+  description: "This doesn't seem right"
+
+# =============================================================================
+# PRIORITY LABELS (Urgency)
+# =============================================================================
+
+- name: "priority: critical"
+  color: "B60205"
+  description: "Needs immediate attention"
+
+- name: "priority: high"
+  color: "D93F0B"
+  description: "Important - should be addressed soon"
+
+- name: "priority: medium"
+  color: "FBCA04"
+  description: "Normal priority"
+
+- name: "priority: low"
+  color: "0E8A16"
+  description: "Nice to have, not urgent"
+
+# =============================================================================
+# PROACTIVE LABELS (For proactive playbooks)
+# =============================================================================
+
+- name: "proactive"
+  color: "1D76DB"
+  description: "Related to proactive monitoring playbooks"
+
+- name: "capacity-performance"
+  color: "C2E0C6"
+  description: "Capacity and performance playbooks"
+
+- name: "security-compliance"
+  color: "F9D0C4"
+  description: "Security and compliance playbooks"
+
+- name: "cost-optimization"
+  color: "BFD4F2"
+  description: "Cost optimization playbooks"

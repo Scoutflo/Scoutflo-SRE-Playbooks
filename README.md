@@ -23,6 +23,7 @@
 - [Examples & Use Cases](#examples--use-cases)
 - [FAQ](#faq)
 - [Video Tutorials](#video-tutorials)
+- [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [Connect with Us](#connect-with-us)
 - [Support](#support)
@@ -375,9 +376,19 @@ Learn how to use these playbooks effectively:
 - Contributing to playbooks
 - Advanced correlation analysis
 
+## Roadmap
+
+Check out our [ROADMAP.md](ROADMAP.md) to see:
+- Planned features and new playbook categories
+- Short-term and long-term goals
+- How to suggest new features
+- Release history
+
 ## Contributing
 
 We welcome contributions from the community! Your contributions help make these playbooks better for everyone.
+
+> **First-time contributor?** Start with our [Getting Started Guide](.github/GETTING_STARTED.md) for a quick onboarding experience, then look for issues labeled `good first issue`.
 
 ### How to Contribute
 

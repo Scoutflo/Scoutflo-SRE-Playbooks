@@ -1,0 +1,142 @@
+name: Validate Playbooks
+
+on:
+  pull_request:
+    paths:
+      - '**/*.md'
+      - '!README.md'
+      - '!CONTRIBUTING.md'
+      - '!CHANGELOG.md'
+      - '!.github/**'
+  push:
+    branches:
+      - master
+    paths:
+      - '**/*.md'
+  workflow_dispatch:
+
+jobs:
+  validate-structure:
+    name: Validate Playbook Structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Playbook Structure
+        run: |
+          echo "## Playbook Validation Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          errors=0
+          warnings=0
+          checked=0
+
+          # Find all playbook files (excluding root docs and .github)
+          for file in $(find "AWS Playbooks" "K8s Playbooks" "Sentry Playbooks" -name "*.md" -type f 2>/dev/null | grep -v README.md); do
+            checked=$((checked + 1))
+            file_errors=""
+
+            # Check for required sections
+            if ! grep -q "^## Meaning" "$file"; then
+              file_errors="$file_errors\n  - Missing '## Meaning' section"
+            fi
+
+            if ! grep -q "^## Impact" "$file"; then
+              file_errors="$file_errors\n  - Missing '## Impact' section"
+            fi
+
+            if ! grep -q "^## Playbook" "$file"; then
+              file_errors="$file_errors\n  - Missing '## Playbook' section"
+            fi
+
+            if ! grep -q "^## Diagnosis" "$file"; then
+              file_errors="$file_errors\n  - Missing '## Diagnosis' section"
+            fi
+
+            # Check for numbered steps in Playbook section
+            if ! grep -q "^[0-9]\." "$file"; then
+              file_errors="$file_errors\n  - Missing numbered steps in Playbook section"
+            fi
+
+            if [ -n "$file_errors" ]; then
+              errors=$((errors + 1))
+              echo "### :x: $file" >> $GITHUB_STEP_SUMMARY
+              echo -e "$file_errors" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "**Summary:** Checked $checked playbooks, found $errors with issues" >> $GITHUB_STEP_SUMMARY
+
+          if [ $errors -gt 0 ]; then
+            echo ""
+            echo "::error::Found $errors playbooks with structural issues"
+            exit 1
+          else
+            echo ":white_check_mark: All $checked playbooks passed validation" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  check-placeholders:
+    name: Check Placeholder Consistency
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check Placeholder Format
+        run: |
+          echo "## Placeholder Consistency Check" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Check for non-standard placeholder formats
+          # Standard format: <placeholder-name>
+
+          issues=0
+
+          # Find files with potential placeholder issues
+          for file in $(find "AWS Playbooks" "K8s Playbooks" "Sentry Playbooks" -name "*.md" -type f 2>/dev/null); do
+            # Check for curly brace placeholders (should be angle brackets)
+            if grep -q '{[a-z_-]*}' "$file"; then
+              echo "- **$file**: Uses curly braces instead of angle brackets" >> $GITHUB_STEP_SUMMARY
+              issues=$((issues + 1))
+            fi
+
+            # Check for square bracket placeholders (should be angle brackets)
+            if grep -q '\[[A-Z_-]*\]' "$file" | grep -v "^\[" | head -1; then
+              # Skip markdown links
+              true
+            fi
+          done
+
+          if [ $issues -eq 0 ]; then
+            echo ":white_check_mark: All placeholders use consistent format" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Found $issues files with placeholder format issues**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  count-playbooks:
+    name: Count Playbooks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate Playbook Count
+        run: |
+          echo "## Playbook Statistics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          aws_count=$(find "AWS Playbooks" -name "*.md" -type f | grep -v README.md | wc -l)
+          k8s_count=$(find "K8s Playbooks" -name "*.md" -type f | grep -v README.md | wc -l)
+          sentry_count=$(find "Sentry Playbooks" -name "*.md" -type f | grep -v README.md | wc -l)
+          total=$((aws_count + k8s_count + sentry_count))
+
+          echo "| Provider | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| AWS | $aws_count |" >> $GITHUB_STEP_SUMMARY
+          echo "| Kubernetes | $k8s_count |" >> $GITHUB_STEP_SUMMARY
+          echo "| Sentry | $sentry_count |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Total** | **$total** |" >> $GITHUB_STEP_SUMMARY

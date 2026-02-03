@@ -35,6 +35,7 @@ Describe a real-world scenario where this would be useful:
 
 - [ ] New AWS Playbook
 - [ ] New Kubernetes Playbook
+- [ ] New Sentry Playbook
 - [ ] Enhancement to Existing Playbook
 - [ ] Documentation Improvement
 - [ ] Other (please specify)
