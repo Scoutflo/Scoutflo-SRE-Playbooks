@@ -23,3 +23,6 @@ dist/
 build/
 *.bak
 *.backup
+
+# Local development files
+CLAUDE.md
