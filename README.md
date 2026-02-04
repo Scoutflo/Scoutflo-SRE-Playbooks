@@ -386,7 +386,7 @@ Check out our [ROADMAP.md](ROADMAP.md) to see:
 
 ## Contributing
 
-We welcome contributions from the community! Your contributions help make these playbooks better for everyone.
+We welcome contributions from the community! Your contributions help make these playbooks better for everyone. See our [Contributors](CONTRIBUTORS.md) page to see who has helped build this project.
 
 > **First-time contributor?** Start with our [Getting Started Guide](.github/GETTING_STARTED.md) for a quick onboarding experience, then look for issues labeled `good first issue`.
 
