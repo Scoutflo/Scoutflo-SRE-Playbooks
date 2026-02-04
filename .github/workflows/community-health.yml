@@ -2,7 +2,7 @@ name: Community Health Check
 
 on:
   schedule:
-    # Run weekly on Mondays
+    # Run weekly on Mondays at midnight UTC
     - cron: '0 0 * * 1'
   workflow_dispatch:
 
@@ -10,22 +10,79 @@ jobs:
   community-health:
     runs-on: ubuntu-latest
     steps:
-      - name: Check Community Standards
-        uses: github/super-linter@v4
-        env:
-          DEFAULT_BRANCH: master
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VALIDATE_ALL_CODEBASE: false
-          VALIDATE_MARKDOWN: true
-          VALIDATE_YAML: true
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Check Repository Health
+      - name: Check Required Files
         run: |
           echo "## Community Health Report" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ README.md exists" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ LICENSE exists" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ CONTRIBUTING.md exists" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ CODE_OF_CONDUCT.md exists" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ SECURITY.md exists" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Issue templates configured" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ PR template configured" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Required Files Check" >> $GITHUB_STEP_SUMMARY
+
+          check_file() {
+            if [ -f "$1" ]; then
+              echo "- ✅ $1 exists" >> $GITHUB_STEP_SUMMARY
+              return 0
+            else
+              echo "- ❌ $1 missing" >> $GITHUB_STEP_SUMMARY
+              return 1
+            fi
+          }
+
+          errors=0
+
+          check_file "README.md" || errors=$((errors + 1))
+          check_file "LICENSE" || errors=$((errors + 1))
+          check_file "CONTRIBUTING.md" || errors=$((errors + 1))
+          check_file "CODE_OF_CONDUCT.md" || errors=$((errors + 1))
+          check_file "SECURITY.md" || errors=$((errors + 1))
+          check_file "CHANGELOG.md" || errors=$((errors + 1))
+          check_file "CODEOWNERS" || errors=$((errors + 1))
+          check_file ".github/pull_request_template.md" || errors=$((errors + 1))
+          check_file ".github/ISSUE_TEMPLATE/bug_report.md" || errors=$((errors + 1))
+          check_file ".github/ISSUE_TEMPLATE/feature_request.md" || errors=$((errors + 1))
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ $errors -gt 0 ]; then
+            echo "**Found $errors missing files**" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "**All required files present!**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Count Playbooks
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Playbook Statistics" >> $GITHUB_STEP_SUMMARY
+
+          # Use -print0 to handle spaces in folder names
+          aws_count=$(find "AWS Playbooks" -name "*.md" -type f -print0 2>/dev/null | grep -zvc README.md || echo 0)
+          k8s_count=$(find "K8s Playbooks" -name "*.md" -type f -print0 2>/dev/null | grep -zvc README.md || echo 0)
+          sentry_count=$(find "Sentry Playbooks" -name "*.md" -type f -print0 2>/dev/null | grep -zvc README.md || echo 0)
+          total=$((aws_count + k8s_count + sentry_count))
+
+          echo "| Provider | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| AWS | $aws_count |" >> $GITHUB_STEP_SUMMARY
+          echo "| Kubernetes | $k8s_count |" >> $GITHUB_STEP_SUMMARY
+          echo "| Sentry | $sentry_count |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Total** | **$total** |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check for Stale Issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Issue Statistics" >> $GITHUB_STEP_SUMMARY
+
+          open_issues=$(gh issue list --state open --limit 100 --json number | jq length)
+          echo "- Open issues: $open_issues" >> $GITHUB_STEP_SUMMARY
+
+          # Check for issues without labels
+          unlabeled=$(gh issue list --state open --limit 100 --json labels,number | jq '[.[] | select(.labels | length == 0)] | length')
+          if [ "$unlabeled" -gt 0 ]; then
+            echo "- ⚠️ Unlabeled issues: $unlabeled" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ✅ All issues are labeled" >> $GITHUB_STEP_SUMMARY
+          fi
