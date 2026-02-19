@@ -11,7 +11,7 @@ categories:
 
 ## Meaning
 
-Pod Disruption Budget (PDB) violations happen when Kubernetes blocks voluntary disruptions because evicting a pod would break the availability guarantees defined in a PodDisruptionBudget. This commonly shows up during node drain operations, cluster autoscaler scale-down, or rolling updates when pods cannot be evicted safely. A typical symptom is that `disruptionsAllowed` is `0` for a PDB protecting the affected workload, so voluntary evictions stall. This is usually caused by an overly strict `minAvailable` / `maxUnavailable`, unhealthy pods reducing `currentHealthy`, or selector issues (PDB selecting the wrong pods or not matching the intended pods). For PDB concepts and behavior, refer to Kubernetes documentation: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+Pod Disruption Budget (PDB) violations happen when Kubernetes blocks voluntary disruptions because evicting a pod would break the availability guarantees defined in a PodDisruptionBudget. This commonly shows up during node drain operations, cluster autoscaler scale-down, or rolling updates when pods cannot be evicted safely. A typical symptom is that `disruptionsAllowed` is `0` for a PDB protecting the affected workload, so voluntary evictions stall. This is usually caused by an overly strict `minAvailable` / `maxUnavailable`, unhealthy pods reducing `currentHealthy`, or selector issues (PDB selecting the wrong pods or not matching the intended pods). For PDB concepts and behavior, refer to [Kubernetes PDB documentation](https://kubernetes.io/docs/tasks/run-application/configure-pdb/).
 
 ## Impact
 
@@ -41,7 +41,7 @@ Node maintenance can be blocked because draining `<node-name>` hangs or fails wh
 7. If autoscaler scale-down messages align with PDB blocking and the pods on candidate nodes are protected, then autoscaler cannot remove the node without violating the PDB, so scale-down will remain blocked.
 
 Inline references:
-- Kubernetes PDB documentation: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
-- PDB API reference: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-disruption-budget-v1/
-- kubectl drain behavior: https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/
-- Cluster Autoscaler scale-down concepts: https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler
+- [Kubernetes PDB documentation](https://kubernetes.io/docs/tasks/run-application/configure-pdb/)
+- [PDB API reference](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-disruption-budget-v1/)
+- [kubectl drain behavior](https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/)
+- [Cluster Autoscaler FAQ – PDB interaction](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md)
