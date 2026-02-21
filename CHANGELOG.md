@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-02-21
+
+### Added
+- **38 new Kubernetes playbooks** synced from internal repository
+  - 01-Control-Plane/ (+6): CertManager playbooks for certificate lifecycle management
+    - CertificateExpiringCritical, CertificateExpiringSoon, CertificateNotReady
+    - CertManagerACMEOrderFailed, CertManagerControllerHighError, CertManagerDown
+  - 02-Nodes/ (+12): NodeExporter playbooks for node-level monitoring
+    - NodeClockSkewDetected, NodeDiskIOSaturation, NodeExporterDown
+    - NodeFileDescriptorLimit, NodeFilesystemAlmostOutOfSpace, NodeHighCPUUsage
+    - NodeHighLoadAverage, NodeHighMemoryUsage, NodeMemoryMajorPagesFaults
+    - NodeNetworkReceiveErrors, NodeRAIDDegraded, NodeSystemdServiceFailed
+  - 03-Pods/ (+10): Container resource and lifecycle playbooks
+    - ContainerHighCPUThrottling, ContainerHighMemoryUsage, ContainerMemoryNearLimit
+    - ContainerRestartsFrequent, CPUThrottlingHigh, KubeContainerOOMKilled
+    - KubePodContainerWaiting, KubePodFrequentlyRestarting, KubePodImagePullBackOff, KubePodPending
+  - 04-Workloads/ (+2): Workload state playbooks
+    - KubeDaemonSetNotReady, KubeDeploymentRolloutStuck
+  - 05-Networking/ (+8): CoreDNS and NGINX Ingress playbooks
+    - CoreDNSDown, CoreDNSLatencyHigh, IngressCertificateExpiring
+    - NginxIngress4xxErrorsHigh, NginxIngress5xxErrorsHigh, NginxIngressConfigReloadFailed
+    - NginxIngressDown, NginxIngressHighLatency
+
+### Changed
+- Updated all K8s folder READMEs with new playbook counts and listings
+- Updated main README.md with new statistics
+
+### Statistics
+- Total Playbooks: 376 → **414** (+38 new playbooks)
+- Kubernetes: 194 → **232** (+38 playbooks)
+  - 01-Control-Plane: 18 → 24
+  - 02-Nodes: 12 → 24
+  - 03-Pods: 31 → 41
+  - 04-Workloads: 23 → 25
+  - 05-Networking: 19 → 27
+
 ## [2.0.0] - 2026-02-03
 
 ### Added
