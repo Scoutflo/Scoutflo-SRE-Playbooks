@@ -68,7 +68,7 @@
   <style>
     /* ========================================
        SCOUTFLO DESIGN SYSTEM
-       Based on atlas-deploy-client
+       Exact specifications from atlas-deploy-client
        ======================================== */
 
     :root {
@@ -76,7 +76,7 @@
       --primary-brand: #090a40;
       --primary-brand-light: #1f3180;
 
-      /* Primary Blue Scale */
+      /* Primary Blue Scale (from globals.scss) */
       --primary-blue-10: #e0f2fe;
       --primary-blue-20: #b9e6fe;
       --primary-blue-50: #36bffa;
@@ -104,7 +104,7 @@
       --feedback-warning-100: #fab841;
       --feedback-error-100: #f04438;
 
-      /* Neutral Gray Scale */
+      /* Neutral Gray Scale (from globals.scss) */
       --neutral-gray-10: #f2f4f7;
       --neutral-gray-20: #eaecf0;
       --neutral-gray-50: #d0d5dd;
@@ -113,13 +113,19 @@
       --neutral-gray-500: #475467;
       --neutral-gray-1000: #1d2939;
 
-      /* Status Colors */
+      /* Status Colors (from globals.scss) */
       --status-success: #1db954;
+      --status-muted-success: #d1fadf;
+      --status-dark-success: #027a48;
       --status-warning: #ff9800;
+      --status-muted-warning: #fef0c7;
+      --status-dark-warning: #b54708;
       --status-error: #e22134;
+      --status-muted-error: #fee4e2;
+      --status-dark-error: #b42318;
       --status-info: #2e77d0;
 
-      /* Box Shadows */
+      /* Box Shadows (from globals.scss) */
       --box-shadow-xs: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
       --box-shadow-sm: 0px 1px 3px 0px rgba(16, 24, 40, 0.1);
       --box-shadow-md: 0px 4px 8px -2px rgba(16, 24, 40, 0.1);
@@ -129,8 +135,8 @@
       --theme-color: var(--primary-blue-100);
       --theme-color-secondary: var(--primary-blue-500);
 
-      /* Sidebar */
-      --sidebar-width: 280px;
+      /* Sidebar - 16rem from sidebar.tsx SIDEBAR_WIDTH */
+      --sidebar-width: 16rem;
       --sidebar-background: var(--neutral-gray-10);
       --sidebar-nav-link-color: var(--neutral-gray-500);
       --sidebar-nav-link-color--active: var(--primary-blue-200);
@@ -140,22 +146,22 @@
       /* Content */
       --content-max-width: 900px;
       --base-font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
-      --base-font-size: 14px;
-      --base-line-height: 1.6;
+      --base-font-size: 0.875rem; /* 14px = text-sm from Tailwind */
+      --base-line-height: 1.5;
       --base-color: var(--neutral-gray-1000);
       --base-background-color: #ffffff;
 
       /* Headings */
       --heading-font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
       --heading-color: var(--primary-dark-blue-500);
-      --heading-h1-font-size: 2rem;
-      --heading-h2-font-size: 1.5rem;
-      --heading-h3-font-size: 1.25rem;
-      --heading-h4-font-size: 1rem;
+      --heading-h1-font-size: 1.875rem; /* 30px */
+      --heading-h2-font-size: 1.5rem;   /* 24px */
+      --heading-h3-font-size: 1.25rem;  /* 20px */
+      --heading-h4-font-size: 1rem;     /* 16px */
 
       /* Code */
       --code-font-family: 'IBM Plex Mono', Menlo, Monaco, monospace;
-      --code-font-size: 13px;
+      --code-font-size: 0.8125rem; /* 13px */
       --code-theme-background: var(--neutral-gray-1000);
       --code-theme-text: var(--neutral-gray-10);
       --code-inline-background: var(--neutral-gray-10);
@@ -172,8 +178,8 @@
       --blockquote-border-color: var(--primary-blue-100);
       --blockquote-border-width: 4px;
 
-      /* Tables */
-      --table-head-background: var(--neutral-gray-10);
+      /* Tables - from table.tsx */
+      --table-head-background: var(--primary-blue-10);
       --table-row-odd-background: #ffffff;
       --table-row-even-background: var(--neutral-gray-10);
 
@@ -188,10 +194,16 @@
       --cover-button-color: #ffffff;
       --cover-blockquote-color: rgba(255, 255, 255, 0.8);
 
-      /* Border Radius */
-      --border-radius-s: 4px;
-      --border-radius-m: 8px;
-      --border-radius-l: 12px;
+      /* Border Radius - from Tailwind/ShadCN */
+      --border-radius-sm: 0.375rem;  /* rounded-md = 6px */
+      --border-radius-md: 0.5rem;    /* rounded-lg = 8px */
+      --border-radius-lg: 0.75rem;   /* rounded-xl = 12px */
+
+      /* Component Sizing - from button.tsx */
+      --btn-height-xs: 1.75rem;  /* h-7 = 28px */
+      --btn-height-sm: 2.25rem;  /* h-9 = 36px */
+      --btn-height-default: 2.5rem; /* h-10 = 40px */
+      --btn-height-lg: 2.75rem;  /* h-11 = 44px */
     }
 
     /* Dark Mode */
@@ -225,85 +237,214 @@
       -moz-osx-font-smoothing: grayscale;
     }
 
-    /* Dark mode toggle */
+    /* ========================================
+       BUTTONS - from button.tsx
+       h-10 (40px), rounded-md, text-sm, font-medium
+       ======================================== */
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+      border-radius: var(--border-radius-sm); /* rounded-md */
+      font-size: 0.875rem; /* text-sm */
+      font-weight: 500; /* font-medium */
+      transition: background-color 0.15s ease, color 0.15s ease;
+      cursor: pointer;
+      /* Default size: h-10 px-4 py-2 */
+      height: var(--btn-height-default); /* h-10 = 40px */
+      padding: 0.5rem 1rem; /* py-2 px-4 */
+    }
+    .btn:disabled {
+      pointer-events: none;
+      opacity: 0.5;
+    }
+    .btn-default {
+      background: var(--primary-dark-blue-500);
+      color: white;
+      box-shadow: var(--box-shadow-xs);
+    }
+    .btn-default:hover {
+      background: var(--primary-dark-blue-100);
+    }
+    .btn-secondary {
+      background: var(--primary-blue-100);
+      color: white;
+      box-shadow: var(--box-shadow-xs);
+    }
+    .btn-secondary:hover {
+      background: var(--primary-blue-200);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--neutral-gray-50);
+      color: var(--neutral-gray-500);
+    }
+    .btn-outline:hover {
+      background: var(--neutral-gray-10);
+      color: var(--neutral-gray-1000);
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--neutral-gray-500);
+    }
+    .btn-ghost:hover {
+      background: var(--neutral-gray-10);
+      color: var(--neutral-gray-1000);
+    }
+    /* Button sizes */
+    .btn-xs {
+      height: var(--btn-height-xs); /* h-7 = 28px */
+      padding: 0 0.5rem; /* px-2 */
+      font-size: 0.75rem; /* text-xs */
+    }
+    .btn-sm {
+      height: var(--btn-height-sm); /* h-9 = 36px */
+      padding: 0 0.75rem; /* px-3 */
+    }
+    .btn-lg {
+      height: var(--btn-height-lg); /* h-11 = 44px */
+      padding: 0 2rem; /* px-8 */
+    }
+    .btn-icon {
+      height: var(--btn-height-default);
+      width: var(--btn-height-default);
+      padding: 0;
+    }
+
+    /* Dark mode toggle - uses btn-icon sizing */
     .dark-mode-toggle {
       position: fixed;
-      top: 16px;
-      right: 16px;
+      top: 1rem;
+      right: 1rem;
       z-index: 100;
       background: var(--primary-dark-blue-500);
       color: white;
       border: 1px solid var(--primary-dark-blue-50);
-      border-radius: var(--border-radius-m);
-      width: 40px;
-      height: 40px;
+      border-radius: var(--border-radius-sm); /* rounded-md */
+      width: var(--btn-height-default); /* h-10 = 40px */
+      height: var(--btn-height-default); /* h-10 = 40px */
       cursor: pointer;
-      font-size: 16px;
-      box-shadow: var(--box-shadow-md);
-      transition: all 0.2s ease;
+      font-size: 1rem;
+      box-shadow: var(--box-shadow-sm);
+      transition: background-color 0.15s ease;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .dark-mode-toggle:hover {
       background: var(--primary-dark-blue-100);
-      transform: translateY(-1px);
-      box-shadow: var(--box-shadow-lg);
     }
 
     /* ========================================
-       PROVIDER BADGES
+       BADGES - from badge.tsx
+       rounded-md, px-2.5 py-0.5, text-xs, font-semibold
        ======================================== */
 
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: var(--border-radius-sm); /* rounded-md */
+      border: 1px solid transparent;
+      padding: 0.125rem 0.625rem; /* py-0.5 px-2.5 */
+      font-size: 0.75rem; /* text-xs */
+      font-weight: 600; /* font-semibold */
+      transition: color 0.15s ease;
+    }
     .badge-aws {
       background-color: var(--accent-orange-100);
       color: white;
-      padding: 2px 8px;
-      border-radius: var(--border-radius-s);
-      font-size: 11px;
+      border-radius: var(--border-radius-sm);
+      padding: 0.125rem 0.625rem;
+      font-size: 0.75rem;
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
     .badge-k8s {
       background-color: var(--primary-blue-200);
       color: white;
-      padding: 2px 8px;
-      border-radius: var(--border-radius-s);
-      font-size: 11px;
+      border-radius: var(--border-radius-sm);
+      padding: 0.125rem 0.625rem;
+      font-size: 0.75rem;
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
     .badge-sentry {
       background-color: #362d59;
       color: white;
-      padding: 2px 8px;
-      border-radius: var(--border-radius-s);
-      font-size: 11px;
+      border-radius: var(--border-radius-sm);
+      padding: 0.125rem 0.625rem;
+      font-size: 0.75rem;
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    }
+    .badge-success {
+      background-color: var(--status-muted-success);
+      color: var(--status-dark-success);
+      border-radius: var(--border-radius-sm);
+      padding: 0.125rem 0.625rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-warning {
+      background-color: var(--status-muted-warning);
+      color: var(--status-dark-warning);
+      border-radius: var(--border-radius-sm);
+      padding: 0.125rem 0.625rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-error {
+      background-color: var(--status-muted-error);
+      color: var(--status-dark-error);
+      border-radius: var(--border-radius-sm);
+      padding: 0.125rem 0.625rem;
+      font-size: 0.75rem;
+      font-weight: 600;
     }
 
     /* ========================================
-       STATS CARDS
+       CARDS - from card.tsx
+       rounded-lg, border, shadow-sm, p-4
        ======================================== */
 
+    .card {
+      background: white;
+      border: 1px solid var(--neutral-gray-20);
+      border-radius: var(--border-radius-md); /* rounded-lg */
+      box-shadow: var(--box-shadow-sm);
+    }
+    .card-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem; /* space-y-1.5 */
+      padding: 1rem; /* p-4 */
+    }
+    .card-content {
+      padding: 1rem; /* p-4 */
+      padding-top: 0; /* pt-0 */
+    }
+    .card-footer {
+      display: flex;
+      align-items: center;
+      padding: 1rem; /* p-4 */
+      padding-top: 0;
+    }
+
+    /* Stats Cards */
     .stats-container {
       display: flex;
-      gap: 16px;
+      gap: 1rem;
       flex-wrap: wrap;
-      margin: 24px 0;
+      margin: 1.5rem 0;
     }
     .stat-card {
       background: var(--primary-dark-blue-500);
       color: white;
-      padding: 20px 24px;
-      border-radius: var(--border-radius-l);
-      min-width: 160px;
+      padding: 1rem 1.5rem; /* Closer to p-4 px-6 */
+      border-radius: var(--border-radius-md); /* rounded-lg */
+      min-width: 140px;
       text-align: center;
-      box-shadow: var(--box-shadow-md);
+      box-shadow: var(--box-shadow-sm);
       border: 1px solid var(--primary-dark-blue-50);
     }
     .stat-card.aws {
@@ -319,43 +460,53 @@
       border-color: #5765a0;
     }
     .stat-number {
-      font-size: 32px;
+      font-size: 1.875rem; /* 30px */
       font-weight: 700;
       line-height: 1;
       font-family: 'IBM Plex Sans', sans-serif;
     }
     .stat-label {
-      font-size: 13px;
+      font-size: 0.8125rem; /* 13px */
       opacity: 0.9;
-      margin-top: 8px;
+      margin-top: 0.5rem;
       font-weight: 500;
     }
 
+    [data-theme="dark"] .card {
+      background: var(--primary-dark-blue-80);
+      border-color: var(--primary-dark-blue-50);
+    }
+
     /* ========================================
-       COLLAPSIBLE CLI SECTIONS
+       COLLAPSIBLE CLI SECTIONS (details)
+       Using card styling: rounded-lg, shadow-sm
        ======================================== */
 
     details {
       background: var(--neutral-gray-10);
       border: 1px solid var(--neutral-gray-20);
-      border-radius: var(--border-radius-m);
-      padding: 12px 16px;
-      margin: 8px 0 16px 0;
+      border-radius: var(--border-radius-md); /* rounded-lg */
+      padding: 0.75rem 1rem; /* py-3 px-4 */
+      margin: 0.5rem 0 1rem 0;
       box-shadow: var(--box-shadow-xs);
     }
     details summary {
       cursor: pointer;
-      font-weight: 500;
+      font-weight: 500; /* font-medium */
       color: var(--neutral-gray-500);
-      font-size: 13px;
+      font-size: 0.875rem; /* text-sm */
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 0.5rem;
+      list-style: none;
+    }
+    details summary::-webkit-details-marker {
+      display: none;
     }
     details summary::before {
       content: '▶';
-      font-size: 10px;
-      transition: transform 0.2s;
+      font-size: 0.625rem;
+      transition: transform 0.15s ease;
     }
     details[open] summary::before {
       transform: rotate(90deg);
@@ -364,8 +515,8 @@
       color: var(--primary-blue-200);
     }
     details[open] summary {
-      margin-bottom: 12px;
-      padding-bottom: 12px;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.75rem;
       border-bottom: 1px solid var(--neutral-gray-20);
       color: var(--primary-blue-200);
     }
@@ -378,48 +529,52 @@
     }
     [data-theme="dark"] details[open] summary {
       border-color: var(--primary-dark-blue-50);
+      color: var(--primary-blue-50);
     }
 
     /* ========================================
-       CATEGORY CARDS
+       CATEGORY CARDS - follows card.tsx
+       rounded-lg, border, shadow-sm, p-4
        ======================================== */
 
     .category-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 16px;
-      margin: 24px 0;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
     }
     .category-card {
       background: #ffffff;
       border: 1px solid var(--neutral-gray-20);
-      border-radius: var(--border-radius-m);
-      padding: 16px 20px;
-      transition: all 0.2s ease;
+      border-radius: var(--border-radius-md); /* rounded-lg */
+      padding: 1rem; /* p-4 */
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
       text-decoration: none;
       display: block;
-      box-shadow: var(--box-shadow-xs);
+      box-shadow: var(--box-shadow-sm);
     }
     .category-card:hover {
       border-color: var(--primary-blue-100);
       box-shadow: var(--box-shadow-md);
-      transform: translateY(-2px);
     }
     .category-card h4 {
-      margin: 0 0 8px 0;
+      margin: 0 0 0.5rem 0;
       color: var(--primary-dark-blue-500);
-      font-size: 15px;
+      font-size: 0.9375rem; /* 15px */
       font-weight: 600;
     }
     .category-card p {
       margin: 0;
       color: var(--neutral-gray-200);
-      font-size: 13px;
+      font-size: 0.8125rem; /* 13px */
       line-height: 1.5;
     }
     [data-theme="dark"] .category-card {
       background: var(--primary-dark-blue-80);
       border-color: var(--primary-dark-blue-50);
+    }
+    [data-theme="dark"] .category-card:hover {
+      border-color: var(--primary-blue-100);
     }
     [data-theme="dark"] .category-card h4 {
       color: var(--neutral-gray-10);
@@ -430,6 +585,7 @@
 
     /* ========================================
        COVER PAGE ENHANCEMENTS
+       Button sizing matches button.tsx
        ======================================== */
 
     .cover-main {
@@ -444,31 +600,34 @@
     }
     .cover-main blockquote {
       color: rgba(255, 255, 255, 0.85) !important;
-      font-size: 1.25rem !important;
+      font-size: 1.125rem !important;
     }
     .cover-main ul {
       color: rgba(255, 255, 255, 0.8) !important;
     }
     .cover-main .cover-main-cta {
       display: flex;
-      gap: 12px;
+      gap: 0.75rem;
       justify-content: center;
-      margin-top: 24px;
+      margin-top: 1.5rem;
     }
+    /* Cover page buttons - match btn-default and btn-lg from button.tsx */
     section.cover .cover-main > p:last-child a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       background: var(--primary-blue-100) !important;
       border: none !important;
-      border-radius: var(--border-radius-m) !important;
-      padding: 12px 28px !important;
-      font-weight: 600 !important;
-      font-size: 14px !important;
-      transition: all 0.2s ease !important;
-      box-shadow: var(--box-shadow-sm) !important;
+      border-radius: var(--border-radius-sm) !important; /* rounded-md */
+      height: var(--btn-height-lg); /* h-11 = 44px for lg */
+      padding: 0 2rem !important; /* px-8 */
+      font-weight: 500 !important; /* font-medium */
+      font-size: 0.875rem !important; /* text-sm */
+      transition: background-color 0.15s ease !important;
+      box-shadow: var(--box-shadow-xs) !important;
     }
     section.cover .cover-main > p:last-child a:hover {
       background: var(--primary-blue-200) !important;
-      transform: translateY(-1px) !important;
-      box-shadow: var(--box-shadow-md) !important;
     }
     section.cover .cover-main > p:last-child a:last-child {
       background: transparent !important;
@@ -481,141 +640,322 @@
     }
 
     /* ========================================
-       SIDEBAR ENHANCEMENTS
+       SIDEBAR - from sidebar.tsx
+       SIDEBAR_WIDTH = '16rem' (256px)
        ======================================== */
 
     .sidebar {
+      width: 16rem !important; /* SIDEBAR_WIDTH from sidebar.tsx */
       border-right: 1px solid var(--neutral-gray-20);
+      background: var(--sidebar-background);
     }
     .sidebar-nav {
-      padding: 16px 0;
+      padding: 1rem 0;
+    }
+    .sidebar-nav ul {
+      padding: 0;
+      margin: 0;
     }
     .sidebar-nav li {
-      margin: 2px 0;
+      margin: 0.125rem 0;
+      list-style: none;
     }
     .sidebar-nav a {
-      padding: 8px 16px;
-      border-radius: var(--border-radius-s);
+      display: block;
+      padding: 0.5rem 1rem; /* py-2 px-4 */
+      border-radius: var(--border-radius-sm); /* rounded-md */
+      font-size: 0.875rem; /* text-sm */
+      font-weight: 500; /* font-medium */
+      color: var(--neutral-gray-500);
       transition: all 0.15s ease;
+      text-decoration: none;
     }
     .sidebar-nav a:hover {
       background: var(--neutral-gray-20);
+      color: var(--neutral-gray-1000);
     }
     .sidebar-nav a.active {
       background: var(--primary-blue-10);
       color: var(--primary-blue-200);
+      font-weight: 600;
+    }
+    /* Nested items */
+    .sidebar-nav ul ul {
+      padding-left: 1rem;
+    }
+    .sidebar-nav ul ul a {
+      font-size: 0.8125rem; /* Slightly smaller for nested */
     }
     [data-theme="dark"] .sidebar {
       border-color: var(--primary-dark-blue-50);
+      background: var(--primary-dark-blue-80);
+    }
+    [data-theme="dark"] .sidebar-nav a {
+      color: var(--neutral-gray-100);
     }
     [data-theme="dark"] .sidebar-nav a:hover {
       background: var(--primary-dark-blue-50);
+      color: var(--neutral-gray-20);
     }
     [data-theme="dark"] .sidebar-nav a.active {
       background: var(--primary-dark-blue-50);
+      color: var(--primary-blue-50);
     }
 
     /* ========================================
-       SEARCH BOX
+       INPUT / SEARCH - from input.tsx
+       rounded-md, px-3 py-2, text-sm, focus:border-blue-500
        ======================================== */
 
     .search input {
+      width: 100%;
+      background: white;
       border: 1px solid var(--neutral-gray-50) !important;
-      border-radius: var(--border-radius-m) !important;
-      padding: 10px 16px !important;
+      border-radius: var(--border-radius-sm) !important; /* rounded-md */
+      padding: 0.5rem 0.75rem !important; /* py-2 px-3 */
       font-family: 'IBM Plex Sans', sans-serif !important;
-      font-size: 14px !important;
-      box-shadow: var(--box-shadow-xs) !important;
-      transition: all 0.2s ease !important;
+      font-size: 0.875rem !important; /* text-sm */
+      font-weight: 400; /* font-normal */
+      transition: border-color 0.15s ease !important;
+    }
+    .search input::placeholder {
+      color: var(--neutral-gray-100);
     }
     .search input:focus {
-      border-color: var(--primary-blue-100) !important;
-      box-shadow: 0 0 0 3px var(--primary-blue-10) !important;
+      border-color: var(--primary-blue-500) !important; /* focus:border-blue-500 */
       outline: none !important;
+      box-shadow: none !important;
+    }
+    .search input:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
     }
     [data-theme="dark"] .search input {
       background: var(--primary-dark-blue-80) !important;
       border-color: var(--primary-dark-blue-50) !important;
       color: var(--neutral-gray-20) !important;
     }
+    [data-theme="dark"] .search input::placeholder {
+      color: var(--neutral-gray-200);
+    }
+    [data-theme="dark"] .search input:focus {
+      border-color: var(--primary-blue-100) !important;
+    }
 
     /* ========================================
-       TABLES
+       TABLES - from table.tsx
+       TableHeader: bg-primary-blue-10
+       TableHead: px-2 py-2, font-semibold, text-neutral-gray-500
+       TableCell: px-2 py-3
+       TableRow: border-neutral-gray-20
        ======================================== */
 
     table {
       border-collapse: collapse;
       width: 100%;
-      margin: 16px 0;
-      font-size: 13px;
-      box-shadow: var(--box-shadow-xs);
-      border-radius: var(--border-radius-m);
-      overflow: hidden;
+      margin: 1rem 0;
+      font-size: 0.875rem; /* text-sm */
+      caption-side: bottom;
     }
-    table th {
-      background: var(--neutral-gray-10);
-      font-weight: 600;
-      text-align: left;
-      padding: 12px 16px;
+    table caption {
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--neutral-gray-200);
+    }
+    thead {
       border-bottom: 1px solid var(--neutral-gray-20);
-      color: var(--neutral-gray-500);
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      background: var(--primary-blue-10); /* bg-primary-blue-10 from table.tsx */
     }
-    table td {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--neutral-gray-20);
+    tbody {
+      /* [&_tr:last-child]:border-0 */
     }
-    table tr:last-child td {
+    tbody tr:last-child {
       border-bottom: none;
     }
-    [data-theme="dark"] table th {
+    table tr {
+      border-bottom: 1px solid var(--neutral-gray-20); /* border-neutral-gray-20 */
+      transition: background-color 0.15s ease;
+    }
+    table tr:hover {
+      background-color: rgba(0, 0, 0, 0.02); /* hover:bg-muted/50 */
+    }
+    table th {
+      padding: 0.5rem; /* px-2 py-2 = 8px */
+      text-align: left;
+      vertical-align: middle;
+      font-weight: 600; /* font-semibold */
+      color: var(--neutral-gray-500); /* text-neutral-gray-500 */
+      font-size: 0.875rem; /* Keep same as body */
+      height: 2.5rem; /* h-10 */
+    }
+    table td {
+      padding: 0.5rem 0.5rem 0.75rem 0.5rem; /* px-2 py-3 = 8px 12px */
+      vertical-align: middle;
+    }
+    [data-theme="dark"] thead {
       background: var(--primary-dark-blue-80);
+    }
+    [data-theme="dark"] table th {
       color: var(--neutral-gray-100);
+    }
+    [data-theme="dark"] table tr {
       border-color: var(--primary-dark-blue-50);
     }
-    [data-theme="dark"] table td {
-      border-color: var(--primary-dark-blue-50);
+    [data-theme="dark"] table tr:hover {
+      background-color: rgba(255, 255, 255, 0.02);
     }
 
     /* ========================================
-       CODE BLOCKS
+       CODE BLOCKS - ShadCN patterns
        ======================================== */
 
     pre {
-      border-radius: var(--border-radius-m) !important;
+      border-radius: var(--border-radius-md) !important; /* rounded-lg */
       box-shadow: var(--box-shadow-sm) !important;
+      font-size: 0.8125rem !important; /* 13px */
+      padding: 1rem !important;
     }
     code {
-      font-family: 'IBM Plex Mono', Menlo, monospace !important;
+      font-family: 'IBM Plex Mono', Menlo, Monaco, monospace !important;
+    }
+    /* Inline code - similar to ShadCN Badge styling */
+    :not(pre) > code {
+      background: var(--neutral-gray-10);
+      color: var(--primary-dark-blue-500);
+      padding: 0.125rem 0.375rem; /* py-0.5 px-1.5 */
+      border-radius: var(--border-radius-sm); /* rounded-md */
+      font-size: 0.8125rem;
+      font-weight: 500;
+    }
+    [data-theme="dark"] :not(pre) > code {
+      background: var(--primary-dark-blue-80);
+      color: var(--primary-blue-20);
     }
 
     /* ========================================
-       ALERTS / CALLOUTS
+       ALERTS / CALLOUTS - ShadCN Alert component
+       rounded-lg, border, p-4, text-sm
        ======================================== */
 
     .alert {
-      border-radius: var(--border-radius-m);
-      padding: 16px 20px;
-      margin: 16px 0;
-      border-left: 4px solid;
+      position: relative;
+      width: 100%;
+      border-radius: var(--border-radius-md); /* rounded-lg */
+      border: 1px solid var(--neutral-gray-20);
+      padding: 1rem; /* p-4 */
+      margin: 1rem 0;
+      font-size: 0.875rem; /* text-sm */
     }
-    .alert.callout {
+    .alert > :first-child {
+      margin-top: 0;
+    }
+    .alert > :last-child {
+      margin-bottom: 0;
+    }
+    .alert.callout,
+    .alert.info {
       background: var(--primary-blue-10);
       border-color: var(--primary-blue-100);
+      color: var(--primary-blue-500);
     }
     .alert.warning {
-      background: #fffbeb;
+      background: var(--status-muted-warning);
       border-color: var(--feedback-warning-100);
+      color: var(--status-dark-warning);
     }
-    .alert.danger {
-      background: #fef2f2;
+    .alert.danger,
+    .alert.error {
+      background: var(--status-muted-error);
       border-color: var(--feedback-error-100);
+      color: var(--status-dark-error);
     }
-    .alert.tip {
-      background: #ecfdf5;
+    .alert.tip,
+    .alert.success {
+      background: var(--status-muted-success);
       border-color: var(--feedback-success-100);
+      color: var(--status-dark-success);
+    }
+    [data-theme="dark"] .alert {
+      border-color: var(--primary-dark-blue-50);
+    }
+
+    /* ========================================
+       SEPARATOR - from separator.tsx
+       ======================================== */
+
+    .separator,
+    hr {
+      flex-shrink: 0;
+      background: var(--neutral-gray-20);
+      border: none;
+      height: 1px;
+      width: 100%;
+      margin: 1rem 0;
+    }
+    [data-theme="dark"] .separator,
+    [data-theme="dark"] hr {
+      background: var(--primary-dark-blue-50);
+    }
+
+    /* ========================================
+       SCROLL AREA - ShadCN ScrollArea patterns
+       ======================================== */
+
+    ::-webkit-scrollbar {
+      width: 0.5rem;
+      height: 0.5rem;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--neutral-gray-50);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--neutral-gray-100);
+    }
+    [data-theme="dark"] ::-webkit-scrollbar-thumb {
+      background: var(--primary-dark-blue-50);
+    }
+    [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+      background: var(--neutral-gray-200);
+    }
+
+    /* ========================================
+       TYPOGRAPHY - ShadCN text patterns
+       ======================================== */
+
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'IBM Plex Sans', sans-serif;
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+    h1 { font-size: var(--heading-h1-font-size); }
+    h2 { font-size: var(--heading-h2-font-size); }
+    h3 { font-size: var(--heading-h3-font-size); }
+    h4 { font-size: var(--heading-h4-font-size); }
+
+    p {
+      line-height: 1.625; /* leading-relaxed */
+    }
+
+    /* Muted text - ShadCN text-muted-foreground */
+    .text-muted {
+      color: var(--neutral-gray-200);
+    }
+    [data-theme="dark"] .text-muted {
+      color: var(--neutral-gray-100);
+    }
+
+    /* ========================================
+       FOCUS VISIBLE - ShadCN accessibility
+       ======================================== */
+
+    :focus-visible {
+      outline: 2px solid var(--primary-blue-100);
+      outline-offset: 2px;
     }
 
     /* ========================================
@@ -629,6 +969,61 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
+      font-size: 0.875rem; /* text-sm */
+    }
+
+    /* ========================================
+       DOCSIFY OVERRIDES for ShadCN consistency
+       ======================================== */
+
+    /* Ensure content area respects sidebar width */
+    .content {
+      padding-left: calc(16rem + 2rem) !important; /* sidebar width + gap */
+    }
+
+    /* Markdown content max-width */
+    .markdown-section {
+      max-width: var(--content-max-width);
+      padding: 2rem;
+    }
+
+    /* Links in content */
+    .markdown-section a {
+      color: var(--link-color);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .markdown-section a:hover {
+      color: var(--link-color--hover);
+      text-decoration: underline;
+    }
+
+    /* Lists */
+    .markdown-section ul,
+    .markdown-section ol {
+      padding-left: 1.5rem;
+      margin: 0.75rem 0;
+    }
+    .markdown-section li {
+      margin: 0.25rem 0;
+      line-height: 1.625;
+    }
+
+    /* Blockquotes - ShadCN styling */
+    blockquote {
+      background: var(--blockquote-background);
+      border-left: var(--blockquote-border-width) solid var(--blockquote-border-color);
+      border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
+      padding: 1rem;
+      margin: 1rem 0;
+      font-style: normal;
+    }
+    blockquote p {
+      margin: 0;
+    }
+    [data-theme="dark"] blockquote {
+      background: var(--primary-dark-blue-80);
+      border-color: var(--primary-blue-100);
     }
   </style>
 </head>
