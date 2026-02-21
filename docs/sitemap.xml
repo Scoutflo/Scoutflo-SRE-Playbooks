@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Home -->
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Quick Reference -->
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/quick-reference</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- AWS Playbooks -->
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/aws/</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/aws/01-compute</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/aws/02-database</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/aws/03-storage</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/aws/04-networking</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/aws/05-security</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Kubernetes Playbooks -->
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/k8s/</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/k8s/01-control-plane</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/k8s/02-nodes</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/k8s/03-pods</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/k8s/04-workloads</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/k8s/05-networking</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/k8s/06-storage</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/k8s/13-proactive</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Sentry Playbooks -->
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/sentry/</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/sentry/01-error-tracking</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/sentry/02-performance</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Contributing -->
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/contributing</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Other Pages -->
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/faq</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/examples</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/flowchart</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/changelog</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://scoutflo.github.io/scoutflo-SRE-Playbooks/#/roadmap</loc>
+    <lastmod>2026-02-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+</urlset>

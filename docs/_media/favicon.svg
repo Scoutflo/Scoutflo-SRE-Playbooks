@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e40af;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="45" fill="url(#grad)"/>
+  <!-- SRE text stylized as play button + document -->
+  <g fill="white">
+    <!-- Play button triangle (represents "playbook") -->
+    <polygon points="35,25 35,75 70,50" opacity="0.9"/>
+    <!-- Document lines -->
+    <rect x="40" y="38" width="20" height="3" rx="1" opacity="0.6"/>
+    <rect x="40" y="45" width="15" height="3" rx="1" opacity="0.6"/>
+    <rect x="40" y="52" width="18" height="3" rx="1" opacity="0.6"/>
+  </g>
+</svg>

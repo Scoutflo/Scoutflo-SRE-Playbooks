@@ -1,0 +1,11 @@
+# SRE Playbooks - Scoutflo
+# https://scoutflo.github.io/scoutflo-SRE-Playbooks/
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://scoutflo.github.io/scoutflo-SRE-Playbooks/sitemap.xml
+
+# Crawl delay (optional, be nice to crawlers)
+Crawl-delay: 1

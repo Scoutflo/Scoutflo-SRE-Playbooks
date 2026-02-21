@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SRE Playbooks | Scoutflo - 414 Incident Response Playbooks</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="414 production-ready SRE incident response playbooks for Kubernetes, AWS, and Sentry. Open source runbooks for DevOps and Site Reliability Engineers.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <meta name="keywords" content="SRE, DevOps, Kubernetes, AWS, Sentry, Playbooks, Runbooks, Incident Response, Site Reliability Engineering, K8s, Cloud Infrastructure, Troubleshooting, Monitoring, Alerting">
+  <meta name="author" content="Scoutflo">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://scoutflo.github.io/scoutflo-SRE-Playbooks/">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://scoutflo.github.io/scoutflo-SRE-Playbooks/">
+  <meta property="og:title" content="SRE Playbooks | 414 Incident Response Playbooks">
+  <meta property="og:description" content="Production-ready SRE playbooks for Kubernetes, AWS, and Sentry. Open source runbooks for DevOps teams.">
+  <meta property="og:image" content="https://raw.githubusercontent.com/Scoutflo/scoutflo-SRE-Playbooks/master/docs/_media/og-image.png">
+  <meta property="og:site_name" content="Scoutflo SRE Playbooks">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@scout_flo">
+  <meta name="twitter:title" content="SRE Playbooks | 414 Incident Response Playbooks">
+  <meta name="twitter:description" content="Production-ready SRE playbooks for Kubernetes, AWS, and Sentry. Open source runbooks for DevOps teams.">
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/Scoutflo/scoutflo-SRE-Playbooks/master/docs/_media/og-image.png">
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "SRE Playbooks - Incident Response Documentation",
+    "description": "414 production-ready SRE incident response playbooks for Kubernetes, AWS, and Sentry",
+    "author": {
+      "@type": "Organization",
+      "name": "Scoutflo",
+      "url": "https://scoutflo.com"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Scoutflo"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://scoutflo.github.io/scoutflo-SRE-Playbooks/"
+    },
+    "keywords": ["SRE", "DevOps", "Kubernetes", "AWS", "Incident Response", "Playbooks"],
+    "isAccessibleForFree": true,
+    "license": "https://opensource.org/licenses/MIT"
+  }
+  </script>
+
+  <!-- Favicon -->
+  <link rel="icon" href="_media/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="_media/apple-touch-icon.png">
+
+  <!-- Theme -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css">
+
+  <!-- Custom Styles -->
+  <style>
+    :root {
+      /* Primary colors */
+      --theme-color: #2563eb;
+      --theme-color-secondary: #1e40af;
+
+      /* Sidebar */
+      --sidebar-width: 280px;
+      --sidebar-background: #f8fafc;
+      --sidebar-nav-link-color: #334155;
+      --sidebar-nav-link-color--active: #2563eb;
+      --sidebar-nav-link-font-weight--active: 600;
+
+      /* Content */
+      --content-max-width: 900px;
+
+      /* Code blocks */
+      --code-theme-background: #1e293b;
+      --code-theme-text: #e2e8f0;
+      --code-inline-background: #f1f5f9;
+      --code-inline-color: #0f172a;
+
+      /* Search */
+      --search-result-heading-color: #2563eb;
+
+      /* Cover */
+      --cover-background-color: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+    }
+
+    /* Dark mode */
+    [data-theme="dark"] {
+      --base-background-color: #0f172a;
+      --base-color: #e2e8f0;
+      --sidebar-background: #1e293b;
+      --sidebar-nav-link-color: #94a3b8;
+      --sidebar-nav-link-color--active: #60a5fa;
+      --code-inline-background: #334155;
+      --code-inline-color: #e2e8f0;
+      --heading-color: #f1f5f9;
+      --blockquote-background: #1e293b;
+    }
+
+    /* Dark mode toggle button */
+    .dark-mode-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 100;
+      background: var(--theme-color);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      font-size: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+    }
+    .dark-mode-toggle:hover {
+      transform: scale(1.1);
+    }
+
+    /* Provider badges */
+    .badge-aws {
+      background-color: #ff9900;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-k8s {
+      background-color: #326ce5;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-sentry {
+      background-color: #362d59;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Stats cards */
+    .stats-container {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin: 24px 0;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px 24px;
+      border-radius: 12px;
+      min-width: 150px;
+      text-align: center;
+    }
+    .stat-card.aws { background: linear-gradient(135deg, #ff9900 0%, #ff6600 100%); }
+    .stat-card.k8s { background: linear-gradient(135deg, #326ce5 0%, #1e40af 100%); }
+    .stat-card.sentry { background: linear-gradient(135deg, #362d59 0%, #1a1a2e 100%); }
+    .stat-number {
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 14px;
+      opacity: 0.9;
+      margin-top: 8px;
+    }
+
+    /* Collapsible CLI sections */
+    details {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 8px 0 16px 0;
+    }
+    details summary {
+      cursor: pointer;
+      font-weight: 500;
+      color: #475569;
+    }
+    details summary:hover {
+      color: #2563eb;
+    }
+    details[open] summary {
+      margin-bottom: 12px;
+      color: #2563eb;
+    }
+
+    /* Category cards */
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+    .category-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+      transition: all 0.2s;
+    }
+    .category-card:hover {
+      border-color: #2563eb;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+    }
+    .category-card h4 {
+      margin: 0 0 8px 0;
+      color: #1e293b;
+    }
+    .category-card p {
+      margin: 0;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    /* Quick search highlight */
+    .search-keyword {
+      background: #fef3c7;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Dark Mode Toggle -->
+  <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle dark mode" aria-label="Toggle dark mode">
+    <span id="theme-icon">🌙</span>
+  </button>
+
+  <div id="app">Loading SRE Playbooks...</div>
+
+  <script>
+    window.$docsify = {
+      name: 'SRE Playbooks',
+      repo: 'https://github.com/Scoutflo/scoutflo-SRE-Playbooks',
+      logo: '_media/favicon.svg',
+
+      // Load from docs folder
+      basePath: '/docs/',
+
+      // Homepage & Cover
+      homepage: 'home.md',
+      coverpage: true,
+      onlyCover: false,
+
+      // Navigation
+      loadSidebar: true,
+      loadNavbar: true,
+      subMaxLevel: 3,
+      mergeNavbar: true,
+
+      // 404 page
+      notFoundPage: true,
+
+      // Search
+      search: {
+        maxAge: 86400000,
+        paths: 'auto',
+        placeholder: 'Search playbooks...',
+        noData: 'No results found',
+        depth: 3,
+        hideOtherSidebarContent: false,
+      },
+
+      // Copy code button
+      copyCode: {
+        buttonText: 'Copy',
+        successText: 'Copied!',
+      },
+
+      // Pagination
+      pagination: {
+        previousText: 'Previous',
+        nextText: 'Next',
+        crossChapter: true,
+      },
+
+      // Tab support
+      tabs: {
+        persist: true,
+        sync: true,
+        theme: 'classic',
+        tabComments: true,
+        tabHeadings: true,
+      },
+
+      // Auto header
+      auto2top: true,
+
+      // Theme color
+      themeColor: '#2563eb',
+
+      // Count
+      count: {
+        countable: true,
+        fontsize: '0.9em',
+        color: 'rgb(90,90,90)',
+        language: 'english',
+      },
+
+      // Alias for cleaner URLs
+      alias: {
+        '/.*/_sidebar.md': '/_sidebar.md',
+        '/.*/_navbar.md': '/_navbar.md',
+      },
+
+      // Format updated
+      formatUpdated: '{MM}/{DD}/{YYYY}',
+    }
+  </script>
+
+  <!-- Docsify core -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+
+  <!-- Plugins -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-pagination@2/dist/docsify-pagination.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-tabs@1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docsify-count@latest/dist/countable.min.js"></script>
+
+  <!-- Syntax highlighting -->
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-yaml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
+
+  <!-- Emoji support -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/emoji.min.js"></script>
+
+  <!-- Dark mode script -->
+  <script>
+    function toggleDarkMode() {
+      const html = document.documentElement;
+      const icon = document.getElementById('theme-icon');
+      const currentTheme = html.getAttribute('data-theme');
+
+      if (currentTheme === 'dark') {
+        html.removeAttribute('data-theme');
+        icon.textContent = '🌙';
+        localStorage.setItem('theme', 'light');
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        icon.textContent = '☀️';
+        localStorage.setItem('theme', 'dark');
+      }
+    }
+
+    // Check for saved theme preference or system preference
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+      if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.addEventListener('DOMContentLoaded', function() {
+          const icon = document.getElementById('theme-icon');
+          if (icon) icon.textContent = '☀️';
+        });
+      }
+    })();
+  </script>
+
+  <!-- Back to top button -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify-plugin-flexible-alerts@1"></script>
+</body>
+</html>
