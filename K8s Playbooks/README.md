@@ -1,9 +1,9 @@
 # Kubernetes (K8s) Playbooks
 
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-194%20playbooks-blue)](README.md)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-232%20playbooks-blue)](README.md)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](../../CONTRIBUTING.md)
 
-> **194 comprehensive Kubernetes incident response playbooks** organized into 13 categorized folders - Systematic troubleshooting guides for common Kubernetes cluster and workload issues to help SREs diagnose and resolve problems faster.
+> **232 comprehensive Kubernetes incident response playbooks** organized into 13 categorized folders - Systematic troubleshooting guides for common Kubernetes cluster and workload issues to help SREs diagnose and resolve problems faster.
 
 ## 📋 Table of Contents
 
@@ -20,7 +20,7 @@
 
 ## Overview
 
-This directory contains **194 Kubernetes incident response playbooks** organized into **13 categorized folders** to help Site Reliability Engineers (SREs) quickly find and diagnose common Kubernetes cluster and workload issues. Each playbook follows a structured format to provide systematic troubleshooting guidance.
+This directory contains **232 Kubernetes incident response playbooks** organized into **13 categorized folders** to help Site Reliability Engineers (SREs) quickly find and diagnose common Kubernetes cluster and workload issues. Each playbook follows a structured format to provide systematic troubleshooting guidance.
 
 ### Services & Components Covered
 
@@ -42,11 +42,11 @@ Playbooks are organized into numbered folders by category for easy navigation:
 
 ```
 K8s Playbooks/
-├── 01-Control-Plane/              (18 playbooks)
-├── 02-Nodes/                      (12 playbooks)
-├── 03-Pods/                       (31 playbooks)
-├── 04-Workloads/                  (23 playbooks)
-├── 05-Networking/                 (19 playbooks)
+├── 01-Control-Plane/              (24 playbooks)
+├── 02-Nodes/                      (24 playbooks)
+├── 03-Pods/                       (41 playbooks)
+├── 04-Workloads/                  (25 playbooks)
+├── 05-Networking/                 (27 playbooks)
 ├── 06-Storage/                    (9 playbooks)
 ├── 07-RBAC/                       (6 playbooks)
 ├── 08-Configuration/              (6 playbooks)

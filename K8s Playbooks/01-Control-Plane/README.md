@@ -1,6 +1,6 @@
 # Control Plane Playbooks
 
-This folder contains **18 playbooks** for troubleshooting Kubernetes control plane component issues.
+This folder contains **24 playbooks** for troubleshooting Kubernetes control plane component issues.
 
 ## What is the Control Plane?
 
@@ -16,7 +16,7 @@ The control plane is the brain of your Kubernetes cluster. It manages the cluste
 - API Server high latency or downtime
 - Scheduler failures
 - Controller Manager problems
-- Certificate expiration
+- Certificate expiration and management (cert-manager)
 - Version mismatches
 - Upgrade failures
 - Client connection errors
@@ -41,6 +41,12 @@ The control plane is the brain of your Kubernetes cluster. It manages the cluste
 16. `KubeVersionMismatch-control-plane.md` - Component version mismatches
 17. `Timeout-control-plane.md` - Control plane timeouts
 18. `UpgradeFails-control-plane.md` - Cluster upgrade failures
+19. `CertificateExpiringCritical-cert.md` - Certificate expiring critically soon
+20. `CertificateExpiringSoon-cert.md` - Certificate expiring soon warning
+21. `CertificateNotReady-cert.md` - Certificate not ready
+22. `CertManagerACMEOrderFailed-cert.md` - Cert-manager ACME order failed
+23. `CertManagerControllerHighError-cert.md` - Cert-manager controller high error rate
+24. `CertManagerDown-cert.md` - Cert-manager down
 
 ## Quick Start
 

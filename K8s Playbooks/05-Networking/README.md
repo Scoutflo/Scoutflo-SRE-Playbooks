@@ -1,6 +1,6 @@
 # Networking Playbooks
 
-This folder contains **19 playbooks** for troubleshooting Kubernetes networking issues.
+This folder contains **27 playbooks** for troubleshooting Kubernetes networking issues.
 
 ## What is Kubernetes Networking?
 
@@ -15,8 +15,8 @@ Key components include Services, Ingress, CoreDNS, and kube-proxy.
 ## Common Issues Covered
 
 - Service connectivity problems
-- Ingress configuration issues
-- DNS resolution failures
+- Ingress configuration issues (including NGINX Ingress)
+- DNS resolution failures (CoreDNS)
 - Network policy blocking traffic
 - kube-proxy failures
 - External service access problems
@@ -43,6 +43,14 @@ Key components include Services, Ingress, CoreDNS, and kube-proxy.
 17. `ServiceNotForwardingTraffic-service.md` - Service not forwarding traffic
 18. `ServiceNotResolvingDNS-dns.md` - Service DNS not resolving
 19. `ServicesIntermittentlyUnreachable-service.md` - Services intermittently unreachable
+20. `CoreDNSDown-dns.md` - CoreDNS down
+21. `CoreDNSLatencyHigh-dns.md` - CoreDNS latency high
+22. `IngressCertificateExpiring-ingress.md` - Ingress certificate expiring
+23. `NginxIngress4xxErrorsHigh-ingress.md` - NGINX Ingress 4xx errors high
+24. `NginxIngress5xxErrorsHigh-ingress.md` - NGINX Ingress 5xx errors high
+25. `NginxIngressConfigReloadFailed-ingress.md` - NGINX Ingress config reload failed
+26. `NginxIngressDown-ingress.md` - NGINX Ingress down
+27. `NginxIngressHighLatency-ingress.md` - NGINX Ingress high latency
 
 ## Quick Start
 

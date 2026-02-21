@@ -1,6 +1,6 @@
 # Nodes Playbooks
 
-This folder contains **12 playbooks** for troubleshooting Kubernetes node-related issues.
+This folder contains **24 playbooks** for troubleshooting Kubernetes node-related issues.
 
 ## What are Nodes?
 
@@ -18,6 +18,7 @@ Nodes are worker machines in Kubernetes that run your pods. Each node contains:
 - Certificate rotation issues
 - Node joining cluster problems
 - Too many pods on a node
+- Node Exporter metrics and monitoring issues
 
 ## Playbooks in This Folder
 
@@ -33,6 +34,18 @@ Nodes are worker machines in Kubernetes that run your pods. Each node contains:
 10. `NodeCannotJoinCluster-node.md` - Node cannot join the cluster
 11. `NodeDiskPressure-storage.md` - Node running out of disk space
 12. `NodeNotReady-node.md` - Node not ready (general)
+13. `NodeClockSkewDetected-node.md` - Node clock skew detected
+14. `NodeDiskIOSaturation-node.md` - Node disk I/O saturation
+15. `NodeExporterDown-node.md` - Node Exporter down
+16. `NodeFileDescriptorLimit-node.md` - Node file descriptor limit reached
+17. `NodeFilesystemAlmostOutOfSpace-node.md` - Node filesystem almost out of space
+18. `NodeHighCPUUsage-node.md` - Node high CPU usage
+19. `NodeHighLoadAverage-node.md` - Node high load average
+20. `NodeHighMemoryUsage-node.md` - Node high memory usage
+21. `NodeMemoryMajorPagesFaults-node.md` - Node memory major page faults
+22. `NodeNetworkReceiveErrors-node.md` - Node network receive errors
+23. `NodeRAIDDegraded-node.md` - Node RAID degraded
+24. `NodeSystemdServiceFailed-node.md` - Node systemd service failed
 
 ## Quick Start
 

@@ -32,7 +32,7 @@
 
 ## Overview
 
-This repository contains **376 comprehensive incident response playbooks** designed to help Site Reliability Engineers (SREs) systematically diagnose and resolve common infrastructure and application issues in AWS, Kubernetes, and Sentry environments.
+This repository contains **414 comprehensive incident response playbooks** designed to help Site Reliability Engineers (SREs) systematically diagnose and resolve common infrastructure and application issues in AWS, Kubernetes, and Sentry environments.
 
 ### Why This Repository?
 
@@ -40,7 +40,7 @@ This repository contains **376 comprehensive incident response playbooks** desig
 - **Time-Saving**: Quickly identify root causes with correlation analysis frameworks
 - **Community-Driven**: Continuously improved by the open-source community
 - **Production-Ready**: Based on real-world incident response scenarios
-- **Comprehensive Coverage**: 194 Kubernetes playbooks + 157 AWS playbooks + 25 Sentry playbooks
+- **Comprehensive Coverage**: 232 Kubernetes playbooks + 157 AWS playbooks + 25 Sentry playbooks
 - **Proactive Monitoring**: 56 K8s + 65 AWS proactive playbooks for capacity planning and compliance
 
 ### Diagnosis Improvements
@@ -72,12 +72,12 @@ scoutflo-SRE-Playbooks/
 │   ├── 07-CI-CD/                     # 9 playbooks (CodePipeline, CodeBuild)
 │   ├── 08-Proactive/                 # 65 proactive monitoring playbooks
 │   └── README.md
-├── K8s Playbooks/                    # 194 Kubernetes playbooks
-│   ├── 01-Control-Plane/             # 18 playbooks
-│   ├── 02-Nodes/                     # 12 playbooks
-│   ├── 03-Pods/                      # 31 playbooks
-│   ├── 04-Workloads/                 # 23 playbooks
-│   ├── 05-Networking/                # 19 playbooks
+├── K8s Playbooks/                    # 232 Kubernetes playbooks
+│   ├── 01-Control-Plane/             # 24 playbooks
+│   ├── 02-Nodes/                     # 24 playbooks
+│   ├── 03-Pods/                      # 41 playbooks
+│   ├── 04-Workloads/                 # 25 playbooks
+│   ├── 05-Networking/                # 27 playbooks
 │   ├── 06-Storage/                   # 9 playbooks
 │   ├── 07-RBAC/                      # 6 playbooks
 │   ├── 08-Configuration/             # 6 playbooks

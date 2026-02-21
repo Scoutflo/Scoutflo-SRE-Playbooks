@@ -1,6 +1,6 @@
 # Pods Playbooks
 
-This folder contains **31 playbooks** for troubleshooting Kubernetes pod-related issues.
+This folder contains **41 playbooks** for troubleshooting Kubernetes pod-related issues.
 
 ## What are Pods?
 
@@ -17,6 +17,7 @@ Pods are the smallest deployable units in Kubernetes. A pod contains one or more
 - Image pull failures
 - Pod logs issues
 - Pod stuck in various states
+- Container resource issues (CPU throttling, memory limits)
 
 ## Playbooks in This Folder
 
@@ -51,6 +52,16 @@ Pods are the smallest deployable units in Kubernetes. A pod contains one or more
 29. `PodStuckinPendingDuetoNodeAffinity-pod.md` - Pod pending due to node affinity
 30. `PodStuckInTerminatingState-pod.md` - Pod stuck terminating
 31. `PodTerminatedWithExitCode137-pod.md` - Pod terminated (OOM killed)
+32. `ContainerHighCPUThrottling-container.md` - Container high CPU throttling
+33. `ContainerHighMemoryUsage-container.md` - Container high memory usage
+34. `ContainerMemoryNearLimit-container.md` - Container memory near limit
+35. `ContainerRestartsFrequent-container.md` - Container restarts frequently
+36. `CPUThrottlingHigh-container.md` - CPU throttling high
+37. `KubeContainerOOMKilled-pod.md` - Container OOM killed
+38. `KubePodContainerWaiting-pod.md` - Pod container waiting
+39. `KubePodFrequentlyRestarting-pod.md` - Pod frequently restarting
+40. `KubePodImagePullBackOff-pod.md` - Pod image pull backoff
+41. `KubePodPending-pod.md` - Pod pending
 
 ## Quick Start
 

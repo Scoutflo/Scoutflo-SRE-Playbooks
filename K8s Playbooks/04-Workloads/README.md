@@ -1,6 +1,6 @@
 # Workloads Playbooks
 
-This folder contains **23 playbooks** for troubleshooting Kubernetes workload resource issues.
+This folder contains **25 playbooks** for troubleshooting Kubernetes workload resource issues.
 
 ## What are Workloads?
 
@@ -47,6 +47,8 @@ Workloads are higher-level resources that manage pods. They include:
 21. `KubeStatefulSetGenerationMismatch-statefulset.md` - StatefulSet generation mismatch
 22. `KubeStatefulSetReplicasMismatch-statefulset.md` - StatefulSet replica mismatch
 23. `KubeStatefulSetUpdateNotRolledOut-statefulset.md` - StatefulSet update not rolling out
+24. `KubeDaemonSetNotReady-daemonset.md` - DaemonSet not ready
+25. `KubeDeploymentRolloutStuck-deployment.md` - Deployment rollout stuck
 
 ## Quick Start
 
