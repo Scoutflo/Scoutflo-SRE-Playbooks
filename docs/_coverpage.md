@@ -11,4 +11,5 @@
 [Get Started](#home)
 [GitHub](https://github.com/Scoutflo/scoutflo-SRE-Playbooks)
 
-![color](#2563eb)
+<!-- Scoutflo primary brand color -->
+![color](#090a40)
