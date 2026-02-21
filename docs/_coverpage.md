@@ -1,17 +1,15 @@
-<!-- _coverpage.md -->
-
-<div style="text-align: center;">
+![logo](_media/favicon.svg ':size=120')
 
 # SRE Playbooks <small>v2.1</small>
 
-> 414 Production-Ready Incident Response Playbooks
+> 414 Production-Ready Incident Response Playbooks for Kubernetes, AWS, and Sentry
 
-**Kubernetes** · **AWS** · **Sentry**
+- Kubernetes (232 playbooks)
+- AWS (157 playbooks)
+- Sentry (25 playbooks)
 
-[Get Started](#/)
-[GitHub](https://github.com/Scoutflo/scoutflo-SRE-Playbooks)
+[Get Started](#/home)
+[View on GitHub](https://github.com/Scoutflo/scoutflo-SRE-Playbooks)
 
-</div>
-
-<!-- Background -->
-![](https://raw.githubusercontent.com/Scoutflo/scoutflo-SRE-Playbooks/master/docs/_media/cover-bg.svg)
+<!-- background color -->
+![color](#0f172a)
