@@ -142,12 +142,20 @@
     }
 
     .sidebar > h1 {
+      display: flex !important;
+      align-items: center !important;
       font-size: 0.9375rem !important;
       font-weight: 600 !important;
       color: hsl(var(--foreground)) !important;
       padding: 0 0.5rem 1rem !important;
       margin: 0 0 1rem !important;
       border-bottom: 1px solid hsl(var(--border)) !important;
+    }
+
+    .sidebar > h1 img {
+      width: 24px !important;
+      height: 24px !important;
+      margin-right: 8px !important;
     }
 
     .sidebar > h1 .app-name-link {
@@ -732,12 +740,10 @@
 
   <script>
     window.$docsify = {
-      name: 'SRE Playbooks',
+      name: '<img src="_media/scoutflo-logo.svg" alt="Scoutflo" style="width:24px;height:24px;vertical-align:middle;margin-right:8px;">SRE Playbooks',
       repo: 'https://github.com/Scoutflo/scoutflo-SRE-Playbooks',
-      logo: '_media/scoutflo-logo.svg',
       homepage: 'home.md',
-      coverpage: '_coverpage.md',
-      onlyCover: false,
+      coverpage: false,
       loadSidebar: true,
       loadNavbar: false,
       subMaxLevel: 2,
