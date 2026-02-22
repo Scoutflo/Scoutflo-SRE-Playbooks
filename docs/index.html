@@ -50,13 +50,23 @@
     }
 
     [data-theme="dark"] {
-      --bg: #0a0a0a;
+      --bg: #09090b;
       --fg: #fafafa;
-      --muted: #1a1a1a;
+      --muted: #18181b;
       --muted-fg: #a1a1aa;
       --border: #27272a;
+      --blue: #38bdf8;
+      --blue-light: #0c4a6e;
       --gray-50: #18181b;
       --gray-100: #27272a;
+      --gray-200: #3f3f46;
+      --gray-300: #52525b;
+      --gray-400: #71717a;
+      --gray-500: #a1a1aa;
+      --gray-600: #d4d4d8;
+      --gray-700: #e4e4e7;
+      --gray-800: #f4f4f5;
+      --gray-900: #18181b;
     }
 
     /* Reset */
@@ -245,8 +255,41 @@
     }
     blockquote p { margin: 0; color: var(--gray-700); }
 
-    [data-theme="dark"] blockquote { background: var(--muted); }
+    /* Dark theme overrides */
+    [data-theme="dark"] blockquote { background: var(--muted); border-color: var(--blue); }
     [data-theme="dark"] blockquote p { color: var(--muted-fg); }
+
+    [data-theme="dark"] pre { background: #1e1e1e; color: #d4d4d4; border: 1px solid var(--border); }
+    [data-theme="dark"] :not(pre) > code { background: var(--muted); color: #e4e4e7; }
+
+    [data-theme="dark"] thead { background: var(--muted); }
+    [data-theme="dark"] th { color: #a1a1aa; border-color: var(--border); }
+    [data-theme="dark"] td { color: #d4d4d8; border-color: var(--border); }
+
+    [data-theme="dark"] .category-card { background: var(--muted); border-color: var(--border); }
+    [data-theme="dark"] .category-card:hover { border-color: #52525b; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+    [data-theme="dark"] .category-card h4 { color: #fafafa; }
+    [data-theme="dark"] .category-card p { color: #a1a1aa; }
+
+    [data-theme="dark"] details { background: var(--muted); border-color: var(--border); }
+    [data-theme="dark"] details summary { color: #a1a1aa; }
+    [data-theme="dark"] details[open] summary { color: #fafafa; }
+
+    [data-theme="dark"] .sidebar { background: var(--bg); border-color: var(--border); }
+    [data-theme="dark"] .sidebar > h1 { border-color: var(--border); }
+    [data-theme="dark"] .sidebar-nav a { color: #a1a1aa; }
+    [data-theme="dark"] .sidebar-nav a:hover { background: var(--muted); color: #fafafa; }
+    [data-theme="dark"] .sidebar-nav li.active > a { background: var(--muted); color: #fafafa; }
+
+    [data-theme="dark"] .search input { background: var(--muted); border-color: var(--border); color: #fafafa; }
+    [data-theme="dark"] .search input::placeholder { color: #71717a; }
+
+    [data-theme="dark"] hr { background: var(--border); }
+
+    [data-theme="dark"] .dark-mode-toggle { background: var(--muted); border-color: var(--border); }
+
+    [data-theme="dark"] ::-webkit-scrollbar-thumb { background: #3f3f46; }
+    [data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background: #52525b; }
 
     /* ==============================================
        CARDS
