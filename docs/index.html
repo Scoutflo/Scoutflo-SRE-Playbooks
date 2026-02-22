@@ -202,41 +202,68 @@
     }
 
     /* =============================================
-       CONTENT
+       CONTENT - Fix Docsify empty space issue
        ============================================= */
 
-    /* Remove cover page completely */
-    section.cover {
+    /* Hide cover completely */
+    section.cover,
+    .cover-main {
       display: none !important;
+      height: 0 !important;
+      min-height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
     }
 
-    /* Remove any top spacing from main */
+    /* CRITICAL: Override Docsify main element */
     main {
+      display: block !important;
       height: auto !important;
-      min-height: 100vh !important;
+      min-height: auto !important;
+      width: 100% !important;
+      position: relative !important;
     }
 
+    /* Remove all body spacing */
+    body,
+    body.ready,
+    body.close {
+      padding: 0 !important;
+      margin: 0 !important;
+      padding-top: 0 !important;
+      margin-top: 0 !important;
+    }
+
+    /* Content wrapper */
     .content {
       padding-left: var(--sidebar-width) !important;
       padding-top: 0 !important;
       margin-top: 0 !important;
+      top: 0 !important;
+      position: relative !important;
     }
 
-    article.markdown-section {
+    /* Article/markdown area */
+    article.markdown-section,
+    .markdown-section {
       max-width: var(--content-max-width) !important;
-      padding: 2rem !important;
+      padding: 1.5rem 2rem 2rem 2rem !important;
       margin: 0 auto !important;
-      padding-top: 1.5rem !important;
+      position: relative !important;
+      top: 0 !important;
     }
 
-    /* Ensure no extra spacing from Docsify theme */
-    body.ready {
-      padding-top: 0 !important;
-      margin-top: 0 !important;
-    }
-
-    .app-nav {
+    /* Hide app-nav completely */
+    .app-nav,
+    .app-nav-list {
       display: none !important;
+      height: 0 !important;
+    }
+
+    /* Reset any transforms */
+    section.cover.show ~ .sidebar,
+    section.cover.show ~ .content {
+      transform: none !important;
     }
 
     /* =============================================
