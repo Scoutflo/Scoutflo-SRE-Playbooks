@@ -205,14 +205,38 @@
        CONTENT
        ============================================= */
 
-    .content {
-      padding-left: var(--sidebar-width) !important;
+    /* Remove cover page completely */
+    section.cover {
+      display: none !important;
     }
 
-    .markdown-section {
+    /* Remove any top spacing from main */
+    main {
+      height: auto !important;
+      min-height: 100vh !important;
+    }
+
+    .content {
+      padding-left: var(--sidebar-width) !important;
+      padding-top: 0 !important;
+      margin-top: 0 !important;
+    }
+
+    article.markdown-section {
       max-width: var(--content-max-width) !important;
-      padding: 2.5rem 2rem !important;
+      padding: 2rem !important;
       margin: 0 auto !important;
+      padding-top: 1.5rem !important;
+    }
+
+    /* Ensure no extra spacing from Docsify theme */
+    body.ready {
+      padding-top: 0 !important;
+      margin-top: 0 !important;
+    }
+
+    .app-nav {
+      display: none !important;
     }
 
     /* =============================================
@@ -686,10 +710,6 @@
     /* =============================================
        DOCSIFY OVERRIDES
        ============================================= */
-
-    .app-nav {
-      display: none !important;
-    }
 
     .github-corner {
       display: none !important;
