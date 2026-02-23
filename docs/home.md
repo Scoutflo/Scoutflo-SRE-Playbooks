@@ -4,6 +4,10 @@ Production-ready incident response playbooks for Kubernetes, AWS, and Sentry env
 
 ---
 
+> **NEW: Dual-Format Playbooks!** Each playbook now includes both NLP (AI Agent) and CLI (DevOps/SRE) versions. Use the **NLP / CLI / Both** toggle in the top-right corner to switch formats. [Try the demo →](/dual-format-demo)
+
+---
+
 ## Browse Playbooks
 
 | Provider | Playbooks | Categories |
@@ -97,8 +101,19 @@ Each playbook includes four sections:
 |---------|-------------|
 | **Meaning** | What the issue is and why it occurs |
 | **Impact** | Business and technical consequences |
-| **Playbook** | Step-by-step diagnostic procedures |
+| **Playbook** | Step-by-step procedures (NLP + CLI formats) |
 | **Diagnosis** | Root cause analysis with conditional logic |
+
+### Dual-Format Playbook Section
+
+The Playbook section now includes **two formats**:
+
+| Format | Audience | Description |
+|--------|----------|-------------|
+| **For AI Agents (NLP)** | AI automation tools | Natural language instructions |
+| **For DevOps/SREs (CLI)** | Human operators | Copy-paste ready CLI commands |
+
+Use the toggle in the top-right to switch between formats.
 
 ---
 

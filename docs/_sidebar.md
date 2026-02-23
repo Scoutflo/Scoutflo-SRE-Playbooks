@@ -1,3 +1,6 @@
+* **NEW: Dual-Format Playbooks**
+  * [Demo - Try the Toggle!](/dual-format-demo)
+
 * **Getting Started**
   * [Home](/)
   * [Quick Reference](/quick-reference)
