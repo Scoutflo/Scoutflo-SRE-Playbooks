@@ -113,6 +113,50 @@ jobs:
             echo "**Found $issues files with placeholder format issues**" >> $GITHUB_STEP_SUMMARY
           fi
 
+  check-dual-format:
+    name: Check Dual Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check Dual Format Structure
+        run: |
+          echo "## Dual Format Check" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          total=0
+          dual_format=0
+          nlp_only=0
+
+          # Check all playbook files
+          while IFS= read -r -d '' file; do
+            total=$((total + 1))
+
+            # Check for dual format sections
+            has_nlp=$(grep -c "### For AI Agents (NLP)" "$file" || echo 0)
+            has_cli=$(grep -c "### For DevOps/SREs (CLI)" "$file" || echo 0)
+
+            if [ "$has_nlp" -gt 0 ] && [ "$has_cli" -gt 0 ]; then
+              dual_format=$((dual_format + 1))
+            else
+              nlp_only=$((nlp_only + 1))
+            fi
+          done < <(find "AWS Playbooks" "K8s Playbooks" "Sentry Playbooks" -name "*.md" -type f -print0 2>/dev/null | grep -zv README.md)
+
+          pct=$((dual_format * 100 / total))
+
+          echo "| Format | Count | Percentage |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Dual Format (NLP + CLI) | $dual_format | $pct% |" >> $GITHUB_STEP_SUMMARY
+          echo "| NLP Only | $nlp_only | $((100 - pct))% |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Total** | **$total** | 100% |" >> $GITHUB_STEP_SUMMARY
+
+          if [ $pct -eq 100 ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo ":white_check_mark: All playbooks have dual format!" >> $GITHUB_STEP_SUMMARY
+          fi
+
   count-playbooks:
     name: Count Playbooks
     runs-on: ubuntu-latest

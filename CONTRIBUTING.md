@@ -148,12 +148,11 @@ All playbooks must follow this structure:
    - Cascading effects
    - Minimum 3-5 sentences
 
-4. **Playbook** (H2)
+4. **Playbook** (H2) - **Dual Format Required**
    - 8-10 numbered steps
    - Ordered from most common to specific
-   - Use placeholders for resource identifiers
-   - Include specific commands/checks
-   - Each step should be actionable
+   - Use placeholders for resource identifiers (e.g., `<pod-name>`, `<namespace>`)
+   - **Must include both formats** (see [Dual Format Guidelines](#dual-format-guidelines) below)
 
 5. **Diagnosis** (H2)
    - 5 correlation analysis steps
@@ -170,6 +169,63 @@ All playbooks must follow this structure:
 - **Be Accurate**: Ensure all information is correct and up-to-date
 - **Be Clear**: Use simple, direct language
 - **Be Complete**: Cover the most common scenarios
+
+### Dual Format Guidelines
+
+All playbooks must include **both** NLP (AI agent) and CLI (DevOps/SRE) versions of the Playbook section.
+
+**Structure:**
+
+```markdown
+## Playbook
+
+### For AI Agents (NLP)
+
+1. Describe pod `<pod-name>` in namespace `<namespace>` to see pod status...
+
+2. Retrieve events in namespace `<namespace>` for pod `<pod-name>`...
+
+### For DevOps/SREs (CLI)
+
+1. Check pod status and events:
+   ```bash
+   kubectl describe pod <pod-name> -n <namespace>
+   ```
+
+2. Get events sorted by timestamp:
+   ```bash
+   kubectl get events -n <namespace> --field-selector involvedObject.name=<pod-name>
+   ```
+```
+
+**Key Rules:**
+
+| Rule | Description |
+|------|-------------|
+| Same step numbers | Steps 1, 2, 3... must match between NLP and CLI |
+| Consistent placeholders | Use `<placeholder-name>` format in both sections |
+| CLI code blocks | Always use ` ```bash ` for CLI commands |
+| Production-ready | CLI commands should be copy-paste ready |
+
+**Contributing:**
+
+You can contribute either format and the maintainers will generate the other:
+
+- **Submit NLP only** → We'll add CLI commands
+- **Submit CLI only** → We'll add NLP descriptions
+- **Submit both** → Preferred for faster merge
+
+**Provider-Specific Commands:**
+
+| Provider | Primary CLI Tool | Example |
+|----------|------------------|---------|
+| Kubernetes | `kubectl` | `kubectl get pods -n <namespace>` |
+| AWS | `aws` | `aws ec2 describe-instances --instance-ids <instance-id>` |
+| Sentry | `sentry-cli` / `curl` | `sentry-cli issues list --project <project>` |
+
+**GitHub Pages Toggle:**
+
+The documentation site includes a toggle (NLP / CLI / Both) that lets users view their preferred format. This is powered by CSS classes added by a Docsify plugin.
 
 ### AWS Playbook Requirements
 

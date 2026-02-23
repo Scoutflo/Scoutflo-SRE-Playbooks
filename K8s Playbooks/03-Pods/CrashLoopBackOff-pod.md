@@ -18,6 +18,8 @@ Application pods fail to start; services become unavailable; deployments cannot 
 
 ## Playbook
 
+### For AI Agents (NLP)
+
 1. Describe pod `<pod-name>` in namespace `<namespace>` to see pod status, restart count, termination reason (OOMKilled, Error, etc.), and recent events - this immediately shows why the pod is crashing.
 
 2. Retrieve events in namespace `<namespace>` for pod `<pod-name>` sorted by timestamp to see the sequence of failures with timestamps.
@@ -29,6 +31,39 @@ Application pods fail to start; services become unavailable; deployments cannot 
 5. Describe deployment `<deployment-name>` in namespace `<namespace>` to check container image, resource limits, environment variables, and liveness/readiness probe configuration.
 
 6. Retrieve rollout history for deployment `<deployment-name>` in namespace `<namespace>` to check if the issue started after a recent deployment.
+
+### For DevOps/SREs (CLI)
+
+1. Check pod status, restart count, and events:
+   ```bash
+   kubectl describe pod <pod-name> -n <namespace>
+   ```
+
+2. Get events sorted by timestamp:
+   ```bash
+   kubectl get events -n <namespace> --field-selector involvedObject.name=<pod-name> --sort-by='.lastTimestamp'
+   ```
+
+3. Check container termination reason:
+   ```bash
+   kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.status.containerStatuses[*].lastState.terminated}'
+   ```
+
+4. Get logs from previous crashed container:
+   ```bash
+   kubectl logs <pod-name> -n <namespace> --previous
+   ```
+
+5. Check deployment configuration:
+   ```bash
+   kubectl describe deployment <deployment-name> -n <namespace>
+   kubectl get deployment <deployment-name> -n <namespace> -o yaml
+   ```
+
+6. Check rollout history:
+   ```bash
+   kubectl rollout history deployment/<deployment-name> -n <namespace>
+   ```
 
 ## Diagnosis
 

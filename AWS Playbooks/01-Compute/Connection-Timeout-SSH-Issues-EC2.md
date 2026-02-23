@@ -10,6 +10,8 @@ EC2InstanceStatusCheckFailed alarms may fire; administrators cannot access insta
 
 ## Playbook
 
+### For AI Agents (NLP)
+
 1. Verify instance `<instance-id>` is in "running" state and AWS service health for EC2 in region `<region>` is normal.
 2. Retrieve the Security Group `<security-group-id>` associated with EC2 instance `<instance-id>` and inspect inbound rules for SSH port 22 access, verifying source IP addresses or CIDR blocks.
 3. Retrieve the EC2 Instance `<instance-id>` in region `<region>` and verify public IP address or Elastic IP assignment, checking if instance is in a public subnet with internet gateway route.
@@ -19,6 +21,55 @@ EC2InstanceStatusCheckFailed alarms may fire; administrators cannot access insta
 7. Retrieve CloudWatch Logs for EC2 serial console output for instance `<instance-id>` and filter for connection errors or authentication failures.
 8. Retrieve the Route Table `<route-table-id>` and Network ACL `<nacl-id>` for subnet containing instance `<instance-id>` and verify route to internet gateway (0.0.0.0/0 → igw-id) exists and inbound and outbound rules allow SSH traffic (port 22 TCP).
 9. Query CloudWatch Logs for log groups containing VPC Flow Logs and filter for blocked traffic to instance `<instance-id>` on port 22.
+
+### For DevOps/SREs (CLI)
+
+1. Check instance state and AWS service health:
+   ```bash
+   aws ec2 describe-instances --instance-ids <instance-id> --region <region> --query 'Reservations[*].Instances[*].[State.Name,InstanceId]' --output table
+   aws health describe-events --filter services=EC2 --region <region>
+   ```
+
+2. Check security group inbound rules for SSH:
+   ```bash
+   aws ec2 describe-security-groups --group-ids <security-group-id> --region <region> --query 'SecurityGroups[*].IpPermissions[?FromPort==`22`]' --output json
+   ```
+
+3. Verify public IP and subnet configuration:
+   ```bash
+   aws ec2 describe-instances --instance-ids <instance-id> --region <region> --query 'Reservations[*].Instances[*].[PublicIpAddress,SubnetId,VpcId]' --output table
+   ```
+
+4. Check key pair assignment:
+   ```bash
+   aws ec2 describe-instances --instance-ids <instance-id> --region <region> --query 'Reservations[*].Instances[*].KeyName' --output text
+   ```
+
+5. Check IMDSv2 configuration:
+   ```bash
+   aws ec2 describe-instances --instance-ids <instance-id> --region <region> --query 'Reservations[*].Instances[*].MetadataOptions' --output json
+   ```
+
+6. Check IAM instance profile:
+   ```bash
+   aws ec2 describe-instances --instance-ids <instance-id> --region <region> --query 'Reservations[*].Instances[*].IamInstanceProfile' --output json
+   ```
+
+7. Get EC2 serial console output:
+   ```bash
+   aws ec2 get-console-output --instance-id <instance-id> --region <region> --output text
+   ```
+
+8. Check route table and NACL rules:
+   ```bash
+   aws ec2 describe-route-tables --route-table-ids <route-table-id> --region <region> --output table
+   aws ec2 describe-network-acls --network-acl-ids <nacl-id> --region <region> --query 'NetworkAcls[*].Entries' --output json
+   ```
+
+9. Query VPC Flow Logs for blocked SSH traffic:
+   ```bash
+   aws logs filter-log-events --log-group-name <vpc-flow-logs-group> --filter-pattern "REJECT <instance-id> 22" --region <region>
+   ```
 
 ## Diagnosis
 

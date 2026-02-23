@@ -18,19 +18,62 @@ Pods cannot start; deployments remain at 0 replicas; rolling updates fail; appli
 
 ## Playbook
 
-1. Describe pod <pod-name> in namespace <namespace> to see the exact error message for image pull failure - look in Events section for "Failed to pull image" with the specific reason (auth error, not found, timeout).
+### For AI Agents (NLP)
 
-2. Retrieve events for pod <pod-name> in namespace <namespace> filtered by reason Failed and sorted by timestamp to see the sequence of image pull failures.
+1. Describe pod `<pod-name>` in namespace `<namespace>` to see the exact error message for image pull failure - look in Events section for "Failed to pull image" with the specific reason (auth error, not found, timeout).
 
-3. Verify the image exists and is accessible: retrieve the image name for pod <pod-name> in namespace <namespace> and test image pull manually on the node.
+2. Retrieve events for pod `<pod-name>` in namespace `<namespace>` filtered by reason Failed and sorted by timestamp to see the sequence of image pull failures.
 
-4. Check imagePullSecrets configuration: retrieve the imagePullSecrets for pod <pod-name> in namespace <namespace>, verify the secret exists, and decode and verify the credentials.
+3. Verify the image exists and is accessible: retrieve the image name for pod `<pod-name>` in namespace `<namespace>` and test image pull manually on the node.
 
-5. Describe Deployment <deployment-name> in namespace <namespace> to verify the image reference is correct (registry, repository, tag) and check if imagePullSecrets are properly configured in the pod template.
+4. Check imagePullSecrets configuration: retrieve the imagePullSecrets for pod `<pod-name>` in namespace `<namespace>`, verify the secret exists, and decode and verify the credentials.
+
+5. Describe Deployment `<deployment-name>` in namespace `<namespace>` to verify the image reference is correct (registry, repository, tag) and check if imagePullSecrets are properly configured in the pod template.
 
 6. Test registry connectivity from a pod in the same namespace by executing a request to the registry URL.
 
 7. Check node disk space where pod is scheduled by SSH to the node - insufficient disk prevents image pulls.
+
+### For DevOps/SREs (CLI)
+
+1. Check pod events for image pull errors:
+   ```bash
+   kubectl describe pod <pod-name> -n <namespace> | grep -A 10 "Events:"
+   ```
+
+2. Get events filtered by image pull failures:
+   ```bash
+   kubectl get events -n <namespace> --field-selector involvedObject.name=<pod-name>,reason=Failed --sort-by='.lastTimestamp'
+   ```
+
+3. Verify image reference and test pull:
+   ```bash
+   kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.spec.containers[*].image}'
+   # On node: docker pull <image-name> OR crictl pull <image-name>
+   ```
+
+4. Check imagePullSecrets and decode credentials:
+   ```bash
+   kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.spec.imagePullSecrets[*].name}'
+   kubectl get secret <secret-name> -n <namespace> -o jsonpath='{.data.\.dockerconfigjson}' | base64 -d
+   ```
+
+5. Check deployment image configuration:
+   ```bash
+   kubectl describe deployment <deployment-name> -n <namespace>
+   kubectl get deployment <deployment-name> -n <namespace> -o jsonpath='{.spec.template.spec.containers[*].image}'
+   ```
+
+6. Test registry connectivity from a debug pod:
+   ```bash
+   kubectl run test-registry --rm -it --image=curlimages/curl -- curl -I https://<registry-url>/v2/
+   ```
+
+7. Check node disk space:
+   ```bash
+   kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.spec.nodeName}'
+   kubectl debug node/<node-name> -it --image=busybox -- df -h
+   ```
 
 ## Diagnosis
 

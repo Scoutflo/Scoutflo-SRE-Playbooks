@@ -347,6 +347,67 @@
     details[open] summary { margin-bottom: 10px; color: var(--fg); }
 
     /* ==============================================
+       FORMAT TOGGLE (NLP / CLI / Both)
+       ============================================== */
+
+    .format-toggle {
+      position: fixed;
+      top: 16px;
+      right: 56px;
+      z-index: 100;
+      display: flex;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .format-btn {
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      background: transparent;
+      border: none;
+      border-right: 1px solid var(--border);
+      color: var(--muted-fg);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .format-btn:last-child { border-right: none; }
+    .format-btn:hover { background: var(--muted); color: var(--fg); }
+
+    .format-btn.active {
+      background: var(--blue);
+      color: white;
+    }
+
+    /* Hide sections based on format mode */
+    [data-format="nlp"] .cli-section { display: none; }
+    [data-format="cli"] .nlp-section { display: none; }
+
+    /* Section headers styling */
+    .nlp-section h3, .cli-section h3 {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted-fg);
+      margin: 20px 0 12px;
+      padding: 6px 10px;
+      background: var(--muted);
+      border-radius: var(--radius);
+      display: inline-block;
+    }
+
+    .nlp-section h3::before { content: '🤖 '; }
+    .cli-section h3::before { content: '💻 '; }
+
+    [data-theme="dark"] .format-toggle { background: var(--bg); border-color: var(--border); }
+    [data-theme="dark"] .format-btn { color: #a1a1aa; border-color: var(--border); }
+    [data-theme="dark"] .format-btn:hover { background: var(--muted); color: #fafafa; }
+    [data-theme="dark"] .format-btn.active { background: var(--blue); color: white; }
+
+    /* ==============================================
        DARK MODE TOGGLE
        ============================================== */
 
@@ -450,6 +511,14 @@
   </style>
 </head>
 <body>
+  <!-- Format Toggle: NLP / CLI / Both -->
+  <div class="format-toggle">
+    <button id="format-nlp" class="format-btn" onclick="setFormat('nlp')" title="Show AI Agent instructions only">NLP</button>
+    <button id="format-cli" class="format-btn" onclick="setFormat('cli')" title="Show CLI commands only">CLI</button>
+    <button id="format-both" class="format-btn active" onclick="setFormat('both')" title="Show both formats">Both</button>
+  </div>
+
+  <!-- Dark Mode Toggle -->
   <button class="dark-mode-toggle" onclick="toggleDarkMode()" aria-label="Toggle dark mode">
     <span id="theme-icon">🌙</span>
   </button>
@@ -489,7 +558,52 @@
 
       alias: {
         '/.*/_sidebar.md': '/_sidebar.md'
-      }
+      },
+
+      plugins: [
+        // Plugin to add nlp-section and cli-section classes to playbook format sections
+        function(hook) {
+          hook.doneEach(function() {
+            // Find h3 headers and wrap their content sections
+            const contentSection = document.querySelector('.markdown-section');
+            if (!contentSection) return;
+
+            const h3s = contentSection.querySelectorAll('h3');
+            h3s.forEach(h3 => {
+              const text = h3.textContent.toLowerCase();
+
+              // Create wrapper div
+              const wrapper = document.createElement('div');
+
+              if (text.includes('ai agents') || text.includes('nlp')) {
+                wrapper.className = 'nlp-section';
+              } else if (text.includes('devops') || text.includes('cli')) {
+                wrapper.className = 'cli-section';
+              } else {
+                return; // Skip non-format headers
+              }
+
+              // Move h3 into wrapper
+              h3.parentNode.insertBefore(wrapper, h3);
+              wrapper.appendChild(h3);
+
+              // Move all following siblings until next h2 or h3
+              let sibling = wrapper.nextSibling;
+              while (sibling) {
+                const next = sibling.nextSibling;
+                const tagName = sibling.tagName ? sibling.tagName.toLowerCase() : '';
+
+                if (tagName === 'h2' || tagName === 'h3') {
+                  break;
+                }
+
+                wrapper.appendChild(sibling);
+                sibling = next;
+              }
+            });
+          });
+        }
+      ]
     }
   </script>
 
@@ -501,6 +615,7 @@
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-yaml.min.js"></script>
 
   <script>
+    // Dark mode toggle
     function toggleDarkMode() {
       const html = document.documentElement;
       const icon = document.getElementById('theme-icon');
@@ -515,15 +630,48 @@
       }
     }
 
+    // Format toggle (NLP / CLI / Both)
+    function setFormat(format) {
+      const html = document.documentElement;
+
+      // Update data-format attribute
+      if (format === 'both') {
+        html.removeAttribute('data-format');
+      } else {
+        html.setAttribute('data-format', format);
+      }
+
+      // Update button active states
+      document.querySelectorAll('.format-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.id === 'format-' + format);
+      });
+
+      // Save preference
+      localStorage.setItem('playbook-format', format);
+    }
+
+    // Initialize on page load
     (function() {
-      const saved = localStorage.getItem('theme');
-      if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      // Dark mode
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.documentElement.setAttribute('data-theme', 'dark');
         document.addEventListener('DOMContentLoaded', () => {
           const icon = document.getElementById('theme-icon');
           if (icon) icon.textContent = '☀️';
         });
       }
+
+      // Format preference
+      const savedFormat = localStorage.getItem('playbook-format') || 'both';
+      if (savedFormat !== 'both') {
+        document.documentElement.setAttribute('data-format', savedFormat);
+      }
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.format-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.id === 'format-' + savedFormat);
+        });
+      });
     })();
   </script>
 </body>
