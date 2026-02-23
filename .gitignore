@@ -26,4 +26,5 @@ build/
 
 # Local development files
 CLAUDE.md
+DUAL_FORMAT_PROGRESS.md
 .claude/
