@@ -76,7 +76,7 @@ Lambda functions experience higher than necessary cold start latency; user-facin
      --log-group-name /aws/lambda/<function-name> \
      --start-time $(date -u -d '7 days ago' +%s) \
      --end-time $(date -u +%s) \
-     --query-string 'filter @type = "REPORT" | stats avg(@memorySize / @maxMemoryUsed) as memoryUtilization'
+     --query-string 'filter @type = "REPORT" | stats avg(@maxMemoryUsed / @memorySize) * 100 as memoryUtilizationPct'
    ```
 
 6. Get VPC configuration:
@@ -87,12 +87,14 @@ Lambda functions experience higher than necessary cold start latency; user-facin
      --region <region>
    ```
 
-7. Compare performance across memory configurations (requires testing):
+7. Compare performance across memory configurations (test on non-prod function/alias only):
    ```bash
+   # Test on a non-production function or alias (e.g., canary, staging)
    aws lambda update-function-configuration \
-     --function-name <function-name> \
+     --function-name <test-function-name-or-alias> \
      --memory-size <new-memory-size> \
      --region <region>
+   # Validate via canary traffic before any production rollout
    ```
 
 8. Calculate provisioned concurrency cost-benefit:
