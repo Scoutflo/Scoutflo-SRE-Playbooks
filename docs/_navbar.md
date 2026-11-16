@@ -4,6 +4,7 @@
   * [Kubernetes Playbooks](/k8s/)
   * [Sentry Playbooks](/sentry/)
   * [Terraform Playbooks](/terraform/)
+  * [Azure Playbooks](/azure/)
 * [Quick Reference](/quick-reference)
 * [Contributing](/contributing)
 * [:octocat: GitHub](https://github.com/Scoutflo/scoutflo-SRE-Playbooks)

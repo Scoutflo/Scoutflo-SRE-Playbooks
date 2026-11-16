@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- 11 new dual-format playbooks completing the contributor starter issues:
+  - K8s: KarpenterNodeProvisioningFailed (#7)
+  - AWS: SQS Queue Backlog and DLQ Growth (#8), SNS Delivery Failures (#9)
+  - Sentry Release Health: CrashFreeRateDropAfterRelease (#10), ReleaseOrDeployMissing (#11)
+  - Terraform: RemoteStateAccessDenied, DependencyCycle (#13)
+  - New **Azure Playbooks/** category with 4 AKS playbooks (#14): NodePoolNotScaling, ImagePullFailedFromACR, LoadBalancerNotProvisioning, ManagedIdentityAuthorizationFailed
+- Verification notes: Terraform commands were run locally; AWS/Azure CLI commands were checked for valid subcommands and flags only (not run against live accounts) - see issue #15 for live verification
 - Sentry source-map troubleshooting playbook (minified JavaScript stack traces) — community contribution (#17, @Golden007-prog)
 
 ## [2.2.0] - 2026-11-16

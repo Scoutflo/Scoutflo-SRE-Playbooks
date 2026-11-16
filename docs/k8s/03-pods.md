@@ -1,8 +1,11 @@
 # 03 - Pods
 
-> **41 playbooks** for Kubernetes pod lifecycle and container issues.
+> **42 playbooks** for Kubernetes pod lifecycle and container issues.
 
 ## Overview
+
+> **New:** [KarpenterNodeProvisioningFailed](https://github.com/Scoutflo/Scoutflo-SRE-Playbooks/blob/master/K8s%20Playbooks/03-Pods/KarpenterNodeProvisioningFailed-pod.md) - pods Pending because Karpenter cannot provision nodes.
+
 
 Pods are the smallest deployable units in Kubernetes. This category covers:
 - Container crashes and restarts

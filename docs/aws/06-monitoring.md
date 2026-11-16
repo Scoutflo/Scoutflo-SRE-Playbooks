@@ -1,6 +1,6 @@
 # AWS Monitoring Playbooks
 
-> **8 playbooks** for CloudWatch, CloudTrail, Config, and X-Ray issues.
+> **9 playbooks** for CloudWatch, CloudTrail, Config, and X-Ray issues.
 
 ## CloudWatch Playbooks
 
@@ -29,6 +29,12 @@
 | Playbook | Description |
 |----------|-------------|
 | [Traces Missing in Application Logs](https://github.com/Scoutflo/scoutflo-SRE-Playbooks/blob/master/AWS%20Playbooks/06-Monitoring/Traces-Missing-in-Application-Logs-X-Ray.md) | Troubleshoot X-Ray tracing |
+
+## SNS Playbooks
+
+| Playbook | Description |
+|----------|-------------|
+| [Delivery Failures (SNS)](https://github.com/Scoutflo/Scoutflo-SRE-Playbooks/blob/master/AWS%20Playbooks/06-Monitoring/Delivery-Failures-SNS.md) | Messages not reaching subscribers: filters, confirmation, access policies, KMS, endpoints |
 
 ---
 

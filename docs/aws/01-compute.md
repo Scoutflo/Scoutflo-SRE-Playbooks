@@ -1,6 +1,6 @@
 # AWS Compute Playbooks
 
-> **27 playbooks** for EC2, Lambda, ECS, EKS, Fargate, and Auto Scaling issues.
+> **28 playbooks** for EC2, Lambda, ECS, EKS, Fargate, and Auto Scaling issues.
 
 ## EC2 Playbooks
 
@@ -63,6 +63,12 @@
 |----------|-------------|
 | [Fargate Running Out of Memory](https://github.com/Scoutflo/scoutflo-SRE-Playbooks/blob/master/AWS%20Playbooks/01-Compute/Running-Out-of-Memory-Fargate.md) | Fix Fargate memory issues |
 | [CodeDeploy Failing on EC2](https://github.com/Scoutflo/scoutflo-SRE-Playbooks/blob/master/AWS%20Playbooks/01-Compute/Failing-on-EC2-Instances-CodeDeploy.md) | Troubleshoot CodeDeploy failures |
+
+## Messaging Playbooks
+
+| Playbook | Description |
+|----------|-------------|
+| [Queue Backlog and DLQ Growth (SQS)](https://github.com/Scoutflo/Scoutflo-SRE-Playbooks/blob/master/AWS%20Playbooks/01-Compute/Queue-Backlog-and-DLQ-Growth-SQS.md) | Growing SQS backlog or dead-letter queue: find failing or slow consumers and redrive safely |
 
 ---
 

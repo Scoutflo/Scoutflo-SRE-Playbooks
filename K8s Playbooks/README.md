@@ -1,9 +1,9 @@
 # Kubernetes (K8s) Playbooks
 
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-233%20playbooks-blue)](README.md)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-234%20playbooks-blue)](README.md)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](../../CONTRIBUTING.md)
 
-> **233 comprehensive Kubernetes incident response playbooks** organized into 13 categorized folders - Systematic troubleshooting guides for common Kubernetes cluster and workload issues to help SREs diagnose and resolve problems faster.
+> **234 comprehensive Kubernetes incident response playbooks** organized into 13 categorized folders - Systematic troubleshooting guides for common Kubernetes cluster and workload issues to help SREs diagnose and resolve problems faster.
 
 ## 📋 Table of Contents
 
@@ -20,7 +20,7 @@
 
 ## Overview
 
-This directory contains **233 Kubernetes incident response playbooks** organized into **13 categorized folders** to help Site Reliability Engineers (SREs) quickly find and diagnose common Kubernetes cluster and workload issues. Each playbook follows a structured format to provide systematic troubleshooting guidance.
+This directory contains **234 Kubernetes incident response playbooks** organized into **13 categorized folders** to help Site Reliability Engineers (SREs) quickly find and diagnose common Kubernetes cluster and workload issues. Each playbook follows a structured format to provide systematic troubleshooting guidance.
 
 ### Services & Components Covered
 
@@ -44,7 +44,7 @@ Playbooks are organized into numbered folders by category for easy navigation:
 K8s Playbooks/
 ├── 01-Control-Plane/              (24 playbooks)
 ├── 02-Nodes/                      (24 playbooks)
-├── 03-Pods/                       (41 playbooks)
+├── 03-Pods/                       (42 playbooks)
 ├── 04-Workloads/                  (26 playbooks)
 ├── 05-Networking/                 (27 playbooks)
 ├── 06-Storage/                    (9 playbooks)
@@ -189,7 +189,7 @@ Node readiness, kubelet issues, node capacity, node connectivity
 - `NodeRAIDDegraded-node.md`
 - `NodeSystemdServiceFailed-node.md`
 
-### 03-Pods/ (41 playbooks)
+### 03-Pods/ (42 playbooks)
 Pod lifecycle, scheduling, health checks, pod states, resource issues
 
 **Key Topics:**
@@ -212,6 +212,7 @@ Pod lifecycle, scheduling, health checks, pod states, resource issues
 - `EvictedPods-pod.md`
 - `FailedtoStartPodSandbox-pod.md`
 - `ImagePullBackOff-registry.md`
+- `KarpenterNodeProvisioningFailed-pod.md`
 - `KubeContainerOOMKilled-pod.md`
 - `KubeContainerWaiting-pod.md`
 - `KubePodContainerWaiting-pod.md`
@@ -518,7 +519,7 @@ Proactive monitoring, capacity planning, security compliance, and operational re
 
 ### 1. Documentation
 
-This directory contains 233 Kubernetes incident response playbooks organized into 13 categorized folders. Each playbook provides systematic troubleshooting guidance for common Kubernetes cluster and workload issues.
+This directory contains 234 Kubernetes incident response playbooks organized into 13 categorized folders. Each playbook provides systematic troubleshooting guidance for common Kubernetes cluster and workload issues.
 
 **Quick Navigation:**
 - Browse by category folder (e.g., `03-Pods/` for pod issues)
@@ -990,7 +991,7 @@ To add a new playbook for an uncovered Kubernetes issue:
 
 ## Statistics
 
-- **Total Playbooks**: 233
+- **Total Playbooks**: 234
 - **Categories**: 13 (including Proactive monitoring)
 - **Organization**: Numbered folders for easy navigation
 - **Coverage**: All major Kubernetes components, common issues, and proactive monitoring

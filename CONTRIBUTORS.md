@@ -36,10 +36,10 @@ We recognize all contributions, including:
 
 | Category | Count |
 |----------|-------|
-| Total Playbooks | 420 |
-| AWS Playbooks | 158 |
-| Kubernetes Playbooks | 233 |
-| Sentry Playbooks | 26 |
+| Total Playbooks | 431 |
+| AWS Playbooks | 160 |
+| Kubernetes Playbooks | 234 |
+| Sentry Playbooks | 28 |
 
 ## Recognition
 

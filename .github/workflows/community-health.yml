@@ -60,13 +60,17 @@ jobs:
           aws_count=$(find "AWS Playbooks" -name "*.md" -type f -print0 2>/dev/null | grep -zvc README.md || echo 0)
           k8s_count=$(find "K8s Playbooks" -name "*.md" -type f -print0 2>/dev/null | grep -zvc README.md || echo 0)
           sentry_count=$(find "Sentry Playbooks" -name "*.md" -type f -print0 2>/dev/null | grep -zvc README.md || echo 0)
-          total=$((aws_count + k8s_count + sentry_count))
+          terraform_count=$(find "Terraform Playbooks" -name "*.md" -type f -print0 2>/dev/null | grep -zvc README.md || true)
+          azure_count=$(find "Azure Playbooks" -name "*.md" -type f -print0 2>/dev/null | grep -zvc README.md || true)
+          total=$((aws_count + k8s_count + sentry_count + terraform_count + azure_count))
 
           echo "| Provider | Count |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| AWS | $aws_count |" >> $GITHUB_STEP_SUMMARY
           echo "| Kubernetes | $k8s_count |" >> $GITHUB_STEP_SUMMARY
           echo "| Sentry | $sentry_count |" >> $GITHUB_STEP_SUMMARY
+          echo "| Terraform | $terraform_count |" >> $GITHUB_STEP_SUMMARY
+          echo "| Azure | $azure_count |" >> $GITHUB_STEP_SUMMARY
           echo "| **Total** | **$total** |" >> $GITHUB_STEP_SUMMARY
 
       - name: Check for Stale Issues

@@ -36,7 +36,7 @@ Playbooks for transaction issues, latency, and performance problems. This catego
 ### 03-Release-Health
 Playbooks for release correlation and deployment-related issues. This category includes playbooks that help diagnose issues tied to specific releases, deployments, or version changes.
 
-**Total Files**: 0 (placeholder for future playbooks)
+**Total Files**: 2
 
 ## Usage
 

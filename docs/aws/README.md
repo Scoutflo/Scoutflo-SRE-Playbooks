@@ -1,17 +1,17 @@
 # AWS Playbooks
 
-> **158 playbooks** for AWS infrastructure incident response and proactive monitoring.
+> **160 playbooks** for AWS infrastructure incident response and proactive monitoring.
 
 ## Categories
 
 | Category | Playbooks | Description |
 |----------|-----------|-------------|
-| [01 - Compute](/aws/01-compute) | 27 | EC2, Lambda, ECS, EKS, Fargate, Auto Scaling |
+| [01 - Compute](/aws/01-compute) | 28 | EC2, Lambda, ECS, EKS, Fargate, Auto Scaling |
 | [02 - Database](/aws/02-database) | 8 | RDS, DynamoDB |
 | [03 - Storage](/aws/03-storage) | 7 | S3 |
 | [04 - Networking](/aws/04-networking) | 17 | VPC, ELB, Route53, API Gateway |
 | [05 - Security](/aws/05-security) | 16 | IAM, KMS, GuardDuty, WAF |
-| [06 - Monitoring](/aws/06-monitoring) | 8 | CloudTrail, CloudWatch |
+| [06 - Monitoring](/aws/06-monitoring) | 9 | CloudTrail, CloudWatch |
 | [07 - CI/CD](/aws/07-cicd) | 9 | CodePipeline, CodeBuild, CodeDeploy |
 | [08 - Proactive](/aws/08-proactive) | 66 | Proactive monitoring and optimization |
 

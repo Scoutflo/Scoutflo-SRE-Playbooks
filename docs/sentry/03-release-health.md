@@ -6,17 +6,19 @@
 
 Release Health playbooks help you correlate errors and performance issues with specific releases, enabling faster identification of regressions introduced by deployments.
 
-## Coming Soon
+## Playbooks
 
-This category is a placeholder for upcoming playbooks that will cover:
+| Playbook | Description |
+|----------|-------------|
+| [Crash-free rate drop after a release](https://github.com/Scoutflo/Scoutflo-SRE-Playbooks/blob/master/Sentry%20Playbooks/03-Release-Health/CrashFreeRateDropAfterRelease-Release-Health-application.md) | Real regression or measurement artifact? Compare releases, find new issues, decide continue/pause/roll back |
+| [Release or deploy missing in Sentry](https://github.com/Scoutflo/Scoutflo-SRE-Playbooks/blob/master/Sentry%20Playbooks/03-Release-Health/ReleaseOrDeployMissing-Release-Health-application.md) | Releases, deploys or commits not showing: naming mismatch, CI steps, token scope |
+
+### Still to come
 
 | Topic | Description |
 |-------|-------------|
-| Release Regression Detection | Identify error spikes after deployments |
-| Crash-Free Session Monitoring | Track crash-free user sessions |
 | Release Adoption Tracking | Monitor rollout progress |
 | Release Comparison | Compare error rates across releases |
-| Deploy Correlation | Link errors to specific commits |
 | Rollback Decision Support | Data-driven rollback analysis |
 
 ## Best Practices

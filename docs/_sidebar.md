@@ -7,7 +7,7 @@
   * [FAQ](/faq)
   * [Examples](/examples)
 
-* **AWS Playbooks** <span class="badge-aws">158</span>
+* **AWS Playbooks** <span class="badge-aws">160</span>
   * [Overview](/aws/)
   * [01 - Compute](/aws/01-compute)
   * [02 - Database](/aws/02-database)
@@ -18,7 +18,7 @@
   * [07 - CI/CD](/aws/07-cicd)
   * [08 - Proactive](/aws/08-proactive)
 
-* **Kubernetes Playbooks** <span class="badge-k8s">233</span>
+* **Kubernetes Playbooks** <span class="badge-k8s">234</span>
   * [Overview](/k8s/)
   * [01 - Control Plane](/k8s/01-control-plane)
   * [02 - Nodes](/k8s/02-nodes)
@@ -34,14 +34,17 @@
   * [12 - Namespaces](/k8s/12-namespaces)
   * [13 - Proactive](/k8s/13-proactive)
 
-* **Sentry Playbooks** <span class="badge-sentry">26</span>
+* **Sentry Playbooks** <span class="badge-sentry">28</span>
   * [Overview](/sentry/)
   * [01 - Error Tracking](/sentry/01-error-tracking)
   * [02 - Performance](/sentry/02-performance)
   * [03 - Release Health](/sentry/03-release-health)
 
-* **Terraform Playbooks** <span class="badge-sentry">3</span>
+* **Terraform Playbooks** <span class="badge-sentry">5</span>
   * [Overview](/terraform/)
+
+* **Azure Playbooks** <span class="badge-sentry">4</span>
+  * [Overview](/azure/)
 
 * **Contributing**
   * [How to Contribute](/contributing)
