@@ -12,15 +12,15 @@ Lambda functions experience higher than necessary cold start latency; user-facin
 
 ### For AI Agents (NLP)
 
-1. Retrieve CloudWatch metrics for Lambda function `<function-name>` including InitDuration, Duration, and ColdStartDuration over the last 30 days to establish performance baselines and identify optimization opportunities, analyzing cold start frequency and duration trends.
+1. Retrieve CloudWatch metrics for Lambda function `<function-name>` including Duration, Invocations, and Errors, plus `@initDuration` from Lambda REPORT log lines (InitDuration is not a standard AWS/Lambda metric), over the last 30 days to establish performance baselines and identify optimization opportunities, analyzing cold start frequency and duration trends.
 
 2. Retrieve the Lambda Function `<function-name>` configuration in region `<region>` and inspect package size, runtime, memory allocation, timeout settings, provisioned concurrency configuration, and deployment package type to identify optimization opportunities.
 
-3. Calculate cold start percentage by comparing cold start invocations to total invocations over the last 30 days using CloudWatch metrics, establishing whether cold starts are frequent enough to warrant optimization investment.
+3. Calculate cold start percentage by comparing cold start invocations to total invocations over the last 30 days using CloudWatch Logs Insights REPORT lines, establishing whether cold starts are frequent enough to warrant optimization investment.
 
 4. Query CloudWatch Logs for log group `/aws/lambda/<function-name>` and analyze initialization patterns, dependency loading times, and startup sequences to identify optimization opportunities in function code.
 
-5. Retrieve CloudWatch metrics for Lambda function `<function-name>` memory utilization and compare with allocated memory to identify right-sizing opportunities that could improve cold start performance through increased CPU allocation.
+5. Query Lambda REPORT log lines for function `<function-name>` memory utilization (`@maxMemoryUsed` vs `@memorySize`) and compare with allocated memory to identify right-sizing opportunities that could improve cold start performance through increased CPU allocation.
 
 6. Evaluate Lambda function `<function-name>` VPC configuration and assess whether VPC attachment is necessary, calculating VPC ENI creation overhead impact on cold start times.
 
@@ -34,17 +34,17 @@ Lambda functions experience higher than necessary cold start latency; user-facin
 
 ### For DevOps/SREs (CLI)
 
-1. Retrieve cold start metrics for the last 30 days:
+1. Retrieve cold start durations (InitDuration is reported in REPORT log lines, not as an AWS/Lambda metric):
    ```bash
-   aws cloudwatch get-metric-statistics \
-     --namespace AWS/Lambda \
-     --metric-name InitDuration \
-     --dimensions Name=FunctionName,Value=<function-name> \
-     --start-time $(date -u -d '30 days ago' +%Y-%m-%dT%H:%M:%S) \
-     --end-time $(date -u +%Y-%m-%dT%H:%M:%S) \
-     --period 3600 \
-     --statistics Average,Maximum \
-     --region <region>
+   # Portable time bounds (GNU/Linux and macOS); reused by steps 3 and 5
+   START=$(date -u -d '30 days ago' +%s 2>/dev/null || date -u -v-30d +%s)
+   END=$(date -u +%s)
+   QID=$(aws logs start-query \
+     --log-group-name /aws/lambda/<function-name> \
+     --start-time $START --end-time $END \
+     --query-string 'filter @type = "REPORT" and ispresent(@initDuration) | stats count() as coldStarts, avg(@initDuration) as avgInit, max(@initDuration) as maxInit, pct(@initDuration, 95) as p95Init by bin(1d)' \
+     --region <region> --query queryId --output text)
+   aws logs get-query-results --query-id "$QID" --region <region>
    ```
 
 2. Get function configuration details:
@@ -52,12 +52,11 @@ Lambda functions experience higher than necessary cold start latency; user-facin
    aws lambda get-function --function-name <function-name> --region <region>
    ```
 
-3. Calculate cold start percentage using CloudWatch Insights:
+3. Calculate cold start percentage using CloudWatch Logs Insights:
    ```bash
    aws logs start-query \
      --log-group-name /aws/lambda/<function-name> \
-     --start-time $(date -u -d '30 days ago' +%s) \
-     --end-time $(date -u +%s) \
+     --start-time $START --end-time $END \
      --query-string 'filter @type = "REPORT" | stats count(@initDuration) / count() * 100 as coldStartPercentage'
    ```
 
@@ -65,7 +64,7 @@ Lambda functions experience higher than necessary cold start latency; user-facin
    ```bash
    aws logs filter-log-events \
      --log-group-name /aws/lambda/<function-name> \
-     --start-time $(date -u -d '7 days ago' +%s000) \
+     --start-time $(( ($(date -u +%s) - 7*86400) * 1000 )) \
      --filter-pattern "INIT_START" \
      --region <region>
    ```
@@ -74,8 +73,7 @@ Lambda functions experience higher than necessary cold start latency; user-facin
    ```bash
    aws logs start-query \
      --log-group-name /aws/lambda/<function-name> \
-     --start-time $(date -u -d '7 days ago' +%s) \
-     --end-time $(date -u +%s) \
+     --start-time $(( $(date -u +%s) - 7*86400 )) --end-time $(date -u +%s) \
      --query-string 'filter @type = "REPORT" | stats avg(@maxMemoryUsed / @memorySize) * 100 as memoryUtilizationPct'
    ```
 
@@ -112,12 +110,12 @@ Lambda functions experience higher than necessary cold start latency; user-facin
    ```
 
 10. Check SnapStart configuration (Java runtimes):
-   ```bash
-   aws lambda get-function-configuration \
-     --function-name <function-name> \
-     --query 'SnapStart' \
-     --region <region>
-   ```
+    ```bash
+    aws lambda get-function-configuration \
+      --function-name <function-name> \
+      --query 'SnapStart' \
+      --region <region>
+    ```
 
 ## Diagnosis
 
