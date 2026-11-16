@@ -68,7 +68,7 @@ jobs:
               echo -e "$file_errors" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
             fi
-          done < <(find "AWS Playbooks" "K8s Playbooks" "Sentry Playbooks" "Terraform Playbooks" -name "*.md" -type f -print0 2>/dev/null | grep -zv README.md)
+          done < <(find "AWS Playbooks" "K8s Playbooks" "Sentry Playbooks" "Terraform Playbooks" "Azure Playbooks" -name "*.md" -type f -print0 2>/dev/null | grep -zv README.md)
 
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "**Summary:** Checked $checked playbooks, found $errors with issues" >> $GITHUB_STEP_SUMMARY
@@ -106,7 +106,7 @@ jobs:
               echo "- **$file**: Uses curly braces instead of angle brackets" >> $GITHUB_STEP_SUMMARY
               issues=$((issues + 1))
             fi
-          done < <(find "AWS Playbooks" "K8s Playbooks" "Sentry Playbooks" "Terraform Playbooks" -name "*.md" -type f -print0 2>/dev/null)
+          done < <(find "AWS Playbooks" "K8s Playbooks" "Sentry Playbooks" "Terraform Playbooks" "Azure Playbooks" -name "*.md" -type f -print0 2>/dev/null)
 
           if [ $issues -eq 0 ]; then
             echo ":white_check_mark: All placeholders use consistent format" >> $GITHUB_STEP_SUMMARY
@@ -144,7 +144,7 @@ jobs:
             else
               nlp_only=$((nlp_only + 1))
             fi
-          done < <(find "AWS Playbooks" "K8s Playbooks" "Sentry Playbooks" "Terraform Playbooks" -name "*.md" -type f -print0 2>/dev/null | grep -zv README.md)
+          done < <(find "AWS Playbooks" "K8s Playbooks" "Sentry Playbooks" "Terraform Playbooks" "Azure Playbooks" -name "*.md" -type f -print0 2>/dev/null | grep -zv README.md)
 
           pct=$((dual_format * 100 / total))
 
@@ -173,9 +173,10 @@ jobs:
 
           aws_count=$(find "AWS Playbooks" -name "*.md" -type f -print0 | grep -zvc README.md)
           k8s_count=$(find "K8s Playbooks" -name "*.md" -type f -print0 | grep -zvc README.md)
-          sentry_count=$(find "Sentry Playbooks" "Terraform Playbooks" -name "*.md" -type f -print0 | grep -zvc README.md)
-          terraform_count=$(find "Terraform Playbooks" -name "*.md" -type f -print0 | grep -zvc README.md)
-          total=$((aws_count + k8s_count + sentry_count + terraform_count))
+          sentry_count=$(find "Sentry Playbooks" "Terraform Playbooks" "Azure Playbooks" -name "*.md" -type f -print0 | grep -zvc README.md)
+          terraform_count=$(find "Terraform Playbooks" "Azure Playbooks" -name "*.md" -type f -print0 | grep -zvc README.md)
+          azure_count=$(find "Azure Playbooks" -name "*.md" -type f -print0 | grep -zvc README.md)
+          total=$((aws_count + k8s_count + sentry_count + terraform_count + azure_count))
 
           echo "| Provider | Count |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
@@ -183,6 +184,7 @@ jobs:
           echo "| Kubernetes | $k8s_count |" >> $GITHUB_STEP_SUMMARY
           echo "| Sentry | $sentry_count |" >> $GITHUB_STEP_SUMMARY
           echo "| Terraform | $terraform_count |" >> $GITHUB_STEP_SUMMARY
+          echo "| Azure | $azure_count |" >> $GITHUB_STEP_SUMMARY
           echo "| **Total** | **$total** |" >> $GITHUB_STEP_SUMMARY
 
   docs-consistency:

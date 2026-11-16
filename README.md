@@ -32,7 +32,7 @@
 
 ## Overview
 
-This repository contains **420 comprehensive incident response playbooks** designed to help Site Reliability Engineers (SREs) systematically diagnose and resolve common infrastructure and application issues in AWS, Kubernetes, Sentry, and Terraform environments.
+This repository contains **431 comprehensive incident response playbooks** designed to help Site Reliability Engineers (SREs) systematically diagnose and resolve common infrastructure and application issues in AWS, Kubernetes, Sentry, Terraform, and Azure environments.
 
 ### Why This Repository?
 
@@ -40,7 +40,7 @@ This repository contains **420 comprehensive incident response playbooks** desig
 - **Time-Saving**: Quickly identify root causes with correlation analysis frameworks
 - **Community-Driven**: Continuously improved by the open-source community
 - **Production-Ready**: Based on real-world incident response scenarios
-- **Comprehensive Coverage**: 233 Kubernetes playbooks + 158 AWS playbooks + 25 Sentry playbooks
+- **Comprehensive Coverage**: 234 Kubernetes playbooks + 160 AWS playbooks + 28 Sentry playbooks
 - **Proactive Monitoring**: 56 K8s + 66 AWS proactive playbooks for capacity planning and compliance
 
 ### Diagnosis Improvements
@@ -62,20 +62,20 @@ All playbooks use an **events-first approach** for root cause analysis:
 
 ```
 scoutflo-SRE-Playbooks/
-├── AWS Playbooks/                    # 158 AWS playbooks
-│   ├── 01-Compute/                   # 27 playbooks (EC2, Lambda, ECS, EKS)
+├── AWS Playbooks/                    # 160 AWS playbooks
+│   ├── 01-Compute/                   # 28 playbooks (EC2, Lambda, ECS, EKS)
 │   ├── 02-Database/                  # 8 playbooks (RDS, DynamoDB)
 │   ├── 03-Storage/                   # 7 playbooks (S3)
 │   ├── 04-Networking/                # 17 playbooks (VPC, ELB, Route53)
 │   ├── 05-Security/                  # 16 playbooks (IAM, KMS, GuardDuty)
-│   ├── 06-Monitoring/                # 8 playbooks (CloudTrail, CloudWatch)
+│   ├── 06-Monitoring/                # 9 playbooks (CloudTrail, CloudWatch)
 │   ├── 07-CI-CD/                     # 9 playbooks (CodePipeline, CodeBuild)
 │   ├── 08-Proactive/                 # 66 proactive monitoring playbooks
 │   └── README.md
-├── K8s Playbooks/                    # 233 Kubernetes playbooks
+├── K8s Playbooks/                    # 234 Kubernetes playbooks
 │   ├── 01-Control-Plane/             # 24 playbooks
 │   ├── 02-Nodes/                     # 24 playbooks
-│   ├── 03-Pods/                      # 41 playbooks
+│   ├── 03-Pods/                      # 42 playbooks
 │   ├── 04-Workloads/                 # 26 playbooks
 │   ├── 05-Networking/                # 27 playbooks
 │   ├── 06-Storage/                   # 9 playbooks
@@ -87,8 +87,9 @@ scoutflo-SRE-Playbooks/
 │   ├── 12-Namespaces/                # 2 playbooks
 │   ├── 13-Proactive/                 # 56 proactive monitoring playbooks
 │   └── README.md
-├── Terraform Playbooks/              # 3 Terraform playbooks (new)
-├── Sentry Playbooks/                 # 26 Sentry playbooks
+├── Terraform Playbooks/              # 5 Terraform playbooks
+├── Azure Playbooks/                  # 4 Azure (AKS) playbooks
+├── Sentry Playbooks/                 # 28 Sentry playbooks
 │   ├── 01-Error-Tracking/            # 19 playbooks
 │   ├── 02-Performance/               # 6 playbooks
 │   ├── 03-Release-Health/            # Placeholder
@@ -101,14 +102,14 @@ scoutflo-SRE-Playbooks/
 
 ### AWS Playbooks (`AWS Playbooks/`)
 
-**158 playbooks** covering 7 service categories + proactive monitoring:
+**160 playbooks** covering 7 service categories + proactive monitoring:
 
-- **Compute Services** (27 playbooks): EC2, Lambda, ECS, EKS
+- **Compute Services** (28 playbooks): EC2, Lambda, ECS, EKS
 - **Database** (8 playbooks): RDS, DynamoDB
 - **Storage** (7 playbooks): S3
 - **Networking** (17 playbooks): VPC, ELB, Route 53, NAT Gateway
 - **Security** (16 playbooks): IAM, KMS, GuardDuty, CloudTrail
-- **Monitoring** (8 playbooks): CloudTrail, CloudWatch
+- **Monitoring** (9 playbooks): CloudTrail, CloudWatch
 - **CI/CD** (9 playbooks): CodePipeline, CodeBuild
 - **Proactive** (66 playbooks): Capacity planning, compliance, cost optimization
 
@@ -124,12 +125,12 @@ See [AWS Playbooks/README.md](AWS%20Playbooks/README.md) for complete documentat
 
 ### Kubernetes Playbooks (`K8s Playbooks/`)
 
-**233 playbooks** organized into **13 categorized folders** covering Kubernetes cluster and workload issues:
+**234 playbooks** organized into **13 categorized folders** covering Kubernetes cluster and workload issues:
 
 **Folder Structure:**
 - `01-Control-Plane/` (24 playbooks) - API Server, Scheduler, Controller Manager, etcd
 - `02-Nodes/` (24 playbooks) - Node readiness, kubelet issues, resource constraints
-- `03-Pods/` (41 playbooks) - Scheduling, lifecycle, health checks, resource limits
+- `03-Pods/` (42 playbooks) - Scheduling, lifecycle, health checks, resource limits
 - `04-Workloads/` (26 playbooks) - Deployments, StatefulSets, DaemonSets, Jobs, HPA
 - `05-Networking/` (27 playbooks) - Services, Ingress, DNS, Network Policies, kube-proxy
 - `06-Storage/` (9 playbooks) - PersistentVolumes, PersistentVolumeClaims, StorageClasses
@@ -612,11 +613,12 @@ Need help? Check out our [Support Guide](.github/SUPPORT.md) or:
 
 ## Statistics
 
-- **Total Playbooks**: 420
-  - AWS: 158 playbooks (92 reactive + 66 proactive)
-  - Kubernetes: 233 playbooks (177 reactive + 56 proactive)
-  - Sentry: 26 playbooks
-  - Terraform: 3 playbooks
+- **Total Playbooks**: 431
+  - AWS: 160 playbooks (94 reactive + 66 proactive)
+  - Kubernetes: 234 playbooks (178 reactive + 56 proactive)
+  - Sentry: 28 playbooks
+  - Terraform: 5 playbooks
+  - Azure: 4 playbooks
 - **Coverage**: Major AWS services, Kubernetes components, and Sentry monitoring
 - **Format**: Markdown with structured sections
 - **Language**: English

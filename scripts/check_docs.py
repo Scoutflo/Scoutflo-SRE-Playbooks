@@ -14,8 +14,8 @@ from pathlib import Path
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parent.parent
-PROVIDERS = {"K8s Playbooks": "k8s", "AWS Playbooks": "aws", "Sentry Playbooks": "sentry", "Terraform Playbooks": "terraform"}
-LINK = re.compile(r"blob/(?:master|main)/((?:K8s|AWS|Sentry|Terraform)(?:%20| )Playbooks/[^)\s#\"']+\.md)")
+PROVIDERS = {"K8s Playbooks": "k8s", "AWS Playbooks": "aws", "Sentry Playbooks": "sentry", "Terraform Playbooks": "terraform", "Azure Playbooks": "azure"}
+LINK = re.compile(r"blob/(?:master|main)/((?:K8s|AWS|Sentry|Terraform|Azure)(?:%20| )Playbooks/[^)\s#\"']+\.md)")
 
 
 def playbooks():

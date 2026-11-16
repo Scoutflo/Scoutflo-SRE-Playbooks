@@ -25,6 +25,7 @@ PROVIDERS = {
     "aws": BASE_PATH / "AWS Playbooks",
     "sentry": BASE_PATH / "Sentry Playbooks",
     "terraform": BASE_PATH / "Terraform Playbooks",
+    "azure": BASE_PATH / "Azure Playbooks",
 }
 
 
@@ -87,7 +88,7 @@ def get_playbook_files(provider: str = None) -> List[Tuple[Path, str]]:
 
 def main():
     parser = argparse.ArgumentParser(description="Validate dual-format playbooks")
-    parser.add_argument("--provider", choices=["k8s", "aws", "sentry", "terraform"], help="Check specific provider")
+    parser.add_argument("--provider", choices=["k8s", "aws", "sentry", "terraform", "azure"], help="Check specific provider")
     parser.add_argument("--summary", action="store_true", help="Show summary only")
     args = parser.parse_args()
 
@@ -104,7 +105,8 @@ def main():
         "k8s": {"total": 0, "dual": 0, "nlp_only": 0, "issues": 0},
         "aws": {"total": 0, "dual": 0, "nlp_only": 0, "issues": 0},
         "sentry": {"total": 0, "dual": 0, "nlp_only": 0, "issues": 0},
-        "terraform": {"total": 0, "dual": 0, "nlp_only": 0, "issues": 0}
+        "terraform": {"total": 0, "dual": 0, "nlp_only": 0, "issues": 0},
+        "azure": {"total": 0, "dual": 0, "nlp_only": 0, "issues": 0}
     }
 
     issues_list = []

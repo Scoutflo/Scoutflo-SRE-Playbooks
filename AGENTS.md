@@ -7,7 +7,7 @@ Docsify site from `docs/`. Canonical repo: `github.com/Scoutflo/Scoutflo-SRE-Pla
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate && pip install -r scripts/requirements.txt
-python scripts/validate_dual_format.py --summary        # dual-format progress (9/420 at last count)
+python scripts/validate_dual_format.py --summary        # dual-format progress (20/431 at last count)
 python scripts/check_docs.py --strict                   # broken links / unlisted playbooks
 python scripts/sync_readmes.py && python scripts/sync_docs.py   # refresh counts + listings after adding playbooks
 python scripts/validate_dual_format.py --provider k8s   # or aws / sentry

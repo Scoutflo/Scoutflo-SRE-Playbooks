@@ -1,9 +1,9 @@
 # AWS Playbooks
 
-[![AWS](https://img.shields.io/badge/AWS-158%20playbooks-orange)](README.md)
+[![AWS](https://img.shields.io/badge/AWS-160%20playbooks-orange)](README.md)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](../../CONTRIBUTING.md)
 
-> **158 comprehensive AWS incident response playbooks** organized into 8 categorized folders - Systematic troubleshooting guides for common AWS service issues to help SREs diagnose and resolve infrastructure problems faster.
+> **160 comprehensive AWS incident response playbooks** organized into 8 categorized folders - Systematic troubleshooting guides for common AWS service issues to help SREs diagnose and resolve infrastructure problems faster.
 
 ## 📋 Table of Contents
 
@@ -20,7 +20,7 @@
 
 ## Overview
 
-This directory contains **158 AWS incident response playbooks** organized into **8 categorized folders** to help Site Reliability Engineers (SREs) diagnose and resolve common AWS service issues. Each playbook follows a structured format to provide systematic troubleshooting guidance.
+This directory contains **160 AWS incident response playbooks** organized into **8 categorized folders** to help Site Reliability Engineers (SREs) diagnose and resolve common AWS service issues. Each playbook follows a structured format to provide systematic troubleshooting guidance.
 
 ### Services Covered
 
@@ -49,12 +49,12 @@ Playbooks are organized into numbered folders by category for easy navigation:
 
 ```
 AWS Playbooks/
-├── 01-Compute/                    (27 playbooks)
+├── 01-Compute/                    (28 playbooks)
 ├── 02-Database/                   (8 playbooks)
 ├── 03-Storage/                    (7 playbooks)
 ├── 04-Networking/                 (17 playbooks)
 ├── 05-Security/                   (16 playbooks)
-├── 06-Monitoring/                 (8 playbooks)
+├── 06-Monitoring/                 (9 playbooks)
 ├── 07-CI-CD/                      (9 playbooks)
 └── 08-Proactive/                  (66 playbooks)
     ├── 01-Capacity-Performance/   (12 playbooks)
@@ -104,7 +104,7 @@ Correlation analysis framework:
 
 ## Playbook Categories
 
-### 01-Compute/ (27 playbooks)
+### 01-Compute/ (28 playbooks)
 EC2, Lambda, ECS, EKS, Fargate, Auto Scaling, Spot Instances, CodeDeploy
 
 **Key Topics:**
@@ -134,6 +134,7 @@ EC2, Lambda, ECS, EKS, Fargate, Auto Scaling, Spot Instances, CodeDeploy
 - `Not-Scaling-as-Expected-ECS.md`
 - `Not-Triggering-from-S3-Event-Lambda.md`
 - `Pod-Stuck-in-CrashLoopBackOff-EKS.md`
+- `Queue-Backlog-and-DLQ-Growth-SQS.md`
 - `Role-Not-Attaching-to-EC2-Instance-IAM.md`
 - `Running-Out-of-Memory-Fargate.md`
 - `Spot-Instance-Pricing-Unexpectedly-High-Cost.md`
@@ -237,7 +238,7 @@ IAM, KMS, GuardDuty, WAF, Shield, Cognito, Secrets Manager, ACM, Security Hub, S
 - `Token-Expired-Error-STS.md`
 - `User-Pool-Login-Issues-Cognito.md`
 
-### 06-Monitoring/ (8 playbooks)
+### 06-Monitoring/ (9 playbooks)
 CloudWatch, CloudTrail, Config, X-Ray
 
 **Key Topics:**
@@ -248,6 +249,7 @@ CloudWatch, CloudTrail, Config, X-Ray
 
 **Playbooks:**
 - `Alarm-Not-Triggering-as-Expected-CloudWatch.md`
+- `Delivery-Failures-SNS.md`
 - `Events-Not-Showing-in-Logs-CloudTrail.md`
 - `Logs-Not-Appearing-CloudWatch.md`
 - `Logs-Not-Capturing-Events-CloudTrail.md`
@@ -372,7 +374,7 @@ Proactive monitoring, capacity planning, security compliance, and operational re
 
 ### 1. Documentation
 
-This directory contains 158 AWS incident response playbooks organized into 8 categorized folders. Each playbook provides systematic troubleshooting guidance for common AWS issues.
+This directory contains 160 AWS incident response playbooks organized into 8 categorized folders. Each playbook provides systematic troubleshooting guidance for common AWS issues.
 
 **Quick Navigation:**
 - Browse by category folder (e.g., `01-Compute/` for compute issues)
@@ -531,7 +533,7 @@ We welcome contributions to improve AWS playbooks!
 
 ## Statistics
 
-- **Total Playbooks**: 158
+- **Total Playbooks**: 160
 - **Categories**: 8 (including Proactive monitoring)
 - **Organization**: Numbered folders for easy navigation
 - **Coverage**: All major AWS services and proactive monitoring

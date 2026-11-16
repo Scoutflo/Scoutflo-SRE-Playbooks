@@ -8,11 +8,11 @@ To become the most comprehensive, community-driven collection of SRE incident re
 
 ## Current Status (v2.1.0 + Unreleased)
 
-- **420 Playbooks**: 158 AWS + 233 Kubernetes + 26 Sentry + 3 Terraform
+- **431 Playbooks**: 160 AWS + 234 Kubernetes + 28 Sentry + 5 Terraform + 4 Azure
 - **Structured Format**: All playbooks follow 4-section structure (Meaning, Impact, Playbook, Diagnosis)
 - **Events-First Diagnosis**: Correlation analysis with conditional logic patterns
 - **Proactive Monitoring**: 122 proactive playbooks for capacity planning and compliance
-- **Dual-Format (NLP + CLI)**: 9 of 420 playbooks dual-format; converter and validator in `scripts/` (in progress)
+- **Dual-Format (NLP + CLI)**: 20 of 431 playbooks dual-format; converter and validator in `scripts/` (in progress)
 - **CI**: structure validation, placeholder check, dual-format report and docs-consistency checks run on every PR
 
 ---
@@ -22,7 +22,7 @@ To become the most comprehensive, community-driven collection of SRE incident re
 ### New Playbooks
 - [ ] Azure playbooks (target: 50+ playbooks)
 - [ ] GCP playbooks (target: 50+ playbooks)
-- [ ] Terraform/IaC playbooks (target: 20+ playbooks; 3 started in v2.2.0)
+- [ ] Terraform/IaC playbooks (target: 20+ playbooks; 5 so far)
 - [ ] Additional Sentry playbooks for Release Health category
 
 ### Platform Improvements
