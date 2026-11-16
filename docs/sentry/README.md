@@ -1,12 +1,12 @@
 # Sentry Playbooks
 
-> **25 playbooks** for application error tracking and performance monitoring with Sentry.
+> **26 playbooks** for application error tracking and performance monitoring with Sentry.
 
 ## Categories
 
 | Category | Playbooks | Description |
 |----------|-----------|-------------|
-| [01 - Error Tracking](/sentry/01-error-tracking) | 19 | Exception handling, error patterns |
+| [01 - Error Tracking](/sentry/01-error-tracking) | 20 | Exception handling, error patterns |
 | [02 - Performance](/sentry/02-performance) | 6 | Timeout, latency, slow transactions |
 | [03 - Release Health](/sentry/03-release-health) | - | Release correlation (coming soon) |
 
@@ -77,7 +77,7 @@ sentry-cli releases info <version>
 ## All Categories
 
 <details>
-<summary><strong>01 - Error Tracking (19 playbooks)</strong></summary>
+<summary><strong>01 - Error Tracking (20 playbooks)</strong></summary>
 
 Exception handling and error pattern playbooks.
 
