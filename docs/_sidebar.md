@@ -34,7 +34,7 @@
   * [12 - Namespaces](/k8s/12-namespaces)
   * [13 - Proactive](/k8s/13-proactive)
 
-* **Sentry Playbooks** <span class="badge-sentry">25</span>
+* **Sentry Playbooks** <span class="badge-sentry">26</span>
   * [Overview](/sentry/)
   * [01 - Error Tracking](/sentry/01-error-tracking)
   * [02 - Performance](/sentry/02-performance)

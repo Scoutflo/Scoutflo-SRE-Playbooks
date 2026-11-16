@@ -32,7 +32,7 @@
 
 ## Overview
 
-This repository contains **416 comprehensive incident response playbooks** designed to help Site Reliability Engineers (SREs) systematically diagnose and resolve common infrastructure and application issues in AWS, Kubernetes, and Sentry environments.
+This repository contains **417 comprehensive incident response playbooks** designed to help Site Reliability Engineers (SREs) systematically diagnose and resolve common infrastructure and application issues in AWS, Kubernetes, and Sentry environments.
 
 ### Why This Repository?
 
@@ -40,7 +40,7 @@ This repository contains **416 comprehensive incident response playbooks** desig
 - **Time-Saving**: Quickly identify root causes with correlation analysis frameworks
 - **Community-Driven**: Continuously improved by the open-source community
 - **Production-Ready**: Based on real-world incident response scenarios
-- **Comprehensive Coverage**: 233 Kubernetes playbooks + 158 AWS playbooks + 25 Sentry playbooks
+- **Comprehensive Coverage**: 233 Kubernetes playbooks + 158 AWS playbooks + 26 Sentry playbooks
 - **Proactive Monitoring**: 56 K8s + 66 AWS proactive playbooks for capacity planning and compliance
 
 ### Diagnosis Improvements
@@ -87,8 +87,8 @@ scoutflo-SRE-Playbooks/
 │   ├── 12-Namespaces/                # 2 playbooks
 │   ├── 13-Proactive/                 # 56 proactive monitoring playbooks
 │   └── README.md
-├── Sentry Playbooks/                 # 25 Sentry playbooks
-│   ├── 01-Error-Tracking/            # 19 playbooks
+├── Sentry Playbooks/                 # 26 Sentry playbooks
+│   ├── 01-Error-Tracking/            # 20 playbooks
 │   ├── 02-Performance/               # 6 playbooks
 │   ├── 03-Release-Health/            # Placeholder
 │   └── README.md
@@ -153,10 +153,10 @@ See [K8s Playbooks/README.md](K8s%20Playbooks/README.md) for complete documentat
 
 ### Sentry Playbooks (`Sentry Playbooks/`)
 
-**25 playbooks** covering error tracking and performance monitoring:
+**26 playbooks** covering error tracking and performance monitoring:
 
 **Folder Structure:**
-- `01-Error-Tracking/` (19 playbooks) - Error capture, grouping, alerting, and debugging
+- `01-Error-Tracking/` (20 playbooks) - Error capture, grouping, alerting, and debugging
 - `02-Performance/` (6 playbooks) - Transaction monitoring, performance issues, tracing
 - `03-Release-Health/` - Release tracking and health monitoring (placeholder)
 
@@ -611,10 +611,10 @@ Need help? Check out our [Support Guide](.github/SUPPORT.md) or:
 
 ## Statistics
 
-- **Total Playbooks**: 416
+- **Total Playbooks**: 417
   - AWS: 158 playbooks (92 reactive + 66 proactive)
   - Kubernetes: 233 playbooks (177 reactive + 56 proactive)
-  - Sentry: 25 playbooks
+  - Sentry: 26 playbooks
 - **Coverage**: Major AWS services, Kubernetes components, and Sentry monitoring
 - **Format**: Markdown with structured sections
 - **Language**: English

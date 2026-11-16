@@ -20,9 +20,10 @@ Playbooks for exception handling and error patterns. This category includes:
 - **Database Errors**: ConnectionError-ConnectionRefused, ProgrammingError (ColumnMissing, ConstraintViolation, RelationMissing, SyntaxError)
 - **Redis Errors**: ConnectionError-ConnectionRefused
 - **Application Errors**: MemoryError, UnhandledException, APICallFailed
+- **JavaScript Errors**: [Minified stack traces](01-Error-Tracking/SourceMapError-MinifiedStackTrace-JavaScript-Error-application.md)
 - **Code Errors**: KeyError, ValidationError, ValueError, AttributeError, ImportError, IndexError
 
-**Total Files**: 19
+**Total Files**: 20
 
 ### 02-Performance
 Playbooks for transaction issues, latency, and performance problems. This category includes:

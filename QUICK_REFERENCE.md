@@ -39,8 +39,8 @@ scoutflo-SRE-Playbooks/
 │   ├── 11-Installation-Setup/ (1)
 │   ├── 12-Namespaces/      (2)
 │   └── 13-Proactive/       (56) - Proactive monitoring
-└── Sentry Playbooks/       (25 playbooks in 3 folders)
-    ├── 01-Error-Tracking/  (19)
+└── Sentry Playbooks/       (26 playbooks in 3 folders)
+    ├── 01-Error-Tracking/  (20)
     ├── 02-Performance/     (6)
     └── 03-Release-Health/  (placeholder)
 ```

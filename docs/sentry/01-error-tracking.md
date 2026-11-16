@@ -1,6 +1,6 @@
 # Sentry Error Tracking Playbooks
 
-> **19 playbooks** for application exceptions and error handling.
+> **20 playbooks** for application exceptions and error handling.
 
 ## General Error Playbooks
 
@@ -9,6 +9,7 @@
 | [UnhandledException](https://github.com/Scoutflo/scoutflo-SRE-Playbooks/blob/master/Sentry%20Playbooks/01-Error-Tracking/UnhandledException-Error-application.md) | Unhandled exception troubleshooting |
 | [MemoryError](https://github.com/Scoutflo/scoutflo-SRE-Playbooks/blob/master/Sentry%20Playbooks/01-Error-Tracking/MemoryError-Error-application.md) | Memory exhaustion errors |
 | [APICallFailed](https://github.com/Scoutflo/scoutflo-SRE-Playbooks/blob/master/Sentry%20Playbooks/01-Error-Tracking/APICallFailed-Error-application.md) | External API call failures |
+| [Minified JavaScript stack traces](https://github.com/Scoutflo/Scoutflo-SRE-Playbooks/blob/master/Sentry%20Playbooks/01-Error-Tracking/SourceMapError-MinifiedStackTrace-JavaScript-Error-application.md) | Diagnose missing or mismatched source maps |
 
 ## Python Exception Playbooks
 

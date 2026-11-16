@@ -8,11 +8,11 @@ To become the most comprehensive, community-driven collection of SRE incident re
 
 ## Current Status (v2.1.0 + Unreleased)
 
-- **416 Playbooks**: 158 AWS + 233 Kubernetes + 25 Sentry
+- **417 Playbooks**: 158 AWS + 233 Kubernetes + 26 Sentry
 - **Structured Format**: All playbooks follow 4-section structure (Meaning, Impact, Playbook, Diagnosis)
 - **Events-First Diagnosis**: Correlation analysis with conditional logic patterns
 - **Proactive Monitoring**: 122 proactive playbooks for capacity planning and compliance
-- **Dual-Format (NLP + CLI)**: 5 of 416 playbooks converted; converter and validator in `scripts/` (in progress)
+- **Dual-Format (NLP + CLI)**: 6 of 417 playbooks converted; converter and validator in `scripts/` (in progress)
 - **CI**: structure validation, placeholder check, dual-format report and docs-consistency checks run on every PR
 
 ---
