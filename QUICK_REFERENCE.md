@@ -16,7 +16,7 @@ One-page cheat sheet for SRE Playbooks.
 
 ```
 scoutflo-SRE-Playbooks/
-├── AWS Playbooks/          (157 playbooks in 8 folders)
+├── AWS Playbooks/          (158 playbooks in 8 folders)
 │   ├── 01-Compute/         (27) - EC2, Lambda, ECS, EKS
 │   ├── 02-Database/        (8)  - RDS, DynamoDB
 │   ├── 03-Storage/         (7)  - S3
@@ -24,8 +24,8 @@ scoutflo-SRE-Playbooks/
 │   ├── 05-Security/        (16) - IAM, KMS, GuardDuty
 │   ├── 06-Monitoring/      (8)  - CloudTrail, CloudWatch
 │   ├── 07-CI-CD/           (9)  - CodePipeline
-│   └── 08-Proactive/       (65) - Proactive monitoring
-├── K8s Playbooks/          (194 playbooks in 13 folders)
+│   └── 08-Proactive/       (66) - Proactive monitoring
+├── K8s Playbooks/          (233 playbooks in 13 folders)
 │   ├── 01-Control-Plane/   (18)
 │   ├── 02-Nodes/           (12)
 │   ├── 03-Pods/            (31) ⭐ Most common

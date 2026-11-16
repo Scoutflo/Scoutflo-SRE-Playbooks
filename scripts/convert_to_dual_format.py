@@ -145,7 +145,7 @@ Generate the CLI equivalent following the rules in your instructions. Output ONL
 
     try:
         response = client.messages.create(
-            model="claude-sonnet-4-20250514",
+            model=os.environ.get("CONVERT_MODEL", "claude-sonnet-5-5"),
             max_tokens=2000,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": user_prompt}]

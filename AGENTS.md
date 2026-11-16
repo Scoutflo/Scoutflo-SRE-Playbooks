@@ -7,14 +7,17 @@ Docsify site from `docs/`. Canonical repo: `github.com/Scoutflo/Scoutflo-SRE-Pla
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate && pip install -r scripts/requirements.txt
-python scripts/validate_dual_format.py --summary        # validate all playbooks
+python scripts/validate_dual_format.py --summary        # dual-format progress (5/416 at last count)
+python scripts/check_docs.py --strict                   # broken links / unlisted playbooks
+python scripts/sync_readmes.py && python scripts/sync_docs.py   # refresh counts + listings after adding playbooks
 python scripts/validate_dual_format.py --provider k8s   # or aws / sentry
 python scripts/convert_to_dual_format.py --file "<path/to/playbook.md>"   # needs ANTHROPIC_API_KEY
 python3 -m http.server 3000 --directory docs            # preview the Docsify site
 ```
 
-Done check: `validate_dual_format.py --summary` shows no new failures for the
-files you touched, and links/sidebar entries resolve in the preview.
+Done check: a touched playbook is either unchanged NLP-only or fully dual-format;
+`check_docs.py --strict`, `sync_readmes.py --check` and `sync_docs.py --check` all exit 0
+(CI runs them); update total counts in README/ROADMAP/FAQ/CONTRIBUTORS when playbooks are added.
 
 ## Layout
 
@@ -29,4 +32,4 @@ files you touched, and links/sidebar entries resolve in the preview.
 - Ask first: bulk edits across categories, running the converter with `--all` (uses paid API calls), restructuring folders, changing counts in README/docs.
 - Never: commit API keys, put customer names or environment data in playbooks, or run commands from playbooks against live clusters/accounts without explicit scope.
 - Local-only files (`CLAUDE.md`, `.claude/`, `DUAL_FORMAT_PROGRESS.md`) are gitignored; do not force-add them.
-- PRs: the remote currently has only `master`; confirm the base branch with the user before `gh pr create`.
+- PRs: base is `master` (the only branch; it requires 1 approving review, so do not use `--admin` to bypass).

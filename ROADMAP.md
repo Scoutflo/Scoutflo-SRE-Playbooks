@@ -6,12 +6,14 @@ This document outlines the planned development and future direction of the SRE P
 
 To become the most comprehensive, community-driven collection of SRE incident response playbooks, helping engineers worldwide resolve infrastructure issues faster and more systematically.
 
-## Current Status (v2.0.0)
+## Current Status (v2.1.0 + Unreleased)
 
-- **376 Playbooks**: 157 AWS + 194 Kubernetes + 25 Sentry
+- **416 Playbooks**: 158 AWS + 233 Kubernetes + 25 Sentry
 - **Structured Format**: All playbooks follow 4-section structure (Meaning, Impact, Playbook, Diagnosis)
 - **Events-First Diagnosis**: Correlation analysis with conditional logic patterns
-- **Proactive Monitoring**: 121 proactive playbooks for capacity planning and compliance
+- **Proactive Monitoring**: 122 proactive playbooks for capacity planning and compliance
+- **Dual-Format (NLP + CLI)**: 5 of 416 playbooks converted; converter and validator in `scripts/` (in progress)
+- **CI**: structure validation, placeholder check, dual-format report and docs-consistency checks run on every PR
 
 ---
 
@@ -24,8 +26,8 @@ To become the most comprehensive, community-driven collection of SRE incident re
 - [ ] Additional Sentry playbooks for Release Health category
 
 ### Platform Improvements
-- [ ] Automated playbook structure validation (CI/CD)
-- [ ] Broken link detection workflow
+- [x] Automated playbook structure validation (CI/CD)
+- [x] Broken link detection workflow
 - [ ] Search functionality improvements
 - [ ] Interactive troubleshooting flowcharts
 
@@ -106,6 +108,7 @@ For enterprise or priority feature requests, contact us:
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| v2.1.0 | 2026-02-21 | 38 new K8s playbooks (CertManager, NodeExporter, containers, CoreDNS, NGINX Ingress) |
 | v2.0.0 | 2026-02-03 | Added Sentry playbooks, AWS restructured, proactive monitoring |
 | v1.0.0 | 2026-01-13 | Initial release with 163 playbooks (AWS + K8s) |
 

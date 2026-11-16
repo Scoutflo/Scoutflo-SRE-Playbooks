@@ -1,6 +1,6 @@
 # AWS Playbooks
 
-> **157 playbooks** for AWS infrastructure incident response and proactive monitoring.
+> **158 playbooks** for AWS infrastructure incident response and proactive monitoring.
 
 ## Categories
 
@@ -13,7 +13,7 @@
 | [05 - Security](/aws/05-security) | 16 | IAM, KMS, GuardDuty, WAF |
 | [06 - Monitoring](/aws/06-monitoring) | 8 | CloudTrail, CloudWatch |
 | [07 - CI/CD](/aws/07-cicd) | 9 | CodePipeline, CodeBuild, CodeDeploy |
-| [08 - Proactive](/aws/08-proactive) | 65 | Proactive monitoring and optimization |
+| [08 - Proactive](/aws/08-proactive) | 66 | Proactive monitoring and optimization |
 
 ## Quick Navigation
 
@@ -98,7 +98,7 @@ See [07 - CI/CD](/aws/07-cicd) for the full list.
 </details>
 
 <details>
-<summary><strong>08 - Proactive (65 playbooks)</strong></summary>
+<summary><strong>08 - Proactive (66 playbooks)</strong></summary>
 
 See [08 - Proactive](/aws/08-proactive) for the full list.
 

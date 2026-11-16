@@ -7,7 +7,7 @@
   * [FAQ](/faq)
   * [Examples](/examples)
 
-* **AWS Playbooks** <span class="badge-aws">157</span>
+* **AWS Playbooks** <span class="badge-aws">158</span>
   * [Overview](/aws/)
   * [01 - Compute](/aws/01-compute)
   * [02 - Database](/aws/02-database)
@@ -18,7 +18,7 @@
   * [07 - CI/CD](/aws/07-cicd)
   * [08 - Proactive](/aws/08-proactive)
 
-* **Kubernetes Playbooks** <span class="badge-k8s">232</span>
+* **Kubernetes Playbooks** <span class="badge-k8s">233</span>
   * [Overview](/k8s/)
   * [01 - Control Plane](/k8s/01-control-plane)
   * [02 - Nodes](/k8s/02-nodes)

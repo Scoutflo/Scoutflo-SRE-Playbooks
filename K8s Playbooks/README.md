@@ -1,9 +1,9 @@
 # Kubernetes (K8s) Playbooks
 
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-232%20playbooks-blue)](README.md)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-233%20playbooks-blue)](README.md)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](../../CONTRIBUTING.md)
 
-> **232 comprehensive Kubernetes incident response playbooks** organized into 13 categorized folders - Systematic troubleshooting guides for common Kubernetes cluster and workload issues to help SREs diagnose and resolve problems faster.
+> **233 comprehensive Kubernetes incident response playbooks** organized into 13 categorized folders - Systematic troubleshooting guides for common Kubernetes cluster and workload issues to help SREs diagnose and resolve problems faster.
 
 ## 📋 Table of Contents
 
@@ -20,7 +20,7 @@
 
 ## Overview
 
-This directory contains **232 Kubernetes incident response playbooks** organized into **13 categorized folders** to help Site Reliability Engineers (SREs) quickly find and diagnose common Kubernetes cluster and workload issues. Each playbook follows a structured format to provide systematic troubleshooting guidance.
+This directory contains **233 Kubernetes incident response playbooks** organized into **13 categorized folders** to help Site Reliability Engineers (SREs) quickly find and diagnose common Kubernetes cluster and workload issues. Each playbook follows a structured format to provide systematic troubleshooting guidance.
 
 ### Services & Components Covered
 
@@ -45,7 +45,7 @@ K8s Playbooks/
 ├── 01-Control-Plane/              (24 playbooks)
 ├── 02-Nodes/                      (24 playbooks)
 ├── 03-Pods/                       (41 playbooks)
-├── 04-Workloads/                  (25 playbooks)
+├── 04-Workloads/                  (26 playbooks)
 ├── 05-Networking/                 (27 playbooks)
 ├── 06-Storage/                    (9 playbooks)
 ├── 07-RBAC/                       (6 playbooks)
@@ -115,7 +115,7 @@ Correlation analysis framework:
 
 ## Playbook Categories
 
-### 01-Control-Plane/ (18 playbooks)
+### 01-Control-Plane/ (24 playbooks)
 Control plane component issues: API Server, Scheduler, Controller Manager, etcd, certificates
 
 **Key Topics:**
@@ -130,6 +130,12 @@ Control plane component issues: API Server, Scheduler, Controller Manager, etcd,
 - `APIServerHighLatency-control-plane.md`
 - `CannotAccessAPI-control-plane.md`
 - `CertificateExpired-control-plane.md`
+- `CertificateExpiringCritical-cert.md`
+- `CertificateExpiringSoon-cert.md`
+- `CertificateNotReady-cert.md`
+- `CertManagerACMEOrderFailed-cert.md`
+- `CertManagerControllerHighError-cert.md`
+- `CertManagerDown-cert.md`
 - `ConnectionRefused-control-plane.md`
 - `ContextDeadlineExceeded-control-plane.md`
 - `ControlPlaneComponentsNotStarting-control-plane.md`
@@ -146,7 +152,7 @@ Control plane component issues: API Server, Scheduler, Controller Manager, etcd,
 - `Timeout-control-plane.md`
 - `UpgradeFails-control-plane.md`
 
-### 02-Nodes/ (12 playbooks)
+### 02-Nodes/ (24 playbooks)
 Node readiness, kubelet issues, node capacity, node connectivity
 
 **Key Topics:**
@@ -158,20 +164,32 @@ Node readiness, kubelet issues, node capacity, node connectivity
 - Node joining cluster issues
 
 **Playbooks:**
-- `KubeNodeNotReady-node.md`
-- `KubeNodeReadinessFlapping-node.md`
-- `KubeNodeUnreachable-node.md`
 - `KubeletCertificateRotationFailing-node.md`
 - `KubeletDown-node.md`
 - `KubeletPlegDurationHigh-node.md`
 - `KubeletPodStartUpLatencyHigh-node.md`
 - `KubeletServiceNotRunning-node.md`
 - `KubeletTooManyPods-node.md`
+- `KubeNodeNotReady-node.md`
+- `KubeNodeReadinessFlapping-node.md`
+- `KubeNodeUnreachable-node.md`
 - `NodeCannotJoinCluster-node.md`
+- `NodeClockSkewDetected-node.md`
+- `NodeDiskIOSaturation-node.md`
 - `NodeDiskPressure-storage.md`
+- `NodeExporterDown-node.md`
+- `NodeFileDescriptorLimit-node.md`
+- `NodeFilesystemAlmostOutOfSpace-node.md`
+- `NodeHighCPUUsage-node.md`
+- `NodeHighLoadAverage-node.md`
+- `NodeHighMemoryUsage-node.md`
+- `NodeMemoryMajorPagesFaults-node.md`
+- `NodeNetworkReceiveErrors-node.md`
 - `NodeNotReady-node.md`
+- `NodeRAIDDegraded-node.md`
+- `NodeSystemdServiceFailed-node.md`
 
-### 03-Pods/ (31 playbooks)
+### 03-Pods/ (41 playbooks)
 Pod lifecycle, scheduling, health checks, pod states, resource issues
 
 **Key Topics:**
@@ -185,12 +203,23 @@ Pod lifecycle, scheduling, health checks, pod states, resource issues
 - Pod logs issues
 
 **Playbooks:**
+- `ContainerHighCPUThrottling-container.md`
+- `ContainerHighMemoryUsage-container.md`
+- `ContainerMemoryNearLimit-container.md`
+- `ContainerRestartsFrequent-container.md`
+- `CPUThrottlingHigh-container.md`
 - `CrashLoopBackOff-pod.md`
 - `EvictedPods-pod.md`
 - `FailedtoStartPodSandbox-pod.md`
 - `ImagePullBackOff-registry.md`
+- `KubeContainerOOMKilled-pod.md`
 - `KubeContainerWaiting-pod.md`
+- `KubePodContainerWaiting-pod.md`
+- `KubePodCrashLooping-pod.md`
+- `KubePodFrequentlyRestarting-pod.md`
+- `KubePodImagePullBackOff-pod.md`
 - `KubePodNotReady-pod.md`
+- `KubePodPending-pod.md`
 - `PendingPods-pod.md`
 - `PodCannotAccessClusterInternalDNS-dns.md`
 - `PodCannotConnecttoExternalServices-network.md`
@@ -202,21 +231,21 @@ Pod lifecycle, scheduling, health checks, pod states, resource issues
 - `PodLogsTruncated-pod.md`
 - `PodSchedulingIgnoredNodeSelector-pod.md`
 - `PodSecurityContext-pod.md`
-- `PodStuckInTerminatingState-pod.md`
-- `PodStuckinPendingDuetoNodeAffinity-pod.md`
-- `PodTerminatedWithExitCode137-pod.md`
 - `PodsExceedingResourceQuota-workload.md`
 - `PodsNotBeingScheduled-pod.md`
 - `PodsOverloadedDuetoMissingHPA-workload.md`
 - `PodsRestartingFrequently-pod.md`
-- `PodsStuckInUnknownState-pod.md`
 - `PodsStuckinContainerCreatingState-pod.md`
 - `PodsStuckinEvictedState-pod.md`
 - `PodsStuckinImagePullBackOff-registry.md`
 - `PodsStuckinInitState-pod.md`
 - `PodsStuckinTerminatingState-pod.md`
+- `PodsStuckInUnknownState-pod.md`
+- `PodStuckinPendingDuetoNodeAffinity-pod.md`
+- `PodStuckInTerminatingState-pod.md`
+- `PodTerminatedWithExitCode137-pod.md`
 
-### 04-Workloads/ (23 playbooks)
+### 04-Workloads/ (26 playbooks)
 Deployments, StatefulSets, DaemonSets, Jobs, HPA scaling issues
 
 **Key Topics:**
@@ -240,10 +269,12 @@ Deployments, StatefulSets, DaemonSets, Jobs, HPA scaling issues
 - `InvalidMemoryCPURequests-workload.md`
 - `JobFailingToComplete-job.md`
 - `KubeDaemonSetMisScheduled-daemonset.md`
+- `KubeDaemonSetNotReady-daemonset.md`
 - `KubeDaemonSetNotScheduled-daemonset.md`
 - `KubeDaemonSetRolloutStuck-daemonset.md`
 - `KubeDeploymentGenerationMismatch-deployment.md`
 - `KubeDeploymentReplicasMismatch-deployment.md`
+- `KubeDeploymentRolloutStuck-deployment.md`
 - `KubeHpaMaxedOut-workload.md`
 - `KubeHpaReplicasMismatch-workload.md`
 - `KubeJobCompletion-workload.md`
@@ -251,8 +282,9 @@ Deployments, StatefulSets, DaemonSets, Jobs, HPA scaling issues
 - `KubeStatefulSetGenerationMismatch-statefulset.md`
 - `KubeStatefulSetReplicasMismatch-statefulset.md`
 - `KubeStatefulSetUpdateNotRolledOut-statefulset.md`
+- `PodDisruptionBudgetViolations-workload.md`
 
-### 05-Networking/ (19 playbooks)
+### 05-Networking/ (27 playbooks)
 Services, Ingress, DNS, Network Policies, kube-proxy, external connectivity
 
 **Key Topics:**
@@ -264,18 +296,26 @@ Services, Ingress, DNS, Network Policies, kube-proxy, external connectivity
 - External service access
 
 **Playbooks:**
+- `CoreDNSDown-dns.md`
+- `CoreDNSLatencyHigh-dns.md`
 - `CoreDNSPodsCrashLooping-dns.md`
 - `DNSResolutionIntermittent-dns.md`
 - `ErrorConnectionRefusedWhenAccessingService-service.md`
+- `IngressCertificateExpiring-ingress.md`
 - `IngressControllerPodsCrashLooping-ingress.md`
 - `IngressNotWorking-ingress.md`
 - `IngressRedirectLoop-ingress.md`
 - `IngressReturning502BadGateway-ingress.md`
-- `IngressSSLTLSConfigurationFails-ingress.md`
 - `IngressShows404-ingress.md`
+- `IngressSSLTLSConfigurationFails-ingress.md`
 - `Kube-proxyFailing-network.md`
 - `KubeProxyDown-network.md`
 - `NetworkPolicyBlockingTraffic-network.md`
+- `NginxIngress4xxErrorsHigh-ingress.md`
+- `NginxIngress5xxErrorsHigh-ingress.md`
+- `NginxIngressConfigReloadFailed-ingress.md`
+- `NginxIngressDown-ingress.md`
+- `NginxIngressHighLatency-ingress.md`
 - `NodesUnreachable-network.md`
 - `ServiceExternal-IPPending-service.md`
 - `ServiceNodePortNotAccessible-service.md`
@@ -478,7 +518,7 @@ Proactive monitoring, capacity planning, security compliance, and operational re
 
 ### 1. Documentation
 
-This directory contains 194 Kubernetes incident response playbooks organized into 13 categorized folders. Each playbook provides systematic troubleshooting guidance for common Kubernetes cluster and workload issues.
+This directory contains 233 Kubernetes incident response playbooks organized into 13 categorized folders. Each playbook provides systematic troubleshooting guidance for common Kubernetes cluster and workload issues.
 
 **Quick Navigation:**
 - Browse by category folder (e.g., `03-Pods/` for pod issues)
@@ -950,7 +990,7 @@ To add a new playbook for an uncovered Kubernetes issue:
 
 ## Statistics
 
-- **Total Playbooks**: 194
+- **Total Playbooks**: 233
 - **Categories**: 13 (including Proactive monitoring)
 - **Organization**: Numbered folders for easy navigation
 - **Coverage**: All major Kubernetes components, common issues, and proactive monitoring

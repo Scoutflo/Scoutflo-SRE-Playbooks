@@ -32,7 +32,7 @@
 
 ## Overview
 
-This repository contains **414 comprehensive incident response playbooks** designed to help Site Reliability Engineers (SREs) systematically diagnose and resolve common infrastructure and application issues in AWS, Kubernetes, and Sentry environments.
+This repository contains **416 comprehensive incident response playbooks** designed to help Site Reliability Engineers (SREs) systematically diagnose and resolve common infrastructure and application issues in AWS, Kubernetes, and Sentry environments.
 
 ### Why This Repository?
 
@@ -40,8 +40,8 @@ This repository contains **414 comprehensive incident response playbooks** desig
 - **Time-Saving**: Quickly identify root causes with correlation analysis frameworks
 - **Community-Driven**: Continuously improved by the open-source community
 - **Production-Ready**: Based on real-world incident response scenarios
-- **Comprehensive Coverage**: 232 Kubernetes playbooks + 157 AWS playbooks + 25 Sentry playbooks
-- **Proactive Monitoring**: 56 K8s + 65 AWS proactive playbooks for capacity planning and compliance
+- **Comprehensive Coverage**: 233 Kubernetes playbooks + 158 AWS playbooks + 25 Sentry playbooks
+- **Proactive Monitoring**: 56 K8s + 66 AWS proactive playbooks for capacity planning and compliance
 
 ### Diagnosis Improvements
 
@@ -62,7 +62,7 @@ All playbooks use an **events-first approach** for root cause analysis:
 
 ```
 scoutflo-SRE-Playbooks/
-├── AWS Playbooks/                    # 157 AWS playbooks
+├── AWS Playbooks/                    # 158 AWS playbooks
 │   ├── 01-Compute/                   # 27 playbooks (EC2, Lambda, ECS, EKS)
 │   ├── 02-Database/                  # 8 playbooks (RDS, DynamoDB)
 │   ├── 03-Storage/                   # 7 playbooks (S3)
@@ -70,13 +70,13 @@ scoutflo-SRE-Playbooks/
 │   ├── 05-Security/                  # 16 playbooks (IAM, KMS, GuardDuty)
 │   ├── 06-Monitoring/                # 8 playbooks (CloudTrail, CloudWatch)
 │   ├── 07-CI-CD/                     # 9 playbooks (CodePipeline, CodeBuild)
-│   ├── 08-Proactive/                 # 65 proactive monitoring playbooks
+│   ├── 08-Proactive/                 # 66 proactive monitoring playbooks
 │   └── README.md
-├── K8s Playbooks/                    # 232 Kubernetes playbooks
+├── K8s Playbooks/                    # 233 Kubernetes playbooks
 │   ├── 01-Control-Plane/             # 24 playbooks
 │   ├── 02-Nodes/                     # 24 playbooks
 │   ├── 03-Pods/                      # 41 playbooks
-│   ├── 04-Workloads/                 # 25 playbooks
+│   ├── 04-Workloads/                 # 26 playbooks
 │   ├── 05-Networking/                # 27 playbooks
 │   ├── 06-Storage/                   # 9 playbooks
 │   ├── 07-RBAC/                      # 6 playbooks
@@ -100,7 +100,7 @@ scoutflo-SRE-Playbooks/
 
 ### AWS Playbooks (`AWS Playbooks/`)
 
-**157 playbooks** covering 7 service categories + proactive monitoring:
+**158 playbooks** covering 7 service categories + proactive monitoring:
 
 - **Compute Services** (27 playbooks): EC2, Lambda, ECS, EKS
 - **Database** (8 playbooks): RDS, DynamoDB
@@ -109,7 +109,7 @@ scoutflo-SRE-Playbooks/
 - **Security** (16 playbooks): IAM, KMS, GuardDuty, CloudTrail
 - **Monitoring** (8 playbooks): CloudTrail, CloudWatch
 - **CI/CD** (9 playbooks): CodePipeline, CodeBuild
-- **Proactive** (65 playbooks): Capacity planning, compliance, cost optimization
+- **Proactive** (66 playbooks): Capacity planning, compliance, cost optimization
 
 **Key Topics:**
 - Connection timeouts and network issues
@@ -123,14 +123,14 @@ See [AWS Playbooks/README.md](AWS%20Playbooks/README.md) for complete documentat
 
 ### Kubernetes Playbooks (`K8s Playbooks/`)
 
-**194 playbooks** organized into **13 categorized folders** covering Kubernetes cluster and workload issues:
+**233 playbooks** organized into **13 categorized folders** covering Kubernetes cluster and workload issues:
 
 **Folder Structure:**
-- `01-Control-Plane/` (18 playbooks) - API Server, Scheduler, Controller Manager, etcd
-- `02-Nodes/` (12 playbooks) - Node readiness, kubelet issues, resource constraints
-- `03-Pods/` (31 playbooks) - Scheduling, lifecycle, health checks, resource limits
-- `04-Workloads/` (23 playbooks) - Deployments, StatefulSets, DaemonSets, Jobs, HPA
-- `05-Networking/` (19 playbooks) - Services, Ingress, DNS, Network Policies, kube-proxy
+- `01-Control-Plane/` (24 playbooks) - API Server, Scheduler, Controller Manager, etcd
+- `02-Nodes/` (24 playbooks) - Node readiness, kubelet issues, resource constraints
+- `03-Pods/` (41 playbooks) - Scheduling, lifecycle, health checks, resource limits
+- `04-Workloads/` (26 playbooks) - Deployments, StatefulSets, DaemonSets, Jobs, HPA
+- `05-Networking/` (27 playbooks) - Services, Ingress, DNS, Network Policies, kube-proxy
 - `06-Storage/` (9 playbooks) - PersistentVolumes, PersistentVolumeClaims, StorageClasses
 - `07-RBAC/` (6 playbooks) - ServiceAccounts, Roles, RoleBindings, authorization
 - `08-Configuration/` (6 playbooks) - ConfigMaps and Secrets access issues
@@ -611,9 +611,9 @@ Need help? Check out our [Support Guide](.github/SUPPORT.md) or:
 
 ## Statistics
 
-- **Total Playbooks**: 376
-  - AWS: 157 playbooks (92 reactive + 65 proactive)
-  - Kubernetes: 194 playbooks (138 reactive + 56 proactive)
+- **Total Playbooks**: 416
+  - AWS: 158 playbooks (92 reactive + 66 proactive)
+  - Kubernetes: 233 playbooks (177 reactive + 56 proactive)
   - Sentry: 25 playbooks
 - **Coverage**: Major AWS services, Kubernetes components, and Sentry monitoring
 - **Format**: Markdown with structured sections
