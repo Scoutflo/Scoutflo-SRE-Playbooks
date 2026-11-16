@@ -19,6 +19,8 @@ Node maintenance can be blocked because draining `<node-name>` hangs or fails wh
 
 ## Playbook
 
+### For AI Agents (NLP)
+
 1. Describe the PodDisruptionBudget `<pdb-name>` in namespace `<namespace>` and note `minAvailable` / `maxUnavailable`, selector, and status fields (`currentHealthy`, `desiredHealthy`, `disruptionsAllowed`).
 2. List pods in namespace `<namespace>` that match the PDB selector and identify which pods are `Ready` vs not `Ready`, including restart spikes or readiness probe failures.
 3. Retrieve recent events in namespace `<namespace>` and look for eviction/drain messages that mention PDB blocking disruptions, noting timestamps for correlation.
@@ -29,6 +31,64 @@ Node maintenance can be blocked because draining `<node-name>` hangs or fails wh
 8. If cluster autoscaler scale-down is impacted, review autoscaler events/log messages around the same time window to confirm that PDB constraints are preventing node removal.
 9. Validate selector correctness by comparing `spec.selector.matchLabels` of `<pdb-name>` with actual pod labels for the intended workload, and ensure the PDB is protecting the right pods.
 10. If disruptions must proceed urgently, coordinate with the service owner to temporarily relax the PDB or increase replicas for the workload so that `disruptionsAllowed` becomes greater than `0`, then re-run the drain/rollout safely.
+
+### For DevOps/SREs (CLI)
+
+1. Describe the PDB and read `minAvailable`/`maxUnavailable` and status:
+   ```bash
+   kubectl describe pdb <pdb-name> -n <namespace>
+   kubectl get pdb <pdb-name> -n <namespace> -o jsonpath='{.status.currentHealthy} {.status.desiredHealthy} {.status.disruptionsAllowed}{"\n"}'
+   ```
+
+2. List pods matching the PDB selector and their readiness:
+   ```bash
+   SEL=$(kubectl get pdb <pdb-name> -n <namespace> -o jsonpath='{.spec.selector.matchLabels}' | tr -d '{}"' | tr ':' '=')
+   kubectl get pods -n <namespace> -l "$SEL" -o wide
+   ```
+
+3. Check recent events for eviction and drain messages:
+   ```bash
+   kubectl get events -n <namespace> --sort-by=.lastTimestamp | grep -i -E "evict|disruption|drain"
+   ```
+
+4. Check rollout status when a rollout is involved:
+   ```bash
+   kubectl rollout status deployment/<deployment-name> -n <namespace> --timeout=10s
+   kubectl rollout status statefulset/<statefulset-name> -n <namespace> --timeout=10s
+   ```
+
+5. Inspect pods on the node being drained (read-only):
+   ```bash
+   kubectl get pods -A --field-selector spec.nodeName=<node-name> -o wide
+   kubectl drain <node-name> --ignore-daemonsets --delete-emptydir-data --dry-run=server
+   ```
+
+6. Check replica counts:
+   ```bash
+   kubectl get deployment <deployment-name> -n <namespace> -o jsonpath='{.spec.replicas} {.status.readyReplicas} {.status.availableReplicas}{"\n"}'
+   ```
+
+7. List all PDBs in the namespace to spot overlapping selectors:
+   ```bash
+   kubectl get pdb -n <namespace> -o custom-columns=NAME:.metadata.name,MIN:.spec.minAvailable,MAXUNAVAIL:.spec.maxUnavailable,ALLOWED:.status.disruptionsAllowed,SELECTOR:.spec.selector.matchLabels
+   ```
+
+8. Review cluster autoscaler messages for scale-down blocked by PDBs:
+   ```bash
+   kubectl logs -n kube-system deployment/cluster-autoscaler --since=1h | grep -i -E "pdb|disruption"
+   kubectl -n kube-system get configmap cluster-autoscaler-status -o yaml
+   ```
+
+9. Compare PDB selector with actual pod labels:
+   ```bash
+   kubectl get pdb <pdb-name> -n <namespace> -o jsonpath='{.spec.selector}{"\n"}'
+   kubectl get pods -n <namespace> --show-labels
+   ```
+
+10. If disruptions must proceed urgently, coordinate with the service owner, then (change, needs approval) scale the workload so `disruptionsAllowed` > 0:
+    ```bash
+    kubectl scale deployment/<deployment-name> -n <namespace> --replicas=<n+1>
+    ```
 
 ## Diagnosis
 
