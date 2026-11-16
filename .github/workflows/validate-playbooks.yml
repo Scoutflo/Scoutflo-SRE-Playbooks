@@ -8,11 +8,13 @@ on:
       - '!CONTRIBUTING.md'
       - '!CHANGELOG.md'
       - '!.github/**'
+      - 'scripts/**'
   push:
     branches:
       - master
     paths:
       - '**/*.md'
+      - 'scripts/**'
   workflow_dispatch:
 
 jobs:
@@ -134,8 +136,8 @@ jobs:
             total=$((total + 1))
 
             # Check for dual format sections
-            has_nlp=$(grep -c "### For AI Agents (NLP)" "$file" || echo 0)
-            has_cli=$(grep -c "### For DevOps/SREs (CLI)" "$file" || echo 0)
+            has_nlp=$(grep -c "### For AI Agents (NLP)" "$file" || true)
+            has_cli=$(grep -c "### For DevOps/SREs (CLI)" "$file" || true)
 
             if [ "$has_nlp" -gt 0 ] && [ "$has_cli" -gt 0 ]; then
               dual_format=$((dual_format + 1))
@@ -180,3 +182,23 @@ jobs:
           echo "| Kubernetes | $k8s_count |" >> $GITHUB_STEP_SUMMARY
           echo "| Sentry | $sentry_count |" >> $GITHUB_STEP_SUMMARY
           echo "| **Total** | **$total** |" >> $GITHUB_STEP_SUMMARY
+
+  docs-consistency:
+    name: Docs Consistency
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check docs links and listings
+        run: python scripts/check_docs.py --strict
+
+      - name: Check README and docs listings are in sync
+        run: |
+          python scripts/sync_readmes.py --check
+          python scripts/sync_docs.py --check

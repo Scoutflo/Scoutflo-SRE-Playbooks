@@ -2,6 +2,12 @@
 
 All notable changes to the SRE Playbooks repository.
 
+## [Unreleased]
+
+- Added community playbooks: Lambda Cold Start Optimization (AWS) and Pod Disruption Budget Violations (K8s), both dual-format
+- Total playbooks: 414 → **416**; refreshed counts and listings across the docs
+- Added docs consistency checks and generators (`scripts/check_docs.py`, `sync_readmes.py`, `sync_docs.py`)
+
 ## [2.1.0] - 2026-02-21
 
 ### Added

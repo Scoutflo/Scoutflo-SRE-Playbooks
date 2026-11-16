@@ -1,8 +1,17 @@
-# AWS New-Playbooks
+# AWS Proactive Playbooks
 
-All missing/new AWS playbooks in a single flat folder for easy upload.
+Proactive monitoring, capacity planning, security/compliance, backup/DR, cost, observability, data-integrity and operational-readiness checks.
 
-- **Count:** 56 markdown files
-- **Searchables:** `AWS Playbooks/Enhanced-Playbook-Versions/Searchables/aws-playbooks-metadata-missing.json` (one JSON, keyed by `file_name`)
+- **Count:** 66 playbooks across 7 sub-folders (see the table below; run `python scripts/sync_readmes.py` to refresh counts)
 
-Previously under `Missing-Playbooks` with subfolders (Capacity-Planning, Compliance-Audit, Cost-Optimization, etc.); merged into this flat `New-Playbooks` folder so all `.md` files align with the single searchables JSON for upload.
+| Sub-folder | Focus |
+|------------|-------|
+| `01-Capacity-Performance/` | Capacity trends, forecasting, performance regression, Lambda cold starts |
+| `02-Security-Compliance/` | Access, policy and compliance reviews |
+| `03-Backup-DR/` | Backup verification, restore testing, failover, RTO/RPO |
+| `04-Cost-Optimization/` | Cost anomalies, right-sizing, idle resources |
+| `05-Observability/` | Alert, log, metric and trace coverage |
+| `06-Data-Integrity/` | Replication and consistency checks |
+| `07-Operational-Readiness/` | Runbooks, on-call readiness, dependency health |
+
+Full listing: [AWS Playbooks README](../README.md#08-proactive-66-playbooks).

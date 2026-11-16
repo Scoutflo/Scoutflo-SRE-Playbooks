@@ -7,7 +7,7 @@
 - [x] Initial release with 163 playbooks
 - [x] AWS restructuring to service-based folders
 - [x] Sentry playbooks (25)
-- [x] Proactive monitoring playbooks (121)
+- [x] Proactive monitoring playbooks (122)
 - [x] GitHub Pages documentation site
 - [x] Open source community setup
 

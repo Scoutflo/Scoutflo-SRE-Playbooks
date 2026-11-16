@@ -1,6 +1,6 @@
 # Workloads Playbooks
 
-This folder contains **25 playbooks** for troubleshooting Kubernetes workload resource issues.
+This folder contains **26 playbooks** for troubleshooting Kubernetes workload resource issues.
 
 ## What are Workloads?
 

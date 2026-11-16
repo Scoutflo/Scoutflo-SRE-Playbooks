@@ -1,6 +1,6 @@
 # Kubernetes Playbooks
 
-> **232 playbooks** for Kubernetes cluster incident response and proactive monitoring.
+> **233 playbooks** for Kubernetes cluster incident response and proactive monitoring.
 
 ## Categories
 
@@ -9,7 +9,7 @@
 | [01 - Control Plane](/k8s/01-control-plane) | 24 | API Server, etcd, scheduler, CertManager |
 | [02 - Nodes](/k8s/02-nodes) | 24 | Node health, kubelet, NodeExporter |
 | [03 - Pods](/k8s/03-pods) | 41 | Pod lifecycle, containers, restarts |
-| [04 - Workloads](/k8s/04-workloads) | 25 | Deployments, StatefulSets, DaemonSets, Jobs |
+| [04 - Workloads](/k8s/04-workloads) | 26 | Deployments, StatefulSets, DaemonSets, Jobs |
 | [05 - Networking](/k8s/05-networking) | 27 | Services, Ingress, CoreDNS, NetworkPolicies |
 | [06 - Storage](/k8s/06-storage) | 9 | PersistentVolumes, PVCs, StorageClasses |
 | [07 - RBAC](/k8s/07-rbac) | 6 | Roles, RoleBindings, ServiceAccounts |
@@ -104,7 +104,7 @@ See [03 - Pods](/k8s/03-pods) for the full list.
 </details>
 
 <details>
-<summary><strong>04 - Workloads (25 playbooks)</strong></summary>
+<summary><strong>04 - Workloads (26 playbooks)</strong></summary>
 
 Deployments, StatefulSets, DaemonSets, Jobs, CronJobs.
 

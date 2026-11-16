@@ -1,6 +1,6 @@
 # Kubernetes Workload Playbooks
 
-> **25 playbooks** for Deployments, DaemonSets, StatefulSets, Jobs, and HPA issues.
+> **26 playbooks** for Deployments, DaemonSets, StatefulSets, Jobs, and HPA issues.
 
 ## Deployment Playbooks
 
@@ -50,6 +50,12 @@
 | [HPANotRespondingToCustomMetrics](https://github.com/Scoutflo/scoutflo-SRE-Playbooks/blob/master/K8s%20Playbooks/04-Workloads/HPANotRespondingtoCustomMetrics-workload.md) | Custom metrics failures |
 | [KubeHpaMaxedOut](https://github.com/Scoutflo/scoutflo-SRE-Playbooks/blob/master/K8s%20Playbooks/04-Workloads/KubeHpaMaxedOut-workload.md) | HPA at maximum replicas |
 | [KubeHpaReplicasMismatch](https://github.com/Scoutflo/scoutflo-SRE-Playbooks/blob/master/K8s%20Playbooks/04-Workloads/KubeHpaReplicasMismatch-workload.md) | HPA replica mismatch |
+
+## Disruption Budget Playbooks
+
+| Playbook | Description |
+|----------|-------------|
+| [PodDisruptionBudgetViolations](https://github.com/Scoutflo/Scoutflo-SRE-Playbooks/blob/master/K8s%20Playbooks/04-Workloads/PodDisruptionBudgetViolations-workload.md) | PDB blocking drains, rollouts, or autoscaler scale-down |
 
 ## Resource Playbooks
 

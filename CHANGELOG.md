@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Lambda Cold Start Optimization proactive playbook (AWS 08-Proactive/01-Capacity-Performance) — community contribution (#5)
+- Pod Disruption Budget Violations workload playbook (K8s 04-Workloads) — community contribution (#4)
+- Dual-format (NLP + CLI) sections on both new playbooks
+- `scripts/check_docs.py`, `scripts/sync_readmes.py`, `scripts/sync_docs.py`: link/listing checks and generators that keep counts and listings in sync; enforced by a new `docs-consistency` CI job
+
+### Changed
+- Corrected the Lambda playbook: InitDuration is read from REPORT log lines via Logs Insights (it is not an AWS/Lambda CloudWatch metric); date handling is portable across GNU/macOS
+- Total playbooks: 414 → **416** (K8s 233, AWS 158, Sentry 25); refreshed counts and listings across README, ROADMAP, FAQ, CONTRIBUTORS, QUICK_REFERENCE and `docs/`
+- Rebuilt `docs/aws/08-proactive.md` and `docs/k8s/13-proactive.md` from the real playbook files (the AWS page listed playbook names that did not exist)
+- Rewrote the stale `AWS Playbooks/08-Proactive/README.md`
+- Dual-format converter model is now configurable via `CONVERT_MODEL` (default `claude-sonnet-5-5`)
+- Dual-format CI check no longer relies on `grep -c || echo 0` output quirks
+- Added `AGENTS.md` for coding agents
+
 ## [2.1.0] - 2026-02-21
 
 ### Added
