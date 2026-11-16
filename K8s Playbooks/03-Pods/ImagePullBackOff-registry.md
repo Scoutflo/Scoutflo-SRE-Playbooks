@@ -52,10 +52,11 @@ Pods cannot start; deployments remain at 0 replicas; rolling updates fail; appli
    # On node: docker pull <image-name> OR crictl pull <image-name>
    ```
 
-4. Check imagePullSecrets and decode credentials:
+4. Check imagePullSecrets and confirm the secret covers the registry (without exposing credentials):
    ```bash
    kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.spec.imagePullSecrets[*].name}'
-   kubectl get secret <secret-name> -n <namespace> -o jsonpath='{.data.\.dockerconfigjson}' | base64 -d
+   # Show only the registry hostnames in the secret - never print the credentials themselves
+   kubectl get secret <secret-name> -n <namespace> -o jsonpath='{.data.\.dockerconfigjson}' | base64 -d | python3 -c 'import json,sys; print("\n".join(json.load(sys.stdin).get("auths",{})))'
    ```
 
 5. Check deployment image configuration:
@@ -72,7 +73,7 @@ Pods cannot start; deployments remain at 0 replicas; rolling updates fail; appli
 7. Check node disk space:
    ```bash
    kubectl get pod <pod-name> -n <namespace> -o jsonpath='{.spec.nodeName}'
-   kubectl debug node/<node-name> -it --image=busybox -- df -h
+   kubectl debug node/<node-name> -it --image=busybox -- df -h /host   # node root is mounted at /host
    ```
 
 ## Diagnosis

@@ -1,0 +1,31 @@
+name: PR Review Reminder
+
+on:
+  schedule:
+    - cron: '0 6 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  remind:
+    name: Flag PRs waiting for review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label and comment on stale PRs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          cutoff=$(date -u -d '3 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          gh pr list --repo "$REPO" --state open --json number,createdAt,isDraft,reviewDecision,labels,comments \
+            --jq ".[] | select(.isDraft|not) | select(.createdAt < \"$cutoff\") | select(.reviewDecision == \"REVIEW_REQUIRED\" or .reviewDecision == \"\") | .number" |
+          while read -r n; do
+            if gh pr view "$n" --repo "$REPO" --json comments --jq '.comments[].body' | grep -q 'review-reminder-marker'; then
+              continue
+            fi
+            gh pr edit "$n" --repo "$REPO" --add-label "needs-review" || true
+            gh pr comment "$n" --repo "$REPO" --body "<!-- review-reminder-marker -->Thanks for the contribution! This PR has been waiting more than 3 days. Maintainers: please review (see MAINTAINERS.md review expectations)."
+          done

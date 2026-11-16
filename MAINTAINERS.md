@@ -9,6 +9,12 @@ This document lists the maintainers of the SRE Playbooks repository. Maintainers
 - **[@AtharvaBondreScoutflo](https://github.com/AtharvaBondreScoutflo)** - Core maintainer
 - **[@Vedant-Vyawahare](https://github.com/Vedant-Vyawahare)** - Core maintainer
 
+## Review Expectations
+
+- First response on every new PR or issue within **3 working days**; a full review or a clear next step within **7**.
+- A reminder workflow labels `needs-review` and comments on PRs that have had no review for 3 days.
+- A monthly changelog issue is opened automatically on the 1st; maintainers edit it and publish release notes.
+
 ## Maintainer Responsibilities
 
 Maintainers are expected to:

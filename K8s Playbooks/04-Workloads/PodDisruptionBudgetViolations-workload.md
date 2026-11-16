@@ -60,7 +60,8 @@ Node maintenance can be blocked because draining `<node-name>` hangs or fails wh
 5. Inspect pods on the node being drained (read-only):
    ```bash
    kubectl get pods -A --field-selector spec.nodeName=<node-name> -o wide
-   kubectl drain <node-name> --ignore-daemonsets --delete-emptydir-data --dry-run=server
+   # --timeout is required: with a blocking PDB, drain otherwise retries forever
+   kubectl drain <node-name> --ignore-daemonsets --delete-emptydir-data --dry-run=server --timeout=20s
    ```
 
 6. Check replica counts:

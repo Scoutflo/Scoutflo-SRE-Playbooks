@@ -32,7 +32,7 @@
 
 ## Overview
 
-This repository contains **416 comprehensive incident response playbooks** designed to help Site Reliability Engineers (SREs) systematically diagnose and resolve common infrastructure and application issues in AWS, Kubernetes, and Sentry environments.
+This repository contains **419 comprehensive incident response playbooks** designed to help Site Reliability Engineers (SREs) systematically diagnose and resolve common infrastructure and application issues in AWS, Kubernetes, Sentry, and Terraform environments.
 
 ### Why This Repository?
 
@@ -87,6 +87,7 @@ scoutflo-SRE-Playbooks/
 │   ├── 12-Namespaces/                # 2 playbooks
 │   ├── 13-Proactive/                 # 56 proactive monitoring playbooks
 │   └── README.md
+├── Terraform Playbooks/              # 3 Terraform playbooks (new)
 ├── Sentry Playbooks/                 # 25 Sentry playbooks
 │   ├── 01-Error-Tracking/            # 19 playbooks
 │   ├── 02-Performance/               # 6 playbooks
@@ -611,10 +612,11 @@ Need help? Check out our [Support Guide](.github/SUPPORT.md) or:
 
 ## Statistics
 
-- **Total Playbooks**: 416
+- **Total Playbooks**: 419
   - AWS: 158 playbooks (92 reactive + 66 proactive)
   - Kubernetes: 233 playbooks (177 reactive + 56 proactive)
   - Sentry: 25 playbooks
+  - Terraform: 3 playbooks
 - **Coverage**: Major AWS services, Kubernetes components, and Sentry monitoring
 - **Format**: Markdown with structured sections
 - **Language**: English
