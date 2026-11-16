@@ -40,9 +40,13 @@
   * [02 - Performance](/sentry/02-performance)
   * [03 - Release Health](/sentry/03-release-health)
 
+* **Terraform Playbooks** <span class="badge-sentry">3</span>
+  * [Overview](/terraform/)
+
 * **Contributing**
   * [How to Contribute](/contributing)
   * [Playbook Format](/format)
+  * [Using These Playbooks](/using-with-ai-sre)
   * [Code of Conduct](/code-of-conduct)
 
 * **Resources**

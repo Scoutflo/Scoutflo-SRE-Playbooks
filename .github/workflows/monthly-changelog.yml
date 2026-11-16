@@ -1,0 +1,39 @@
+name: Monthly Changelog Draft
+
+on:
+  schedule:
+    - cron: '0 7 1 * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  draft:
+    name: Open monthly changelog issue
+    runs-on: ubuntu-latest
+    steps:
+      - name: Collect merged PRs and open an issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          since=$(date -u -d '1 month ago' +%Y-%m-%d)
+          month=$(date -u -d '1 month ago' +%Y-%m)
+          {
+            echo "Draft changelog for **$month**. Edit, then publish to CHANGELOG.md / GitHub Releases and close this issue."
+            echo
+            echo "### Merged pull requests"
+            gh pr list --repo "$REPO" --state merged --search "merged:>=$since" --limit 100 \
+              --json number,title,author --jq '.[] | "- #\(.number) \(.title) (@\(.author.login))"'
+            echo
+            echo "### Contributors"
+            gh pr list --repo "$REPO" --state merged --search "merged:>=$since" --limit 100 \
+              --json author --jq '[.[].author.login] | unique | map("@" + .) | join(", ")'
+            echo
+            echo "### Open good first issues"
+            gh issue list --repo "$REPO" --label "good first issue" --state open --limit 20 \
+              --json number,title --jq '.[] | "- #\(.number) \(.title)"'
+          } > body.md
+          gh issue create --repo "$REPO" --title "Changelog draft: $month" --label documentation --body-file body.md

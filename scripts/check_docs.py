@@ -14,8 +14,8 @@ from pathlib import Path
 from urllib.parse import unquote
 
 ROOT = Path(__file__).resolve().parent.parent
-PROVIDERS = {"K8s Playbooks": "k8s", "AWS Playbooks": "aws", "Sentry Playbooks": "sentry"}
-LINK = re.compile(r"blob/(?:master|main)/((?:K8s|AWS|Sentry)(?:%20| )Playbooks/[^)\s#\"']+\.md)")
+PROVIDERS = {"K8s Playbooks": "k8s", "AWS Playbooks": "aws", "Sentry Playbooks": "sentry", "Terraform Playbooks": "terraform"}
+LINK = re.compile(r"blob/(?:master|main)/((?:K8s|AWS|Sentry|Terraform)(?:%20| )Playbooks/[^)\s#\"']+\.md)")
 
 
 def playbooks():
@@ -46,6 +46,9 @@ def main() -> int:
         key = cat_page.relative_to(ROOT).as_posix()
         if "Proactive" in parts[1]:
             continue  # proactive pages link to sub-category folders, not files
+        if not cat_page.exists():
+            cat_page = ROOT / "docs" / provider / "README.md"  # providers without per-category pages
+            key = cat_page.relative_to(ROOT).as_posix()
         if cat_page.exists() and pb not in linked.get(key, set()):
             print(f"NOT LISTED   {key} is missing {pb}")
             findings += 1

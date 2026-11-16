@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-11-16
+
 ### Added
 - Lambda Cold Start Optimization proactive playbook (AWS 08-Proactive/01-Capacity-Performance) — community contribution (#5)
 - Pod Disruption Budget Violations workload playbook (K8s 04-Workloads) — community contribution (#4)
@@ -21,6 +23,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dual-format converter model is now configurable via `CONVERT_MODEL` (default `claude-sonnet-5-5`)
 - Dual-format CI check no longer relies on `grep -c || echo 0` output quirks
 - Added `AGENTS.md` for coding agents
+- **Terraform Playbooks/** (new category, 3 playbooks, tested locally): StateLockStuck, DriftDetected, ProviderAuthenticationFailure
+- `docs/using-with-ai-sre.md` ("Using These Playbooks") and a clearer docs search placeholder/depth
+- Monthly changelog and PR-review-reminder workflows; review SLA documented in MAINTAINERS.md
+- Contributor pipeline: 9 new good-first/help-wanted issues (#7–#15) and a pinned "How to contribute" issue (#16)
+
+### Fixed
+- Verified the command-bearing playbooks against a local kind cluster and corrected issues:
+  - PodDisruptionBudgetViolations: `kubectl drain --dry-run=server` hangs under a blocking PDB; added `--timeout`
+  - ImagePullBackOff: no longer prints decoded registry credentials; node disk check uses `/host`
+  - Connection-Timeout-SSH-Issues-EC2: VPC Flow Logs filter used instance ID (flow logs record ENIs); security-group query now handles port ranges and all-traffic rules; AWS Health API notes
 
 ## [2.1.0] - 2026-02-21
 
