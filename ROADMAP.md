@@ -8,11 +8,11 @@ To become the most comprehensive, community-driven collection of SRE incident re
 
 ## Current Status (v2.1.0 + Unreleased)
 
-- **417 Playbooks**: 158 AWS + 233 Kubernetes + 26 Sentry
+- **420 Playbooks**: 158 AWS + 233 Kubernetes + 26 Sentry + 3 Terraform
 - **Structured Format**: All playbooks follow 4-section structure (Meaning, Impact, Playbook, Diagnosis)
 - **Events-First Diagnosis**: Correlation analysis with conditional logic patterns
 - **Proactive Monitoring**: 122 proactive playbooks for capacity planning and compliance
-- **Dual-Format (NLP + CLI)**: 6 of 417 playbooks converted; converter and validator in `scripts/` (in progress)
+- **Dual-Format (NLP + CLI)**: 9 of 420 playbooks dual-format; converter and validator in `scripts/` (in progress)
 - **CI**: structure validation, placeholder check, dual-format report and docs-consistency checks run on every PR
 
 ---
@@ -22,7 +22,7 @@ To become the most comprehensive, community-driven collection of SRE incident re
 ### New Playbooks
 - [ ] Azure playbooks (target: 50+ playbooks)
 - [ ] GCP playbooks (target: 50+ playbooks)
-- [ ] Terraform/IaC playbooks (target: 20+ playbooks)
+- [ ] Terraform/IaC playbooks (target: 20+ playbooks; 3 started in v2.2.0)
 - [ ] Additional Sentry playbooks for Release Health category
 
 ### Platform Improvements
@@ -108,6 +108,7 @@ For enterprise or priority feature requests, contact us:
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| v2.2.0 | 2026-11-16 | Community playbooks (Lambda cold start, PDB), Terraform category, accuracy fixes, docs consistency checks |
 | v2.1.0 | 2026-02-21 | 38 new K8s playbooks (CertManager, NodeExporter, containers, CoreDNS, NGINX Ingress) |
 | v2.0.0 | 2026-02-03 | Added Sentry playbooks, AWS restructured, proactive monitoring |
 | v1.0.0 | 2026-01-13 | Initial release with 163 playbooks (AWS + K8s) |

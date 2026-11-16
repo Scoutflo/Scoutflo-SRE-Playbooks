@@ -27,12 +27,13 @@ EC2InstanceStatusCheckFailed alarms may fire; administrators cannot access insta
 1. Check instance state and AWS service health:
    ```bash
    aws ec2 describe-instances --instance-ids <instance-id> --region <region> --query 'Reservations[*].Instances[*].[State.Name,InstanceId]' --output table
-   aws health describe-events --filter services=EC2 --region <region>
+   # AWS Health API needs a Business/Enterprise support plan; otherwise check the Health Dashboard
+   aws health describe-events --filter services=EC2 --region us-east-1
    ```
 
 2. Check security group inbound rules for SSH:
    ```bash
-   aws ec2 describe-security-groups --group-ids <security-group-id> --region <region> --query 'SecurityGroups[*].IpPermissions[?FromPort==`22`]' --output json
+   aws ec2 describe-security-groups --group-ids <security-group-id> --region <region> --query 'SecurityGroups[*].IpPermissions[?FromPort<=`22` && ToPort>=`22` || IpProtocol==`-1`]' --output json   # includes port ranges and all-traffic rules
    ```
 
 3. Verify public IP and subnet configuration:
@@ -68,7 +69,10 @@ EC2InstanceStatusCheckFailed alarms may fire; administrators cannot access insta
 
 9. Query VPC Flow Logs for blocked SSH traffic:
    ```bash
-   aws logs filter-log-events --log-group-name <vpc-flow-logs-group> --filter-pattern "REJECT <instance-id> 22" --region <region>
+   # Flow logs record the network interface (ENI), not the instance ID
+   ENI=$(aws ec2 describe-instances --instance-ids <instance-id> --region <region> --query 'Reservations[0].Instances[0].NetworkInterfaces[0].NetworkInterfaceId' --output text)
+   aws logs filter-log-events --log-group-name <vpc-flow-logs-group> --region <region> \
+     --filter-pattern "[version, account, eni=$ENI, source, destination, srcport, destport=22, protocol, packets, bytes, start, end, action=REJECT, status]"
    ```
 
 ## Diagnosis

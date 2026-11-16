@@ -15,6 +15,7 @@ Production-ready incident response playbooks for Kubernetes, AWS, and Sentry env
 | [Kubernetes](/k8s/) | 233 | Control Plane, Nodes, Pods, Workloads, Networking, Storage |
 | [AWS](/aws/) | 158 | Compute, Database, Storage, Networking, Security, CI/CD |
 | [Sentry](/sentry/) | 26 | Error Tracking, Performance, Release Health |
+| [Terraform](/terraform/) | 3 | State, Drift, Providers |
 
 ---
 
@@ -81,7 +82,7 @@ Production-ready incident response playbooks for Kubernetes, AWS, and Sentry env
 <div class="category-grid">
   <a href="#/sentry/01-error-tracking" class="category-card">
     <h4>Error Tracking</h4>
-    <p>Exception handling — 20 playbooks</p>
+    <p>Exception handling — 19 playbooks</p>
   </a>
   <a href="#/sentry/02-performance" class="category-card">
     <h4>Performance</h4>
