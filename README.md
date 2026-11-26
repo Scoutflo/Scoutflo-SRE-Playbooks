@@ -577,6 +577,7 @@ Need help? Check out our [Support Guide](.github/SUPPORT.md) or:
 **Learning Resources:**
 - [SRE Foundation Course](https://www.cncf.io/certification/training/) - CNCF training
 - [SRE Weekly](https://sreweekly.com/) - Weekly newsletter
+- [AI SRE Weekly](https://www.linkedin.com/company/ai-sre-weekly/) - Weekly newsletter on the AI SRE category: vendor launches, incident-automation research and what changed for on-call teams
 - [SREcon](https://www.usenix.org/conferences/byname/srecon) - SRE conferences
 - [Incident Response Guide](https://response.pagerduty.com/) - PagerDuty's incident response guide
 
